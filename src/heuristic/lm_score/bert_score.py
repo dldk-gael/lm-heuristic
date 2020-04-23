@@ -1,7 +1,6 @@
 from heuristic.score import Score
 from transformers import BertForMaskedLM, BertTokenizer
 import torch
-import math
 
 
 class BertScore(Score):
@@ -20,7 +19,7 @@ class BertScore(Score):
             - [CLS] Where is Gael ? [SEP] he has [MASK] [SEP]
 
     2- compute the likelihood of each target word that has been mask using context from both side
-    3- return the average of all log-likelihood  (in the paper, the authors said they use the sum)
+    3- return the sum or average of all log-likelihood
     """
     def __init__(self, model_name, batch_size=1, length_normalization=False):
         """
@@ -81,11 +80,11 @@ class BertScore(Score):
         log_likelihood_scores = log_likelihood_scores[range(input_ids.shape[0]), encoded_sentence]
 
         if self.length_normalization:
-            return math.exp(torch.mean(log_likelihood_scores).item())
+            return torch.exp(torch.mean(log_likelihood_scores)).item()
         else:
-            return math.exp(torch.sum(log_likelihood_scores).item())
+            return torch.exp(torch.sum(log_likelihood_scores)).item()
 
     def compute_score(self, sentences):
         sentences = [sentences] if type(sentences) == str else sentences
-        return [(sentence, self.compute_score_single_sentence(sentence)) for sentence in sentences]
+        return [self.compute_score_single_sentence(sentence) for sentence in sentences]
 
