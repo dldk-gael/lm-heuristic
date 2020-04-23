@@ -2,7 +2,7 @@ from heuristic.sentence_score import Score
 import torch
 
 
-class FullMaskScore(Score):
+class BertScore(Score):
     """
     Use BERT to score a sentence following the idea describe in the paper
     Effective Sentence Scoring Method Using BERT for Speech Recognition. J. Shin, Y. Lee, Kyomin Jung
@@ -32,15 +32,13 @@ class FullMaskScore(Score):
         self.tokenizer = tokenizer
         self.batch_size = batch_size
 
-    def compute_score(self, context, sentence):
+    def compute_score(self, sentences):
         """
         Compute BERT score of a sentence
-        :param context: str
-        :param sentence: str, sentence to evaluate
+        :param sentences: str | List[str] sentences to evaluate
         :return: float, score
         """
-        # In the method, we simply concatenate context and sentence
-        sentence = context + sentence
+        sentences = [sentences] if type(sentences) == str
 
         # prepare the batch of mask sentences
         tok_sentence = self.tokenizer.tokenize(sentence)

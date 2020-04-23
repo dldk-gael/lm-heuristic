@@ -3,27 +3,28 @@ import torch
 import math
 
 
-class PerplexityScore(Score):
+class GPT2Score(Score):
     """
     Compute the perplexity score of a sentence given a langage model :
      - average the loglikelihood that the LM assign to each token of the sentence given the previous tokens
     """
-    def __init__(self, model, tokenizer):
+    def __init__(self, model, tokenizer, batch_size):
         """
-        Initialize the pre-trained BERT model
+        Initialize the pre-trained GPT2 model
         :param model: Huggingface pretrained Model
         :param tokenizer: Huggingface Tokenizer
+        :param batch_size: int
         """
         super().__init__()
         self.model = model
         self.tokenizer = tokenizer
+        self.batch_size = batch_size
 
-    def compute_score(self, context, sentence):
+    def compute_score(self, sentences):
         """
-        Compute GPT2 score of sentence
-        :param context: str
-        :param sentence: str, sentence to evaluate
-        :return: float, score
+        Compute GPT2 score of the sentences
+        :param sentences: str | List[str] sentences to evaluate
+        :return: List[float], list of score
         """
         sentence = self.tokenizer.bos_token + context + sentence + self.tokenizer.eos_token
         tokens = self.tokenizer.tokenize(sentence)
