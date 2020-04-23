@@ -1,0 +1,3 @@
+[submodule "src/lm-scorer"]
+	path = src/lm-scorer
+	url = git@github.com:dldk-gael/lm-scorer.git
