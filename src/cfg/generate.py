@@ -1,5 +1,6 @@
 import nltk
 from nltk.parse.generate import generate
+import argparse
 
 
 def generate_all_sentences(grammar):
@@ -11,3 +12,11 @@ def generate_all_sentences(grammar):
         str_grammar = f.read()
     grammar = nltk.CFG.fromstring(str_grammar)
     return list(map(lambda l: " ".join(l), generate(grammar)))
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument("path_file")
+    args = parser.parse_args()
+    all_sentences = generate_all_sentences(args.path_file)
+    print("Number of sentences : ", len(all_sentences))
