@@ -46,7 +46,7 @@ class PerplexityScore(Score):
 
         ids_score = log_scores[range(len(tokens_ids)), tokens_ids]
         average = torch.mean(ids_score).item()
-        return -average
+        return math.exp(average)
 
 
 

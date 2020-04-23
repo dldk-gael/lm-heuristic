@@ -13,7 +13,7 @@ BERT_BASE = {'model_type': 'BertForMaskedLM', 'tokenizer_type': 'BertTokenizer',
 
 
 # noinspection PyUnresolvedReferences
-def compare_score(scores, context, sentences):
+def compute_score(scores, context, sentences):
     """
     Will instanciate the score_LM object and run the evaluation for each score_LM / sentences
     :param scores: list of dict {'score_type':str, 'model_type': str, 'tokenizer_type': str, 'model_name': str}
@@ -34,7 +34,7 @@ def compare_score(scores, context, sentences):
         print("Ranking sentences using %s with %s model" % (score_dict['score_type'], score_dict['model_name']))
 
         for i, (sentence, score_result) in enumerate(score.rank_sentences(context, sentences)):
-            print("\tn°%d (score : %.2f) - %s" % (i + 1, score_result, sentence))
+            print("\tn°%d (score : %f) - %s" % (i + 1, score_result, sentence))
         print("")
 
         del model, tokenizer, score  # to save memory for laptop ...

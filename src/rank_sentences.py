@@ -16,7 +16,7 @@ def rank_sentences(sentences):
     device = "cuda:0" if torch.cuda.is_available() else "cpu"
     scorer = LMScorer.from_pretrained("gpt2", device=device)
 
-    scored_sentences = [(sentence, scorer(sentence)) for sentence in tqdm(sentences)]
+    scored_sentences = [(sentence, scorer.sentence_score(sentence)) for sentence in tqdm(sentences)]
     sorted_sentences = sorted(scored_sentences, key=lambda x: x[1], reverse=True)
 
     return sorted_sentences
