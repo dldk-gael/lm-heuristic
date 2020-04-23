@@ -7,4 +7,5 @@ if __name__ == '__main__':
     scorer = LMScorer.from_pretrained("gpt2", device=device)
 
     print(scorer.sentence_score("this is a test", reduce='gmean'))
+    print(scorer.sentence_score("this is another dog test", reduce='gmean'))
 

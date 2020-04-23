@@ -23,7 +23,8 @@ class Score(ABC):
         :param sentences: list[str]
         :return: list[(str, float)] sorted list of sentence with their associated LM scores
         """
-        return sorted(self.compute_score(sentences), key=lambda x: x[1], reverse=True)
+        scored_sentences = list(zip(sentences, self.compute_score(sentences)))
+        return sorted(scored_sentences, key=lambda x: x[1], reverse=True)
 
     def print_sentences_score(self, sentences):
         for i, (sentence, score_result) in enumerate(self.rank_sentences(sentences)):

@@ -1,7 +1,8 @@
-from heuristic.sentence_score import Score
+from heuristic.score import Score
 from transformers import BertForMaskedLM, BertTokenizer
 import torch
 import math
+
 
 class BertScore(Score):
     """
