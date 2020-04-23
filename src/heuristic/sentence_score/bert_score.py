@@ -1,6 +1,7 @@
 from heuristic.sentence_score import Score
+from transformers import BertForMaskedLM, BertTokenizer
 import torch
-
+import math
 
 class BertScore(Score):
     """
@@ -20,26 +21,25 @@ class BertScore(Score):
     2- compute the likelihood of each target word that has been mask using context from both side
     3- return the average of all log-likelihood  (in the paper, the authors said they use the sum)
     """
-    def __init__(self, model, tokenizer, batch_size=1):
+    def __init__(self, model_name, batch_size=1, length_normalization=False):
         """
         Initialize the pre-trained BERT model
-        :param model: Huggingface pretrained Model
-        :param tokenizer: Huggingface Tokenizer
+        :param model_name : [str] for instance 'bert-base-uncased'
         :param batch_size: int, batch size to use for BERT input
+        :param length_normalization [boolean]
         """
         super().__init__()
-        self.model = model
-        self.tokenizer = tokenizer
+        self.model = BertForMaskedLM.from_pretrained(model_name)
+        self.tokenizer = BertTokenizer.from_pretrained(model_name)
         self.batch_size = batch_size
+        self.length_normalization = length_normalization
 
-    def compute_score(self, sentences):
+    def compute_score_single_sentence(self, sentence):
         """
         Compute BERT score of a sentence
-        :param sentences: str | List[str] sentences to evaluate
+        :param sentence
         :return: float, score
         """
-        sentences = [sentences] if type(sentences) == str
-
         # prepare the batch of mask sentences
         tok_sentence = self.tokenizer.tokenize(sentence)
         encoded_sentence = self.tokenizer.convert_tokens_to_ids(tok_sentence)
@@ -79,8 +79,12 @@ class BertScore(Score):
         log_likelihood_scores = torch.nn.LogSoftmax(dim=1)(mask_pred_logits)
         log_likelihood_scores = log_likelihood_scores[range(input_ids.shape[0]), encoded_sentence]
 
-        return torch.mean(log_likelihood_scores).item()
+        if self.length_normalization:
+            return math.exp(torch.mean(log_likelihood_scores).item())
+        else:
+            return math.exp(torch.sum(log_likelihood_scores).item())
 
-
-
+    def compute_score(self, sentences):
+        sentences = [sentences] if type(sentences) == str else sentences
+        return [(sentence, self.compute_score_single_sentence(sentence)) for sentence in sentences]
 
