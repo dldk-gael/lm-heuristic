@@ -7,10 +7,15 @@ from tqdm.autonotebook import tqdm
 
 class GPT2Score(Score):
     """
-    Compute the perplexity score of a sentence given a langage model :
-     - average the loglikelihood that the LM assign to each token of the sentence given the previous tokens
+    Compute the score of a sentence for GPT2 model.
+    Because GPT2 has been trained to predict next_tokens given all previous tokens, we use as a score :
+    P(sentence) = P(t_n | t_1 .. t_(n-1)) * ... * P(t_1)
+    Computation are performed in logspace
+
+    Length normalization can be applied on top of this score:
+    ->  average the loglikelihood of each token
     """
-    def __init__(self, model_name, batch_size=1, length_normalization=False, verbose=False):
+    def __init__(self, model_name, batch_size=1, length_normalization=False):
         """
         Initialize the pre-trained GPT2 model
         :param model_name : "gpt2", "gpt2-medium" or "gpt2-large"
@@ -27,7 +32,6 @@ class GPT2Score(Score):
         self.tokenizer = GPT2Tokenizer.from_pretrained(model_name)
         self.length_normalization = length_normalization
         self.batch_size = batch_size
-        self.verbose = verbose
 
     def compute_score(self, sentences):
         scores = []
@@ -52,27 +56,32 @@ class GPT2Score(Score):
 
         # Prepare the input ids
         tokens_ids = [encode_with_bos_eos_tokens(sentence) for sentence in sentences]
-        input_ids = pad_sequence(list(map(torch.tensor, tokens_ids)), batch_first=True)
+        sentences_len = torch.tensor([len(toks) - 1 for toks in tokens_ids])  # do not count the bos token
+        input_ids = pad_sequence(list(map(torch.tensor, tokens_ids)),
+                                 batch_first=True,
+                                 padding_value=0)
 
         if torch.cuda.is_available():
             input_ids = input_ids.cuda()
 
         # Compute all prediction logits by batch of batch_size
         with torch.no_grad():
-            pred_logits = self.model(input_ids)[0]
+            pred_logits = self.model(input_ids)[0]  # shape = [batch_size, seq_len, vocab_size]
 
-        # pred_scores.shape = [batch_size, seq_len, vocab_size]
-        pred_logits = pred_logits[:, :-1, :]  # To skip prediction for last tokens
         pred_scores = torch.nn.LogSoftmax(dim=2)(pred_logits)
 
-        scores = []
-        # TODO: look for a trick to skip this loop
-        for i in range(len(sentences)):
-            sentence_token_ids = tokens_ids[i][1:]  # To shift 1-rigth the gold label
-            sentence_token_scores = pred_scores[i, range(len(sentence_token_ids)), sentence_token_ids]
-            if self.length_normalization:
-                scores.append(torch.exp(torch.mean(sentence_token_scores)).item())
-            else:
-                scores.append(torch.exp(torch.sum(sentence_token_scores)).item())
+        # Align input and target
+        target_ids = input_ids[:, 1:]
+        pred_scores = pred_scores[:, :-1, :]
 
-        return scores
+        tokens_scores = pred_scores.gather(dim=2, index=target_ids.unsqueeze(2)).squeeze(2)
+
+        # Zeros the score of pad tokens
+        tokens_scores = torch.where(input_ids[:, :-1] != -1, tokens_scores, torch.zeros(tokens_scores.shape))
+        sentences_score = torch.sum(tokens_scores, dim=1)
+        if self.length_normalization:
+            sentences_score = sentences_score / sentences_len
+
+        sentences_score = torch.exp(sentences_score).tolist()
+        return sentences_score
+
