@@ -33,8 +33,8 @@ class Score(ABC):
         self.print_ranked_sentences(self.rank_sentences(sentences))
 
     @staticmethod
-    def print_ranked_sentences(ranked_sentence, n=-1):
-        for i, (sentence, score_result) in enumerate(ranked_sentence):
+    def print_ranked_sentences(ranked_sentences, n=-1):
+        for i, (sentence, score_result) in enumerate(ranked_sentences):
             print("\tn°%d (score : %f) - %s" % (i + 1, score_result, sentence))
             if i == n:
                 break
