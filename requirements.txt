@@ -1,6 +1,5 @@
 nltk
 numpy
-torch
 transformers
 tqdm
 
