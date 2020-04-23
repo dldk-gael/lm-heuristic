@@ -1,0 +1,215 @@
+Context :  None
+Possible sentences :
+	 the dog is playing with the ball
+	 the dog are playing with the ball
+	 the dogs is playing with the ball
+	 the dog is play with the ball
+
+With BERT SCORE :
+	n°1 (score : -2.53) - the dog is playing with the ball
+	n°2 (score : -4.25) - the dogs is playing with the ball
+	n°3 (score : -4.46) - the dog are playing with the ball
+	n°4 (score : -4.84) - the dog is play with the ball
+
+With BERT SCORE (CONTEXT CONSIDERED APPART) :
+	n°1 (score : -0.07) - the dog is playing with the ball
+	n°2 (score : -0.09) - the dog is play with the ball
+	n°3 (score : -0.27) - the dog are playing with the ball
+	n°4 (score : -0.40) - the dogs is playing with the ball
+
+With GPT2 SCORE :
+	n°1 (score : -73.05) - the dog is playing with the ball
+	n°2 (score : -167.27) - the dog are playing with the ball
+	n°3 (score : -213.47) - the dogs is playing with the ball
+	n°4 (score : -263.85) - the dog is play with the ball
+
+--------------------------------------
+
+Context :  Gael threw ball at his dogs.
+Possible sentences :
+	 the dog is playing with the ball
+	 the dogs are playing with the balls
+	 the dog is playing with the balls
+	 the dogs are playing with the ball
+
+With BERT SCORE :
+	n°1 (score : -3.32) - the dog is playing with the ball
+	n°2 (score : -3.55) - the dogs are playing with the ball
+	n°3 (score : -3.91) - the dog is playing with the balls
+	n°4 (score : -4.06) - the dogs are playing with the balls
+
+With BERT SCORE (CONTEXT CONSIDERED APPART) :
+	n°1 (score : -0.05) - the dog is playing with the ball
+	n°2 (score : -0.07) - the dog is playing with the balls
+	n°3 (score : -0.08) - the dogs are playing with the ball
+	n°4 (score : -0.09) - the dogs are playing with the balls
+
+With GPT2 SCORE :
+	n°1 (score : -305.86) - the dog is playing with the ball
+	n°2 (score : -316.36) - the dogs are playing with the ball
+	n°3 (score : -374.57) - the dogs are playing with the balls
+	n°4 (score : -389.30) - the dog is playing with the balls
+
+--------------------------------------
+
+Context :  Gael threw ball at his dogs (Max and Milo).
+Possible sentences :
+	 the dog is playing with the ball
+	 the dogs are playing with the balls
+	 the dog is playing with the balls
+	 the dogs are playing with the ball
+
+With BERT SCORE :
+	n°1 (score : -3.05) - the dog is playing with the ball
+	n°2 (score : -3.26) - the dogs are playing with the ball
+	n°3 (score : -3.44) - the dog is playing with the balls
+	n°4 (score : -3.60) - the dogs are playing with the balls
+
+With BERT SCORE (CONTEXT CONSIDERED APPART) :
+	n°1 (score : -0.05) - the dog is playing with the ball
+	n°2 (score : -0.06) - the dogs are playing with the ball
+	n°3 (score : -0.09) - the dogs are playing with the balls
+	n°4 (score : -0.09) - the dog is playing with the balls
+
+With GPT2 SCORE :
+	n°1 (score : -323.75) - the dog is playing with the ball
+	n°2 (score : -324.32) - the dogs are playing with the ball
+	n°3 (score : -368.09) - the dogs are playing with the balls
+	n°4 (score : -387.65) - the dog is playing with the balls
+
+--------------------------------------
+
+Context :  Gael threw ball at his dogs (Max and Milo).
+Possible sentences :
+	 the dog is playing with the ball
+	 the dogs are playing with the balls
+	 the dog is playing with the balls
+	 the dogs are playing with the ball
+With GPT2 small SCORE :
+	n°1 (score : -323.75) - the dog is playing with the ball
+	n°2 (score : -324.32) - the dogs are playing with the ball
+	n°3 (score : -368.09) - the dogs are playing with the balls
+	n°4 (score : -387.65) - the dog is playing with the balls
+With GPT2 medium SCORE :
+	n°1 (score : -186.87) - the dogs are playing with the ball
+	n°2 (score : -200.95) - the dog is playing with the ball
+	n°3 (score : -216.88) - the dogs are playing with the balls
+	n°4 (score : -242.54) - the dog is playing with the balls
+
+--------------------------------------
+
+Context :  Gael threw ball at Max and Milo.
+Possible sentences :
+	 the dog is playing with the ball
+	 the dogs are playing with the balls
+	 the dog is playing with the balls
+	 the dogs are playing with the ball
+
+With GPT2 small SCORE :
+	n°1 (score : -612.27) - the dog is playing with the ball
+	n°2 (score : -706.61) - the dogs are playing with the ball
+	n°3 (score : -747.98) - the dog is playing with the balls
+	n°4 (score : -808.82) - the dogs are playing with the balls
+
+With GPT2 medium SCORE :
+	n°1 (score : -379.37) - the dog is playing with the ball
+	n°2 (score : -413.46) - the dogs are playing with the ball
+	n°3 (score : -467.16) - the dog is playing with the balls
+	n°4 (score : -470.38) - the dogs are playing with the balls
+
+--------------------------------------
+
+Context :  Who knows Piet ?
+Possible sentences :
+	 the man knows the man
+	 the man knows Piet
+	 the man knows him
+	 Bas knows the man
+	 Bas knows Piet
+	 Bas knows him
+	 he knows the man
+	 he knows Piet
+	 he knows him
+
+With GPT2 small SCORE :
+	n°1 (score : -1387.50) - the man knows the man
+	n°2 (score : -2101.42) - he knows the man
+	n°3 (score : -2510.38) - the man knows him
+	n°4 (score : -2989.20) - the man knows Piet
+	n°5 (score : -4006.93) - he knows him
+	n°6 (score : -4928.32) - he knows Piet
+	n°7 (score : -12217.78) - Bas knows the man
+	n°8 (score : -25863.41) - Bas knows him
+	n°9 (score : -27968.85) - Bas knows Piet
+
+With GPT2 medium SCORE :
+	n°1 (score : -1570.66) - the man knows the man
+	n°2 (score : -2612.21) - he knows the man
+	n°3 (score : -3126.92) - the man knows him
+	n°4 (score : -3280.91) - the man knows Piet
+	n°5 (score : -4433.89) - he knows him
+	n°6 (score : -4579.63) - he knows Piet
+	n°7 (score : -20228.14) - Bas knows the man
+	n°8 (score : -37764.34) - Bas knows him
+	n°9 (score : -39224.73) - Bas knows Piet
+
+With GPT2 large SCORE :
+	n°1 (score : -1632.42) - the man knows the man
+	n°2 (score : -2237.45) - he knows the man
+	n°3 (score : -3224.92) - the man knows him
+	n°4 (score : -3671.42) - the man knows Piet
+	n°5 (score : -4453.01) - he knows him
+	n°6 (score : -5286.07) - he knows Piet
+	n°7 (score : -8450.58) - Bas knows the man
+	n°8 (score : -19260.33) - Bas knows him
+	n°9 (score : -20549.79) - Bas knows Piet
+
+Context :
+ Who knows Piet ? <|endoftext|>
+Possibles sentences:
+the man knows the man
+the man knows Piet
+the man knows him
+Bas knows the man
+Bas knows Piet
+Bas knows him
+he knows the man
+he knows Piet
+he knows him
+-------
+Loading microsoft/DialoGPT-small in memory
+Ranking sentences using PerplexityScore with microsoft/DialoGPT-small model
+	n°1 (score : -1703.17) - the man knows the man
+	n°2 (score : -2567.79) - the man knows him
+	n°3 (score : -2811.65) - the man knows Piet
+	n°4 (score : -3593.52) - he knows the man
+	n°5 (score : -4319.15) - he knows him
+	n°6 (score : -6046.42) - he knows Piet
+	n°7 (score : -11535.35) - Bas knows the man
+	n°8 (score : -14147.91) - Bas knows Piet
+	n°9 (score : -15460.27) - Bas knows him
+
+Loading microsoft/DialoGPT-medium in memory
+Ranking sentences using PerplexityScore with microsoft/DialoGPT-medium model
+	n°1 (score : -429.20) - the man knows the man
+	n°2 (score : -572.21) - the man knows him
+	n°3 (score : -580.83) - he knows the man
+	n°4 (score : -653.56) - he knows him
+	n°5 (score : -711.91) - the man knows Piet
+	n°6 (score : -839.21) - he knows Piet
+	n°7 (score : -2945.45) - Bas knows the man
+	n°8 (score : -3254.16) - Bas knows Piet
+	n°9 (score : -3290.95) - Bas knows him
+
+
+----------------------------------------------------------------------------------------------------
+With LM Scorer with GPT2 base  <- THIS WORKS BETTER , WHY ?
+	n°1 (score : 0.028455) - Who knows Piet ? Bas knows him
+	n°2 (score : 0.017489) - Who knows Piet ? the man knows the man
+	n°3 (score : 0.012444) - Who knows Piet ? the man knows Piet
+	n°4 (score : 0.011456) - Who knows Piet ? the man knows him
+	n°5 (score : 0.010338) - Who knows Piet ? Bas knows the man
+	n°6 (score : 0.009405) - Who knows Piet ? he knows the man
+	n°7 (score : 0.009329) - Who knows Piet ? Bas knows Piet
+	n°8 (score : 0.004479) - Who knows Piet ? he knows him
+	n°9 (score : 0.003914) - Who knows Piet ? he knows Piet

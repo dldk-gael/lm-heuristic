@@ -1,0 +1,40 @@
+
+ ----------------------------------------------------------------------------------------------------
+LM_Score(GPT_2 base with prod
+	n°1 (score : 0.000000) - Who knows Piet ? he knows Piet
+	n°2 (score : 0.000000) - Who knows Piet ? he knows him
+	n°3 (score : 0.000000) - Who knows Piet ? the man knows Piet
+	n°4 (score : 0.000000) - Who knows Piet ? the man knows him
+	n°5 (score : 0.000000) - Who knows Piet ? the man knows the man
+	n°6 (score : 0.000000) - Who knows Piet ? Bas knows him
+	n°7 (score : 0.000000) - Who knows Piet ? Bas knows the man
+
+ ----------------------------------------------------------------------------------------------------
+LM_Score(GPT_2 base with mean
+	n°1 (score : 0.028455) - Who knows Piet ? Bas knows him
+	n°2 (score : 0.017489) - Who knows Piet ? the man knows the man
+	n°3 (score : 0.012444) - Who knows Piet ? the man knows Piet
+	n°4 (score : 0.011456) - Who knows Piet ? the man knows him
+	n°5 (score : 0.010338) - Who knows Piet ? Bas knows the man
+	n°6 (score : 0.004479) - Who knows Piet ? he knows him
+	n°7 (score : 0.003914) - Who knows Piet ? he knows Piet
+
+ ----------------------------------------------------------------------------------------------------
+LM_Score(GPT_2 base with gmean
+	n°1 (score : 0.001190) - Who knows Piet ? the man knows the man
+	n°2 (score : 0.000764) - Who knows Piet ? the man knows Piet
+	n°3 (score : 0.000620) - Who knows Piet ? the man knows him
+	n°4 (score : 0.000406) - Who knows Piet ? he knows Piet
+	n°5 (score : 0.000361) - Who knows Piet ? he knows him
+	n°6 (score : 0.000233) - Who knows Piet ? Bas knows the man
+	n°7 (score : 0.000140) - Who knows Piet ? Bas knows him
+
+ ----------------------------------------------------------------------------------------------------
+LM_Score(GPT_2 base with hmean
+	n°1 (score : 0.000000) - Who knows Piet ? the man knows the man
+	n°2 (score : 0.000000) - Who knows Piet ? the man knows Piet
+	n°3 (score : 0.000000) - Who knows Piet ? the man knows him
+	n°4 (score : 0.000000) - Who knows Piet ? Bas knows the man
+	n°5 (score : 0.000000) - Who knows Piet ? he knows Piet
+	n°6 (score : 0.000000) - Who knows Piet ? he knows him
+	n°7 (score : 0.000000) - Who knows Piet ? Bas knows him
