@@ -26,6 +26,7 @@ class GPT2Score(Score):
         super().__init__()
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
+        print("Loading model on ", self.device)
         self.model = GPT2LMHeadModel.from_pretrained(model_name)
         self.model.eval()
         self.model.to(self.device)
@@ -62,10 +63,6 @@ class GPT2Score(Score):
                                  padding_value=self.tokenizer.eos_token_id)
 
         input_ids = input_ids.to(self.device)
-
-        #input_ids = torch.where(input_ids == -1,
-        #                        torch.full_like(input_ids, self.tokenizer.eos_token_id),
-        #                        input_ids)
 
         # Compute all prediction logits by batch of batch_size
         with torch.no_grad():
