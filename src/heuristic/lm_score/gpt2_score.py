@@ -80,6 +80,8 @@ class GPT2Score(Score):
         target_ids = input_ids[:, 1:]
         pred_scores = pred_scores[:, :-1, :]
 
+        # Retrieve the token scores corresponding to the target id
+        # (found this nice trick in lm-scorer package source code)
         tokens_scores = pred_scores.gather(dim=2, index=target_ids.unsqueeze(2)).squeeze(2)
 
         # Zeros the score of pad tokens
