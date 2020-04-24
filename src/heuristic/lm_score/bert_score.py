@@ -30,8 +30,13 @@ class BertScore(Score):
         """
         super().__init__()
         self.model = BertForMaskedLM.from_pretrained(model_name)
-        self.tokenizer = BertTokenizer.from_pretrained(model_name)
+        self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.batch_size = batch_size
+
+        self.model.eval()
+        self.model.to(self.device)
+        self.tokenizer = BertTokenizer.from_pretrained(model_name)
+
         self.length_normalization = length_normalization
 
     def compute_score_single_sentence(self, sentence):
@@ -53,21 +58,17 @@ class BertScore(Score):
         input_ids = torch.stack([torch.tensor(self.tokenizer.convert_tokens_to_ids(input_sentence))
                                  for input_sentence in input_sentences],
                                 dim=0)
-
-        self.model.eval()
-        if torch.cuda.is_available():
-            self.model.cuda()
-            input_ids = input_ids.cuda()
+        input_ids = input_ids.to(self.device)
 
         # Compute all prediction logits by batch
         i = 0
         pred_logits = []
-        while i + self.batch_size < seq_len:
-            pred_logits.append(self.model(input_ids[i: i+self.batch_size])[0].detach().cpu())
-            i += self.batch_size
-
-        if i < seq_len:
-            pred_logits.append(self.model(input_ids[i:])[0].detach().cpu())
+        with torch.no_grad():
+            while i + self.batch_size < seq_len:
+                pred_logits.append(self.model(input_ids[i: i+self.batch_size])[0])
+                i += self.batch_size
+            if i < seq_len:
+                pred_logits.append(self.model(input_ids[i:])[0])
 
         all_pred_logits = torch.cat(pred_logits, dim=0)  # shape (seq_len, seq_len, vocab_size)
 

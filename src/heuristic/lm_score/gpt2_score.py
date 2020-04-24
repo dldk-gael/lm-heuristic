@@ -3,6 +3,9 @@ import torch
 from torch.nn.utils.rnn import pad_sequence
 from transformers import GPT2Tokenizer, GPT2LMHeadModel
 from tqdm.autonotebook import tqdm
+import logging
+
+logger = logging.getLogger()
 
 
 class GPT2Score(Score):
@@ -21,12 +24,11 @@ class GPT2Score(Score):
         :param model_name : "gpt2", "gpt2-medium" or "gpt2-large"
         :param length_normalization [boolean]
         :param batch_size: int
-        :param verbose: [Boolean]
         """
         super().__init__()
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-        print("Loading model on ", self.device)
+        logger.info("Loading %s on %s" % (model_name, self.device))
         self.model = GPT2LMHeadModel.from_pretrained(model_name)
         self.model.eval()
         self.model.to(self.device)
