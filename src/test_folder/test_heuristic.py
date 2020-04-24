@@ -6,7 +6,7 @@ if __name__ == "__main__":
     gpt2_score = GPT2Score(model_name='gpt2', batch_size=2, length_normalization=True)
 
     print("Computing sentences's score")
-    sentences = ["This is a very simple test", "This is another dog test"]
+    sentences = ["This is a simple test", "This are simple test", "Final sentences"]
 
     gpt2_score.print_sentences_score(sentences)
 

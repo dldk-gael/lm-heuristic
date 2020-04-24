@@ -39,7 +39,7 @@ class GPT2Score(Score):
         for i in tqdm(range(len(sentences) // self.batch_size)):
             scores += self.compute_single_batch(sentences[i * self.batch_size: (i+1) * self.batch_size])
         if len(sentences) % self.batch_size != 0:
-            scores += self.compute_single_batch(sentences[-len(sentences) % self.batch_size:])
+            scores += self.compute_single_batch(sentences[- (len(sentences) % self.batch_size):])
         return scores
 
     def compute_single_batch(self, sentences):
@@ -50,19 +50,22 @@ class GPT2Score(Score):
         """
         sentences = [sentences] if type(sentences) == str else sentences
 
-        def encode_with_bos_eos_tokens(text):
-            # TODO Evaluate if it works best when using eos_token
-            # TODO Same question for bos_token
+        def add_bos_token_and_encode(text):
             return self.tokenizer.encode(self.tokenizer.bos_token + text)
 
         # Prepare the input ids
-        tokens_ids = [encode_with_bos_eos_tokens(sentence) for sentence in sentences]
+        tokens_ids = [add_bos_token_and_encode(sentence) for sentence in sentences]
         # don't count the bos token
         sentences_len = torch.tensor([len(toks) - 1 for toks in tokens_ids], device=self.device)
         input_ids = pad_sequence(list(map(torch.tensor, tokens_ids)),
                                  batch_first=True,
-                                 padding_value=0)
-        input_ids.to(self.device)
+                                 padding_value=self.tokenizer.eos_token_id)
+
+        input_ids = input_ids.to(self.device)
+
+        #input_ids = torch.where(input_ids == -1,
+        #                        torch.full_like(input_ids, self.tokenizer.eos_token_id),
+        #                        input_ids)
 
         # Compute all prediction logits by batch of batch_size
         with torch.no_grad():
@@ -77,7 +80,7 @@ class GPT2Score(Score):
         tokens_scores = pred_scores.gather(dim=2, index=target_ids.unsqueeze(2)).squeeze(2)
 
         # Zeros the score of pad tokens
-        tokens_scores = torch.where(input_ids[:, :-1] != -1,
+        tokens_scores = torch.where(target_ids != self.tokenizer.eos_token_id,
                                     tokens_scores,
                                     torch.zeros(tokens_scores.shape, device=self.device))
 
