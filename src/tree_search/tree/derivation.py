@@ -51,4 +51,4 @@ class Derivation(Node):
         return hash(self.items)
 
     def __str__(self):
-        return " ".join(map(str, self.items))
+        return " ".join(map(str, self.items)) + "."

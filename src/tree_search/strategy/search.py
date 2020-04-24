@@ -8,7 +8,7 @@ class TreeSearch(ABC):
     Abstract class that define a tree search
     Given :
     - a starting node
-    - an evaluation function : terminal_node -> score
+    - an evaluation function : list of terminal_node -> list of scores
 
     A TreeSearch object will search for the terminal node that maximise this evalution function
     """
@@ -19,16 +19,19 @@ class TreeSearch(ABC):
     @abstractmethod
     def search(self) -> Node:
         """
-        perform
+        search and return the terminal node that maximise the evalution function
         """
         pass
 
     @abstractmethod
     def path(self) -> List[Node]:
+        """
+        return path taken from root node to best terminal node that has been found
+        """
         pass
 
     def __call__(self) -> Node:
         return self.search()
 
-    def _eval_node(self, node):
+    def _eval_node(self, node: List[Node]):
         return self.evaluation_fn(node)

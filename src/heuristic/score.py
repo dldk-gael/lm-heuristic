@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 class Score(ABC):
     """
-    A Score instance compute a "naturalness" score for a sentence or a list of sentences
+    A Score object compute a "naturalness" score for a sentence or a list of sentences
     """
     def __init__(self, **kwargs):
         pass

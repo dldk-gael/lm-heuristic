@@ -18,12 +18,13 @@ class GPT2Score(Score):
     Length normalization can be applied on top of this score:
     ->  average the loglikelihood of each token
     """
-    def __init__(self, model_name, batch_size=1, length_normalization=False):
+    def __init__(self, model_name, batch_size=1, length_normalization=False, verbose=False):
         """
         Initialize the pre-trained GPT2 model
         :param model_name : "gpt2", "gpt2-medium" or "gpt2-large"
         :param length_normalization [boolean]
         :param batch_size: int
+        :param verbose: bool, if true will print a tqdm progress bar during computation
         """
         Score.__init__(self)
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
@@ -36,6 +37,7 @@ class GPT2Score(Score):
         self.tokenizer = GPT2Tokenizer.from_pretrained(model_name)
         self.length_normalization = length_normalization
         self.batch_size = batch_size
+        self.verbose = verbose
 
     def compute_score(self, sentences):
         """
@@ -43,7 +45,7 @@ class GPT2Score(Score):
         :return list of sentence's score
         """
         scores = []
-        for i in tqdm(range(len(sentences) // self.batch_size)):
+        for i in tqdm(range(len(sentences) // self.batch_size), disable=not self.verbose):
             scores += self.compute_single_batch(sentences[i * self.batch_size: (i+1) * self.batch_size])
         if len(sentences) % self.batch_size != 0:
             scores += self.compute_single_batch(sentences[- (len(sentences) % self.batch_size):])
