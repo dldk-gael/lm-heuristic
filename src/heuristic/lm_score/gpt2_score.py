@@ -25,7 +25,7 @@ class GPT2Score(Score):
         :param length_normalization [boolean]
         :param batch_size: int
         """
-        super().__init__()
+        Score.__init__(self)
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
         logger.info("Loading %s on %s" % (model_name, self.device))
@@ -38,6 +38,10 @@ class GPT2Score(Score):
         self.batch_size = batch_size
 
     def compute_score(self, sentences):
+        """
+        :param sentences: List[str] - list of sentences
+        :return list of sentence's score
+        """
         scores = []
         for i in tqdm(range(len(sentences) // self.batch_size)):
             scores += self.compute_single_batch(sentences[i * self.batch_size: (i+1) * self.batch_size])
@@ -47,7 +51,7 @@ class GPT2Score(Score):
 
     def compute_single_batch(self, sentences):
         """
-        Compute GPT2 score of the sentences
+        Compute GPT2 score of the sentences by given the model all the sentences in a single batch
         :param sentences: str | List[str] sentences to evaluate:
         :return: List[float], list of score
         """

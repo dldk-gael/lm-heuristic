@@ -14,6 +14,10 @@ def generate_all_sentences(grammar):
     return list(map(lambda l: " ".join(l), generate(grammar)))
 
 
+"""
+Script to quickly test if a grammar is correct at construction time 
+ie: can sentences be derivated from the grammar? if yes, how many ? 
+"""
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("path_file")

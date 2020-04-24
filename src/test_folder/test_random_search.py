@@ -13,4 +13,5 @@ if __name__ == '__main__':
 
     final_derivation = random_search.search()
     print(final_derivation)
-    print("\n".join(map(str, random_search.path)))
+    print("Path")
+    print("\n".join(map(str, random_search.path())))

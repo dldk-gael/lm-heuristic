@@ -3,10 +3,10 @@ from abc import ABC, abstractmethod
 
 class Score(ABC):
     """
-    Abstract class from which all custom sentence score must inheritate
+    A Score instance compute a "naturalness" score for a sentence or a list of sentences
     """
     def __init__(self, **kwargs):
-        ...
+        pass
 
     @abstractmethod
     def compute_score(self, sentences):
@@ -15,7 +15,7 @@ class Score(ABC):
         :param sentences: str | List[str]
         :return: float | List[float], list of sentence scores
         """
-        ...
+        pass
 
     def rank_sentences(self, sentences):
         """
@@ -40,5 +40,6 @@ class Score(ABC):
                 break
         print("")
 
-
+    def __call__(self, sentences):
+        return self.compute_score(sentences)
 
