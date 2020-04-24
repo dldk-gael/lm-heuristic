@@ -24,10 +24,11 @@ class GPT2Score(Score):
         :param verbose: [Boolean]
         """
         super().__init__()
+        self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
+
         self.model = GPT2LMHeadModel.from_pretrained(model_name)
         self.model.eval()
-        if torch.cuda.is_available():
-            self.model.cuda()
+        self.model.to(self.device)
 
         self.tokenizer = GPT2Tokenizer.from_pretrained(model_name)
         self.length_normalization = length_normalization
@@ -56,13 +57,12 @@ class GPT2Score(Score):
 
         # Prepare the input ids
         tokens_ids = [encode_with_bos_eos_tokens(sentence) for sentence in sentences]
-        sentences_len = torch.tensor([len(toks) - 1 for toks in tokens_ids])  # do not count the bos token
+        # don't count the bos token
+        sentences_len = torch.tensor([len(toks) - 1 for toks in tokens_ids], device=self.device)
         input_ids = pad_sequence(list(map(torch.tensor, tokens_ids)),
                                  batch_first=True,
                                  padding_value=0)
-
-        if torch.cuda.is_available():
-            input_ids = input_ids.cuda()
+        input_ids.to(self.device)
 
         # Compute all prediction logits by batch of batch_size
         with torch.no_grad():
@@ -77,7 +77,10 @@ class GPT2Score(Score):
         tokens_scores = pred_scores.gather(dim=2, index=target_ids.unsqueeze(2)).squeeze(2)
 
         # Zeros the score of pad tokens
-        tokens_scores = torch.where(input_ids[:, :-1] != -1, tokens_scores, torch.zeros(tokens_scores.shape))
+        tokens_scores = torch.where(input_ids[:, :-1] != -1,
+                                    tokens_scores,
+                                    torch.zeros(tokens_scores.shape, device=self.device))
+
         sentences_score = torch.sum(tokens_scores, dim=1)
         if self.length_normalization:
             sentences_score = sentences_score / sentences_len
