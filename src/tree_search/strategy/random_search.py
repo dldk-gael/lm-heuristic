@@ -7,10 +7,11 @@ class RandomSearch(TreeSearch):
     """
     Perfom a random search in the tree
     """
-    def __init__(self, root: Node, evaluation_fn=lambda x: 0, n_samples=1):
+    def __init__(self, root: Node, evaluation_fn=lambda x: 0, n_samples=1, batch_size=None):
         TreeSearch.__init__(self, root, evaluation_fn)
         self.__path = None
         self.n_samples = n_samples
+        self.batch_size = batch_size
 
     def random_expansion(self) -> Node:
         node = self.root

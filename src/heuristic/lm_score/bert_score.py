@@ -17,7 +17,7 @@ class BertScore(Score):
             - [CLS] Where [MASK]  Gael ? he has left [SEP]
             - ...
             - ...
-            - [CLS] Where is Gael ? [SEP] he has [MASK] [SEP]
+            - [CLS] Where is Gael ?  he has [MASK] [SEP]
 
     2- compute the likelihood of each target word that has been mask using context from both side
     3- return the sum or average of all log-likelihood
