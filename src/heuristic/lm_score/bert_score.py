@@ -1,6 +1,7 @@
 from heuristic.score import Score
 from transformers import BertForMaskedLM, BertTokenizer
 import torch
+from tqdm.autonotebook import tqdm
 
 
 class BertScore(Score):
@@ -87,5 +88,5 @@ class BertScore(Score):
 
     def compute_score(self, sentences):
         sentences = [sentences] if type(sentences) == str else sentences
-        return [self.compute_score_single_sentence(sentence) for sentence in sentences]
+        return [self.compute_score_single_sentence(sentence) for sentence in tqdm(sentences)]
 
