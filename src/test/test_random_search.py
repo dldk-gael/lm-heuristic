@@ -16,10 +16,10 @@ if __name__ == '__main__':
     heuristic = lambda terminal_nodes: gpt_2_scorer(list(map(str, terminal_nodes)))
 
     # Prepare root node
-    root = Derivation((grammar.start(),), grammar)
+    root = Derivation(grammar.start(), grammar)
 
     # Initialize and perform the search
-    random_search = RandomSearch(root, evaluation_fn=heuristic, n_samples=100, batch_size=1)
+    random_search = RandomSearch(root, evaluation_fn=heuristic, n_samples=100, batch_size=16)
     final_derivation = random_search.search()
 
     print(final_derivation)

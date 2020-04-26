@@ -1,4 +1,3 @@
-from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import List
 
@@ -18,7 +17,7 @@ class Node(ABC):
         pass
 
     @abstractmethod
-    def childrens(self) -> List[Node]:
+    def childrens(self) -> List['Node']:
         """
         Return the list of all children nodes from current node
         """
