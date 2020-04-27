@@ -1,5 +1,4 @@
 from abc import ABC, abstractmethod
-from typing import List
 
 
 class Node(ABC):
@@ -10,21 +9,21 @@ class Node(ABC):
         pass
 
     @abstractmethod
-    def is_terminal(self) -> bool:
+    def is_terminal(self):
         """
         Return true if the current node is a leaf
         """
         pass
 
     @abstractmethod
-    def childrens(self) -> List['Node']:
+    def childrens(self):
         """
         Return the list of all children nodes from current node
         """
         pass
 
     @abstractmethod
-    def random_children(self) -> 'Node':
+    def random_children(self):
         """
         return a random children
         """
@@ -39,3 +38,10 @@ class Node(ABC):
 
     def __eq__(self, other):
         return self.__hash__() == other.__hash__()
+
+    @staticmethod
+    def random_walk(self):
+        node = self
+        while not node.is_terminal():
+            node = node.random_children()
+        return node
