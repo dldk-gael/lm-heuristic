@@ -32,7 +32,7 @@ class RandomSearch(TreeSearch):
         path = [node]
         while True:
             if node.is_terminal():
-                return node, path + [node]
+                return node, path
             node = random.choice(node.childrens())
             path.append(node)
 

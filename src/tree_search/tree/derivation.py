@@ -1,7 +1,7 @@
 from tree_search.tree import Node
 from nltk import CFG, grammar
 from typing import List
-
+import random
 
 class Derivation(Node):
     """
@@ -46,6 +46,10 @@ class Derivation(Node):
                 for production in productions:
                     childrens.append(Derivation(self.items[:idx] + production.rhs() + self.items[idx+1:], self.cfg))
         return childrens
+
+    def random_children(self):
+        #  TODO optimize this function
+        return random.choice(self.childrens())
 
     def __hash__(self):
         return hash(self.items)

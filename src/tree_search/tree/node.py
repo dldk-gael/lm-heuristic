@@ -24,9 +24,18 @@ class Node(ABC):
         pass
 
     @abstractmethod
+    def random_children(self) -> 'Node':
+        """
+        return a random children
+        """
+        pass
+
+    @abstractmethod
     def __hash__(self):
         """
         All node ojbect must be hashable
         """
         pass
 
+    def __eq__(self, other):
+        return self.__hash__() == other.__hash__()
