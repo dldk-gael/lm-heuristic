@@ -3,6 +3,7 @@ from nltk import CFG, grammar
 from typing import List
 import random
 
+
 class Derivation(Node):
     """
     Given a context-free grammar (T, N, P, S) :
@@ -50,9 +51,6 @@ class Derivation(Node):
     def random_children(self):
         #  TODO optimize this function
         return random.choice(self.childrens())
-
-    def __hash__(self):
-        return hash(self.items)
 
     def __str__(self):
         return " ".join(map(str, self.items)) + "."
