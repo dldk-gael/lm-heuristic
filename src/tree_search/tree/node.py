@@ -29,7 +29,6 @@ class Node(ABC):
         """
         pass
 
-    @staticmethod
     def random_walk(self):
         node = self
         while not node.is_terminal():

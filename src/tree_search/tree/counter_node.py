@@ -25,7 +25,7 @@ class Counter(Node):
         self.reference_node = reference_node
         self.__childrens = None
         self.parent = parent
-        self.is_terminal = True
+        self.__is_terminal = True
         self.count = 0
         self.average_reward = 0
         self.sum_of_square_rewards = 0
@@ -36,14 +36,15 @@ class Counter(Node):
         Expand a counter node :
         - generate and save in memory all childrens
         """
+        assert not self.reference_node.is_terminal(), 'Try to expand from a terminal node'
         self.__childrens = [Counter(children_node, parent=self) for children_node in self.reference_node.childrens()]
-        self.is_terminal = False
+        self.__is_terminal = False
 
     def childrens(self):
         return self.__childrens
 
     def is_terminal(self):
-        return self.is_terminal
+        return self.__is_terminal
 
     def update_and_backpropagate(self, new_reward):
         """
@@ -62,7 +63,9 @@ class Counter(Node):
         """
         Return the children that have the best top_reward value
         """
+        assert not self.is_terminal(), 'Try to access childrens of a terminal node'
         return max(self.__childrens, key=lambda child: child.top_reward)
 
     def random_children(self):
+        assert not self.is_terminal(), "Try to access childrens of a terminal node"
         return random.choice(self.childrens())

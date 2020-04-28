@@ -2,15 +2,22 @@ from tree_search.strategy.search import TreeSearch
 from tree_search.tree import Counter
 
 import math
+import logging
+from tqdm.autonotebook import tqdm
+
+
+logger = logging.getLogger(__name__)
 
 
 class MonteCarloTreeSearch(TreeSearch):
     """
     Implement a Single Player Monte Carlo Tree Search as desbribe in
     Single-Player Monte-Carlo Tree Search for SameGame by Schadda, Winandsan, Taka, Uiterwijka in 2011
+
+    Add a modification in order to be able to evaluate leaf node by batch
     """
 
-    def __init__(self, root, evaluation_fn, batch_size=1, nb_of_tree_walks=1, c=1, d=10, t=10):
+    def __init__(self, root, evaluation_fn, batch_size=1, nb_of_tree_walks=1, c=1, d=1000, t=0):
         """
         Initialize the MCTS paramater and create the counter object that will be use to perform the MCTS
         :param root: Node object from which to perform the tree search
@@ -21,13 +28,22 @@ class MonteCarloTreeSearch(TreeSearch):
         :param d: hyperparameter for upper confidence bound TODO : add more explanation here
         :param t: threshold for expansion policy (see expansion_policy method)
         """
+        assert nb_of_tree_walks > t, (
+            "You give a lower number of tree walks that threshold t : the root node will not be able to expand"
+        )
         TreeSearch.__init__(self, root, evaluation_fn)
         self.nb_of_tree_walks = nb_of_tree_walks
         self.batch_size = batch_size
-        self.counter_root = Counter(reference_node=root, parent=None)
         self.c = c
         self.d = d
         self.t = t
+
+        # Wrap the root node in a counter object in order to maintain statistic on the path and rewards
+        self.counter_root = Counter(reference_node=root, parent=None)
+        logging.info("Initialize Monte Carlo Tree search \n"
+                     "\tthe parameters are C = %d, D= %d, t= %d\n"
+                     "\tit will perform %d of tree walks at each step" %
+                     (self.c, self.d, self.t, self.nb_of_tree_walks))
 
     def search(self):
         """
@@ -40,19 +56,20 @@ class MonteCarloTreeSearch(TreeSearch):
         2. Select the best node of the root
         3. Re-start the search from this node
         """
-        node = self.counter_root
-        while not node.reference_node.is_terminal():
+        while not self.counter_root.reference_node.is_terminal():
+            logger.info("Launching tree walks from node : <%s>" % str(self.counter_root.reference_node))
             self.one_step()
-            self.counter_root = node.top_children()
-        return node
+            self.counter_root = self.counter_root.top_children()
+        return self.counter_root.reference_node
 
     def one_step(self):
         """
         Perform nb_of_tree_walks by batch of batch_size
         """
-        for i in range(self.nb_of_tree_walks // self.batch_size):
+        for i in tqdm(range(self.nb_of_tree_walks // self.batch_size)):
             self.batch_tree_walks(self.batch_size)
-        self.batch_tree_walks(self.nb_of_tree_walks % self.batch_size)
+        if self.nb_of_tree_walks % self.batch_size != 0:
+            self.batch_tree_walks(self.nb_of_tree_walks % self.batch_size)
 
     def batch_tree_walks(self, batch_size):
         """
@@ -65,7 +82,7 @@ class MonteCarloTreeSearch(TreeSearch):
         buffer = [self.single_tree_walk() for _ in range(batch_size)]
         nodes = [x[0] for x in buffer]
         rewards = self.evaluation_fn([x[1] for x in buffer])
-        for node, reward in nodes, rewards:
+        for node, reward in zip(nodes, rewards):
             node.update_and_backpropagate(reward)
 
     def single_tree_walk(self):
@@ -79,7 +96,7 @@ class MonteCarloTreeSearch(TreeSearch):
         # bandit phase using selection policy
         counter_node = self.counter_root
         while not counter_node.is_terminal():
-            counter_node = self.selection_policy(counter_node.childrens())
+            counter_node = self.selection_policy(counter_node)
 
         # expansion phase
         counter_node = self.expansion_policy(counter_node)
@@ -94,7 +111,7 @@ class MonteCarloTreeSearch(TreeSearch):
         if a children of current node has been visited yet: visit it
         if all children has been visited already one: select the children with the biggest upper bound confidence
         """
-        for children in counter_node.childrens():  # TODO optimize this step
+        for children in counter_node.childrens():
             if children.count == 0:
                 return children
 
@@ -115,7 +132,7 @@ class MonteCarloTreeSearch(TreeSearch):
         Expand a node only if he has been visited t times so far as desbribe in
         Coulom, R., 2007. Efficient Selectivity and Backup Operators in Monte-Carlo Tree Search
         """
-        if counter_node.count < self.t:
+        if counter_node.reference_node.is_terminal() or counter_node.count < self.t:
             return counter_node
         else:
             counter_node.expand()
