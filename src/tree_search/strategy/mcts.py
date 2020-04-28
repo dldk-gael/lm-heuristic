@@ -66,7 +66,7 @@ class MonteCarloTreeSearch(TreeSearch):
         """
         Perform nb_of_tree_walks by batch of batch_size
         """
-        for i in tqdm(range(self.nb_of_tree_walks // self.batch_size)):
+        for _ in range(self.nb_of_tree_walks // self.batch_size):
             self.batch_tree_walks(self.batch_size)
         if self.nb_of_tree_walks % self.batch_size != 0:
             self.batch_tree_walks(self.nb_of_tree_walks % self.batch_size)
@@ -77,7 +77,7 @@ class MonteCarloTreeSearch(TreeSearch):
             - the terminal node from the counter tree (from which a random walk has been launched)
             - the terminal node from the root tree (the node at the end of the random walk)
         2. Evaluate all the terminal node from the root tree
-        3. Backpropagate the reward informations in the counter
+        3. Backpropagate the reward informations in the counter tree
         """
         buffer = [self.single_tree_walk() for _ in range(batch_size)]
         nodes = [x[0] for x in buffer]
