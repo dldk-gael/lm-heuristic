@@ -17,40 +17,42 @@ class Derivation(Node):
     The childrens of one node consist of all the string that derivated from the current derivation using only
     one production rule from P
     """
-    def __init__(self, items: tuple,  cfg: CFG):
+    def __init__(self, symbols: tuple,  cfg: CFG):
         """
         Initalize a Derivation Node
-        :param items ordered sequences of symbol representing the current derivation string
+        :param symbols ordered sequences of symbol representing the current derivation string
         :param cfg : reference to context free grammar containing the production rules
         """
         Node.__init__(self)
         self.cfg = cfg
-        self.items = (items, ) if type(items) != tuple else items
+        self.symbols = (symbols, ) if type(symbols) != tuple else symbols
 
-    def is_terminal(self) -> bool:
+    def is_terminal(self):
         """
         return True if the current derivation string is only composed of terminal symbols
         """
-        for item in self.items:
-            if type(item) == grammar.Nonterminal:
+        for symbol in self.symbols:
+            if type(symbol) == grammar.Nonterminal:
                 return False
         return True
 
-    def childrens(self) -> List[Node]:
+    def childrens(self):
         """
-        return all the Derativation that derivated from the current derivation using only one production rule from P
+        return all the Derivations nodes corresponding to sentences that can be derivated f
+        from the current derivation using only one production rule from P
         """
         childrens = []
-        for idx, item in enumerate(self.items):
-            if type(item) == grammar.Nonterminal:
-                productions = self.cfg.productions(lhs=item)
+        for idx, symbol in enumerate(self.symbols):
+            if type(symbol) == grammar.Nonterminal:
+                productions = self.cfg.productions(lhs=symbol)
                 for production in productions:
-                    childrens.append(Derivation(self.items[:idx] + production.rhs() + self.items[idx+1:], self.cfg))
+                    childrens.append(Derivation(self.symbols[:idx] + production.rhs() + self.symbols[idx+1:], self.cfg))
         return childrens
 
+    def number_of_childrens(self):
+
     def random_children(self):
-        #  TODO optimize this function
         return random.choice(self.childrens())
 
     def __str__(self):
-        return " ".join(map(str, self.items)) + "."
+        return " ".join(map(str, self.symbols)) + "."
