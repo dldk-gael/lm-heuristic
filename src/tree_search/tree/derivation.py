@@ -49,8 +49,6 @@ class Derivation(Node):
                     childrens.append(Derivation(self.symbols[:idx] + production.rhs() + self.symbols[idx+1:], self.cfg))
         return childrens
 
-    def number_of_childrens(self):
-
     def random_children(self):
         return random.choice(self.childrens())
 
