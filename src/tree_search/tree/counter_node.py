@@ -71,4 +71,8 @@ class Counter(Node):
         return random.choice(self.childrens())
 
     def __str__(self):
-        return str(self.reference_node)
+        return ("Reference node : %s\n"
+                "\t count: %d\n"
+                "\t average_reward: %f\n"
+                "\t top_reward: %f"
+                ) % (str(self.reference_node), self.count, self.average_reward, self.top_reward)
