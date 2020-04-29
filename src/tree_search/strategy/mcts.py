@@ -97,7 +97,7 @@ class MonteCarloTreeSearch(TreeSearch):
         nodes = [x[0] for x in buffer]
         rewards = self.evaluation_fn([x[1] for x in buffer])
         for node, reward in zip(nodes, rewards):
-            node.update_and_backpropagate(reward)
+            node.backpropagate(reward)
 
     def single_tree_walk(self, current_root):
         """
@@ -109,8 +109,10 @@ class MonteCarloTreeSearch(TreeSearch):
         """
         # bandit phase using selection policy
         counter_node = current_root
+        counter_node.count += 1
         while not counter_node.is_terminal():
             counter_node = self.selection_policy(counter_node)
+            counter_node.count += 1
 
         # expansion phase
         # Expand a node only if he has been visited t times so far as desbribe in
@@ -140,17 +142,12 @@ class MonteCarloTreeSearch(TreeSearch):
         Compute the upper confidence bound as describe in section 4.1 of
         'Single-Player Monte-Carlo Tree Search for SameGame'
         """
-        return node.average_reward + \
+        return node.sum_rewards / node.count + \
                math.sqrt(self.c * math.log(total_nb_of_selections / node.count)) + \
-               math.sqrt((node.sum_of_square_rewards - node.count * (node.average_reward ** 2) + self.d) / node.count)
-
-    def expansion_policy(self, counter_node):
-        """
-        Expand a node only if he has been visited t times so far as desbribe in
-        Coulom, R., 2007. Efficient Selectivity and Backup Operators in Monte-Carlo Tree Search
-        """
-        if not counter_node.reference_node.is_terminal() and counter_node.count > self.t:
-            counter_node.expand()
+               math.sqrt((node.sum_of_square_rewards -
+                          node.count * ((node.sum_rewards / node.count) ** 2) +
+                          self.d)
+                         / node.count)
 
     def path(self):
         return list(map(lambda counter_node: counter_node.reference_node, self.__path))

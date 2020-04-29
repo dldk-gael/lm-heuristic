@@ -30,3 +30,5 @@ if __name__ == '__main__':
 
     best_node = mtcs.search()
     mtcs.print_search_info()
+
+    mtcs.node_info(1)

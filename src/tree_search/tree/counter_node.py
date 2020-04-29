@@ -27,7 +27,7 @@ class Counter(Node):
         self.parent = parent
         self.__is_terminal = True
         self.count = 0
-        self.average_reward = 0
+        self.sum_rewards = 0
         self.sum_of_square_rewards = 0
         self.top_reward = 0
 
@@ -46,18 +46,17 @@ class Counter(Node):
     def is_terminal(self):
         return self.__is_terminal
 
-    def update_and_backpropagate(self, new_reward):
+    def backpropagate(self, new_reward):
         """
         Given a new_reward update the average reward, sum of square rewards and top reward
         and backprogate the information to the parent node
         """
-        self.count += 1
-        self.average_reward = self.average_reward * (self.count - 1) / self.count + new_reward / self.count
+        self.sum_rewards += new_reward
         self.sum_of_square_rewards += new_reward ** 2
         self.top_reward = max(self.top_reward, new_reward)
 
         if self.parent is not None:
-            self.parent.update_and_backpropagate(new_reward)
+            self.parent.backpropagate(new_reward)
 
     def top_children(self):
         """
@@ -75,4 +74,5 @@ class Counter(Node):
                 "\t count: %d\n"
                 "\t average_reward: %f\n"
                 "\t top_reward: %f"
-                ) % (str(self.reference_node), self.count, self.average_reward, self.top_reward)
+                ) % (str(self.reference_node), self.count, self.sum_rewards / self.count, self.top_reward)
+
