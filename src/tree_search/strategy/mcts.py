@@ -2,7 +2,7 @@ from tree_search.strategy.search import TreeSearch
 from tree_search.tree import Counter
 
 import math
-from tqdm import tqdm
+from tqdm.autonotebook import tqdm
 from time import time
 
 
@@ -20,10 +20,11 @@ class MonteCarloTreeSearch(TreeSearch):
         :param root: Node object from which to perform the tree search
         :param evaluation_fn: scoring function that evaluate node (must be able to evaluate list of nodes in batch)
         :param batch_size: number of leaf to store in memory before evaluating them in one pass
-        :param nb_of_tree_walks: number of tree walks to compute before selecting an action TODO: replace that by time
+        :param nb_of_tree_walks: number of tree walks to compute before selecting an action
         :param c: hyperparameter for upper confidence bound, control the exploration vs exploitation ratio
-        :param d: hyperparameter for upper confidence bound TODO : add more explanation here
+        :param d: hyperparameter for upper confidence bound
         :param t: threshold for expansion policy (see expansion_policy method)
+        :param time #TODO add a time parameters
         """
         assert nb_of_tree_walks > t, (
             "You give a lower number of tree walks that threshold t : the root node will not be able to expand"
