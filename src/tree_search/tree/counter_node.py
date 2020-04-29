@@ -30,6 +30,7 @@ class Counter(Node):
         self.sum_rewards = 0
         self.sum_of_square_rewards = 0
         self.top_reward = 0
+        self.top_leaf_node = None  # Useful to analyse and debug MCTS, will be remove later
 
     def expand(self):
         """
@@ -46,17 +47,21 @@ class Counter(Node):
     def is_terminal(self):
         return self.__is_terminal
 
-    def backpropagate(self, new_reward):
+    def backpropagate(self, new_reward, leaf):
         """
         Given a new_reward update the average reward, sum of square rewards and top reward
         and backprogate the information to the parent node
         """
         self.sum_rewards += new_reward
         self.sum_of_square_rewards += new_reward ** 2
+
+        if new_reward > self.top_reward:
+            self.top_reward = new_reward
+            self.top_leaf_node = leaf
         self.top_reward = max(self.top_reward, new_reward)
 
         if self.parent is not None:
-            self.parent.backpropagate(new_reward)
+            self.parent.backpropagate(new_reward, leaf)
 
     def top_children(self):
         """
@@ -73,6 +78,11 @@ class Counter(Node):
         return ("Reference node : %s\n"
                 "\t count: %d\n"
                 "\t average_reward: %f\n"
-                "\t top_reward: %f"
-                ) % (str(self.reference_node), self.count, self.sum_rewards / self.count, self.top_reward)
+                "\t top_reward: %f\n"
+                "\t top_leaf_associated : %s"
+                ) % (str(self.reference_node),
+                     self.count,
+                     self.sum_rewards / self.count,
+                     self.top_reward,
+                     str(self.top_leaf_node))
 

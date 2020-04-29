@@ -95,9 +95,10 @@ class MonteCarloTreeSearch(TreeSearch):
         """
         buffer = [self.single_tree_walk(current_root) for _ in range(nb_tree_walks)]
         nodes = [x[0] for x in buffer]
-        rewards = self.evaluation_fn([x[1] for x in buffer])
-        for node, reward in zip(nodes, rewards):
-            node.backpropagate(reward)
+        leafs = [x[1] for x in buffer]
+        rewards = self.evaluation_fn(leafs)
+        for node, leaf, reward in zip(nodes, leafs, rewards):
+            node.backpropagate(reward, leaf)
 
     def single_tree_walk(self, current_root):
         """
