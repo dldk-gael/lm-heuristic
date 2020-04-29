@@ -160,7 +160,7 @@ class MonteCarloTreeSearch(TreeSearch):
         return {
             "time": self.__time,
             "path": self.path(),
-            "total_nb_of_walks": self.nb_of_tree_walks,
+            "total_nb_of_walks": self.total_nb_of_walks,
             "best_leaf": self.search_result.reference_node,
             "best_leaf_value": self._eval_node([self.search_result.reference_node])[0]
         }
