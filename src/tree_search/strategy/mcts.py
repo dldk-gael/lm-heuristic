@@ -3,7 +3,7 @@ from tree_search.tree import Counter
 
 import math
 import logging
-from tqdm.autonotebook import tqdm
+from tqdm import tqdm
 
 
 logger = logging.getLogger(__name__)
@@ -56,17 +56,26 @@ class MonteCarloTreeSearch(TreeSearch):
         2. Select the best node of the root
         3. Re-start the search from this node
         """
+        progress_bar = tqdm(total=self.nb_of_tree_walks, desc="Tree walks", unit='walks')
         while not self.counter_root.reference_node.is_terminal():
-            logger.info("Launching tree walks from node : <%s>" % str(self.counter_root.reference_node))
-            self.one_step()
+            progress_bar.reset()
+            progress_bar.set_postfix(root_node=str(self.counter_root.reference_node))
+            for _ in range(self.nb_of_tree_walks // self.batch_size):
+                self.batch_tree_walks(self.batch_size)
+                progress_bar.update(self.batch_size)
+            if self.nb_of_tree_walks % self.batch_size != 0:
+                self.batch_tree_walks(self.nb_of_tree_walks % self.batch_size)
+
+            #self.one_step()
             self.counter_root = self.counter_root.top_children()
+
         return self.counter_root.reference_node
 
     def one_step(self):
         """
         Perform nb_of_tree_walks by batch of batch_size
         """
-        for _ in range(self.nb_of_tree_walks // self.batch_size):
+        for _ in tqdm(range(self.nb_of_tree_walks // self.batch_size), desc="Tree walks"):
             self.batch_tree_walks(self.batch_size)
         if self.nb_of_tree_walks % self.batch_size != 0:
             self.batch_tree_walks(self.nb_of_tree_walks % self.batch_size)
