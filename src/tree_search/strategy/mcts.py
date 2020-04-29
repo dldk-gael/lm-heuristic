@@ -113,7 +113,10 @@ class MonteCarloTreeSearch(TreeSearch):
             counter_node = self.selection_policy(counter_node)
 
         # expansion phase
-        counter_node = self.expansion_policy(counter_node)
+        # Expand a node only if he has been visited t times so far as desbribe in
+        # Coulom, R., 2007. Efficient Selectivity and Backup Operators in Monte-Carlo Tree Search
+        if not counter_node.reference_node.is_terminal() and counter_node.count + 1 > self.t:
+            counter_node.expand()
 
         # perform a random walk from there
         random_leaf = counter_node.reference_node.random_walk()
@@ -146,11 +149,8 @@ class MonteCarloTreeSearch(TreeSearch):
         Expand a node only if he has been visited t times so far as desbribe in
         Coulom, R., 2007. Efficient Selectivity and Backup Operators in Monte-Carlo Tree Search
         """
-        if counter_node.reference_node.is_terminal() or counter_node.count < self.t:
-            return counter_node
-        else:
+        if not counter_node.reference_node.is_terminal() and counter_node.count > self.t:
             counter_node.expand()
-            return counter_node.random_children()
 
     def path(self):
         return list(map(lambda counter_node: counter_node.reference_node, self.__path))
