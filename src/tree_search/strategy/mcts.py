@@ -2,11 +2,8 @@ from tree_search.strategy.search import TreeSearch
 from tree_search.tree import Counter
 
 import math
-import logging
 from tqdm import tqdm
-
-
-logger = logging.getLogger(__name__)
+from time import time
 
 
 class MonteCarloTreeSearch(TreeSearch):
@@ -40,10 +37,15 @@ class MonteCarloTreeSearch(TreeSearch):
 
         # Wrap the root node in a counter object in order to maintain statistic on the path and rewards
         self.counter_root = Counter(reference_node=root, parent=None)
-        logging.info("Initialize Monte Carlo Tree search \n"
-                     "\tthe parameters are C = %d, D= %d, t= %d\n"
-                     "\tit will perform %d of tree walks at each step" %
-                     (self.c, self.d, self.t, self.nb_of_tree_walks))
+        print("Initialize Monte Carlo Tree search \n"
+              "\tthe parameters are C = %d, D= %d, t= %d\n"
+              "\tit will perform %d of tree walks at each step" %
+              (self.c, self.d, self.t, self.nb_of_tree_walks))
+
+        self.__path = []
+        self.__time = 0
+        self.total_nb_of_walks = 0
+        self.search_result = None
 
     def search(self):
         """
@@ -52,35 +54,37 @@ class MonteCarloTreeSearch(TreeSearch):
         we allocate ressorce move by move rather than using all the ressources from the tree node.
 
         Concretely :
-        1. Compute nb_of_tree_walks
+        1. Compute nb_of_tree_walks by batch of batch_size
         2. Select the best node of the root
         3. Re-start the search from this node
         """
+        current_root = self.counter_root
+
+        begin_time = time()
+        self.total_nb_of_walks = 0
+        self.__path = [current_root]
+
         progress_bar = tqdm(total=self.nb_of_tree_walks, desc="Tree walks", unit='walks')
-        while not self.counter_root.reference_node.is_terminal():
+        while not current_root.reference_node.is_terminal():
             progress_bar.reset()
-            progress_bar.set_postfix(root_node=str(self.counter_root.reference_node))
+            progress_bar.set_postfix(root_node=str(current_root.reference_node))
+
             for _ in range(self.nb_of_tree_walks // self.batch_size):
-                self.batch_tree_walks(self.batch_size)
+                self.batch_tree_walks(current_root, self.batch_size)
                 progress_bar.update(self.batch_size)
             if self.nb_of_tree_walks % self.batch_size != 0:
-                self.batch_tree_walks(self.nb_of_tree_walks % self.batch_size)
+                self.batch_tree_walks(current_root, self.nb_of_tree_walks % self.batch_size)
 
-            #self.one_step()
-            self.counter_root = self.counter_root.top_children()
+            current_root = current_root.top_children()
+            self.__path.append(current_root)
+            self.total_nb_of_walks += self.nb_of_tree_walks
 
-        return self.counter_root.reference_node
+        self.__time = time() - begin_time
+        self.search_result = current_root
 
-    def one_step(self):
-        """
-        Perform nb_of_tree_walks by batch of batch_size
-        """
-        for _ in tqdm(range(self.nb_of_tree_walks // self.batch_size), desc="Tree walks"):
-            self.batch_tree_walks(self.batch_size)
-        if self.nb_of_tree_walks % self.batch_size != 0:
-            self.batch_tree_walks(self.nb_of_tree_walks % self.batch_size)
+        return current_root.reference_node
 
-    def batch_tree_walks(self, batch_size):
+    def batch_tree_walks(self, current_root, nb_tree_walks):
         """
         1. Perform batch_size tree walks keeping in memory at each time :
             - the terminal node from the counter tree (from which a random walk has been launched)
@@ -88,13 +92,13 @@ class MonteCarloTreeSearch(TreeSearch):
         2. Evaluate all the terminal node from the root tree
         3. Backpropagate the reward informations in the counter tree
         """
-        buffer = [self.single_tree_walk() for _ in range(batch_size)]
+        buffer = [self.single_tree_walk(current_root) for _ in range(nb_tree_walks)]
         nodes = [x[0] for x in buffer]
         rewards = self.evaluation_fn([x[1] for x in buffer])
         for node, reward in zip(nodes, rewards):
             node.update_and_backpropagate(reward)
 
-    def single_tree_walk(self):
+    def single_tree_walk(self, current_root):
         """
         Perform a single tree walk.
         1. The 'bandit phase' / selection step: if current node has been explored so far,
@@ -103,7 +107,7 @@ class MonteCarloTreeSearch(TreeSearch):
         3. The play-out step: from there we go randomly to the end of the tree
         """
         # bandit phase using selection policy
-        counter_node = self.counter_root
+        counter_node = current_root
         while not counter_node.is_terminal():
             counter_node = self.selection_policy(counter_node)
 
@@ -148,4 +152,14 @@ class MonteCarloTreeSearch(TreeSearch):
             return counter_node.random_children()
 
     def path(self):
-        return
+        return list(map(lambda counter_node: counter_node.reference_node, self.__path))
+
+    def search_info(self):
+        assert self.search_result is not None, "try to access search info but no search was computed"
+        return {
+            "time": self.__time,
+            "path": self.path(),
+            "total_nb_of_walks": self.nb_of_tree_walks,
+            "best_leaf": self.search_result.reference_node,
+            "best_leaf_value": self._eval_node([self.search_result.reference_node])[0]
+        }

@@ -5,6 +5,7 @@ from tqdm.autonotebook import tqdm
 from typing import List
 import random
 import numpy as np
+from time import time
 
 
 class RandomSearch(TreeSearch):
@@ -22,6 +23,7 @@ class RandomSearch(TreeSearch):
         self.__path = None
         self.n_samples = n_samples
         self.batch_size = batch_size
+        self.__time = 0
 
     def random_expansion(self) -> (Node, List[Node]):
         """
@@ -49,6 +51,8 @@ class RandomSearch(TreeSearch):
         Perform n_samples random expension and return the terminal node that has been found
         and that maximize the evaluation_fn
         """
+        begin_time = time()
+
         best_node = None
         buffer = []
         best_node_value = -1
@@ -65,6 +69,7 @@ class RandomSearch(TreeSearch):
             if best_buffer_node_value > best_node_value:
                 best_node, self.__path, best_node_value = best_buffer_node, path, best_buffer_node_value
 
+        self.__time = time() - begin_time
         return best_node
 
     def path(self):
@@ -72,3 +77,12 @@ class RandomSearch(TreeSearch):
         :return path taken from root node to best terminal node that has been found
         """
         return self.__path
+
+    def search_info(self):
+        return {
+            "time": self.__time,
+            "path": self.__path,
+            "total_nb_of_walks": self.n_samples,
+            "best_leaf": self.__path[-1],
+            "best_leaf_value": self._eval_node([self.__path[-1]])[0]
+        }

@@ -4,8 +4,6 @@ import nltk
 import logging
 from heuristic import GPT2Score
 
-logging.basicConfig(level=logging.DEBUG)
-
 
 GRAMMAR_FOLDER = 'data/cfg/'
 if __name__ == '__main__':
@@ -15,10 +13,10 @@ if __name__ == '__main__':
     grammar = nltk.CFG.fromstring(str_grammar)
 
     # Load heuristic function <- GPT2 score
-    gpt_2_scorer = GPT2Score('gpt2')
-    heuristic = lambda terminal_nodes: gpt_2_scorer(list(map(str, terminal_nodes)))
+    #gpt_2_scorer = GPT2Score('gpt2')
+    #heuristic = lambda terminal_nodes: gpt_2_scorer(list(map(str, terminal_nodes)))
 
-    # heuristic = lambda terminal_nodes: [0] * len(terminal_nodes)
+    heuristic = lambda terminal_nodes: [0] * len(terminal_nodes)
 
     # Prepare root node
     root = Derivation(grammar.start(), grammar)
@@ -28,3 +26,4 @@ if __name__ == '__main__':
                                 nb_of_tree_walks=100, c=1, d=1000, t=0)
 
     best_node = mtcs.search()
+    mtcs.print_search_info()

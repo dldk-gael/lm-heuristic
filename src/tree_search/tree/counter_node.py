@@ -69,3 +69,6 @@ class Counter(Node):
     def random_children(self):
         assert not self.is_terminal(), "Try to access childrens of a terminal node"
         return random.choice(self.childrens())
+
+    def __str__(self):
+        return str(self.reference_node)

@@ -34,3 +34,7 @@ class Node(ABC):
         while not node.is_terminal():
             node = node.random_children()
         return node
+
+    @abstractmethod
+    def __str__(self):
+        pass

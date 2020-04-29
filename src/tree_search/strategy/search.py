@@ -35,3 +35,28 @@ class TreeSearch(ABC):
 
     def _eval_node(self, node: List[Node]):
         return self.evaluation_fn(node)
+
+    @abstractmethod
+    def search_info(self):
+        """
+        :return: dict containing the following information
+                    - time needed to perform the search
+                    - path taken
+                    - total number of tree walks
+                    - best leaf found
+                    - value of the best leaf
+        """
+        pass
+
+    def print_search_info(self):
+        info = self.search_info()
+        print("--- Search information ---\n"
+              "%d tree walks was performed in %.1f s" % (info['total_nb_of_walks'], info['time']))
+
+        print("Best leaf that have been found: %s \n"
+              "It has a score of %f" % (str(info['best_leaf']), info['best_leaf_value']))
+
+        print("The following path was taken :")
+        for i, node in enumerate(info['path']):
+            print("%d: %s" % (i, str(node)))
+
