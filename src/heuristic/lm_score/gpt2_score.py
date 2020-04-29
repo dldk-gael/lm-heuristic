@@ -51,6 +51,25 @@ class GPT2Score(Score):
             scores += self.compute_single_batch(sentences[- (len(sentences) % self.batch_size):])
         return scores
 
+    def pad(self, sequences):
+        """
+        :param sequences: list of Tensor
+        :return: padding input + mask,
+                  both are rensors of shape (len(sequences), max sequence length)
+        """
+        max_seq_len = max([s.size(0) for s in sequences])
+        out_tensor = sequences[0].data.new(len(sequences), max_seq_len).fill_(self.tokenizer.eos_token_id)
+        mask = torch.zeros((len(sequences), max_seq_len), device=sequences[0].device)
+        for i, tensor in enumerate(sequences):
+            length = tensor.size(0)
+            out_tensor[i, :length] = tensor
+            mask[i, :length] = 1
+
+        return out_tensor, mask
+
+    def add_bos_token_and_encode(self, text):
+        return self.tokenizer.encode(self.tokenizer.bos_token + text)
+
     def compute_single_batch(self, sentences):
         """
         Compute GPT2 score of the sentences by given the model all the sentences in a single batch
@@ -59,18 +78,16 @@ class GPT2Score(Score):
         """
         sentences = [sentences] if type(sentences) == str else sentences
 
-        def add_bos_token_and_encode(text):
-            return self.tokenizer.encode(self.tokenizer.bos_token + text)
+
 
         # Prepare the input ids
-        tokens_ids = [add_bos_token_and_encode(sentence) for sentence in sentences]
+        tokens_ids = [self.add_bos_token_and_encode(sentence) for sentence in sentences]
         # don't count the bos token
         sentences_len = torch.tensor([len(toks) - 1 for toks in tokens_ids], device=self.device)
-        input_ids = pad_sequence(list(map(torch.tensor, tokens_ids)),
-                                 batch_first=True,
-                                 padding_value=self.tokenizer.eos_token_id)
+        input_ids, mask = self.pad(list(map(torch.tensor, tokens_ids)))
 
         input_ids = input_ids.to(self.device)
+        mask = mask.to(self.device)
 
         # Compute all prediction logits by batch of batch_size
         with torch.no_grad():
@@ -87,9 +104,7 @@ class GPT2Score(Score):
         tokens_scores = pred_scores.gather(dim=2, index=target_ids.unsqueeze(2)).squeeze(2)
 
         # Zeros the score of pad tokens
-        tokens_scores = torch.where(target_ids != self.tokenizer.eos_token_id,
-                                    tokens_scores,
-                                    torch.zeros(tokens_scores.shape, device=self.device))
+        tokens_scores *= mask[:, 1:]
 
         sentences_score = torch.sum(tokens_scores, dim=1)
         if self.length_normalization:
