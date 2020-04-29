@@ -39,17 +39,20 @@ class GPT2Score(Score):
         self.batch_size = batch_size
         self.verbose = verbose
 
-    def compute_score(self, sentences):
+    def compute_score(self, text):
         """
-        :param sentences: List[str] - list of sentences
+        :param text: str | List[str] sentences to evaluate
         :return list of sentence's score
         """
+        sentences = [text] if type(text) == str else text
+
         scores = []
         for i in tqdm(range(len(sentences) // self.batch_size), disable=not self.verbose):
             scores += self.compute_single_batch(sentences[i * self.batch_size: (i+1) * self.batch_size])
         if len(sentences) % self.batch_size != 0:
             scores += self.compute_single_batch(sentences[- (len(sentences) % self.batch_size):])
-        return scores
+
+        return scores[0] if type(text) == str else scores
 
     def pad(self, sequences):
         """
@@ -76,10 +79,6 @@ class GPT2Score(Score):
         :param sentences: str | List[str] sentences to evaluate:
         :return: List[float], list of score
         """
-        sentences = [sentences] if type(sentences) == str else sentences
-
-
-
         # Prepare the input ids
         tokens_ids = [self.add_bos_token_and_encode(sentence) for sentence in sentences]
         # don't count the bos token
