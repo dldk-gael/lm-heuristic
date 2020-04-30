@@ -180,15 +180,3 @@ class MonteCarloTreeSearch(TreeSearch):
             "best_leaf": self.search_result.reference_node,
             "best_leaf_value": self._eval_node([self.search_result.reference_node])[0]
         }
-
-    def node_info(self, i):
-        """
-        To debug MCTS, print info on the node n°i in the path
-        """
-        counter_node = self.__path[i]
-        print(counter_node)
-        if not counter_node.is_terminal():
-            print("\t has %d children" % len(counter_node.childrens()))
-            for i, children in enumerate(counter_node.childrens()):
-                print("\n-- children n°%d --" % i)
-                print(str(children))

@@ -95,6 +95,14 @@ class Counter(Node):
                     return
             self.parent.set_as_solved()
 
+    def detailed_node_info(self):
+        print(self)
+        if not self.is_terminal():
+            print("\t has %d children" % len(self.childrens()))
+            for i, children in enumerate(self.childrens()):
+                print("\n-- children n°%d --" % i)
+                print(str(children))
+
     def __str__(self):
         return ("Reference node : %s\n"
                 "\t count: %d\n"
