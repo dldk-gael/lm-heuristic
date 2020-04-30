@@ -88,7 +88,7 @@ class Counter(Node):
         """
         self.solved = True
 
-        if self.parent is not None:
+        if (self.parent is not None) and (not self.parent.freeze):
             brothers = self.parent.childrens()
             for brother in brothers:
                 if not brother.solved:
