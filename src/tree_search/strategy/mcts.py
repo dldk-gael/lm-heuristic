@@ -171,6 +171,9 @@ class MonteCarloTreeSearch(TreeSearch):
     def path(self):
         return list(map(lambda counter_node: counter_node.reference_node, self.__path))
 
+    def counter_path(self):
+        return self.__path  # useful for analyse / debug
+
     def search_info(self):
         assert self.search_result is not None, "try to access search info but no search was computed"
         return {
