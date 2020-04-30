@@ -31,6 +31,7 @@ class Counter(Node):
         self.sum_of_square_rewards = 0
         self.top_reward = 0
         self.top_leaf_node = None  # Useful to analyse and debug MCTS, will be remove later
+        self.freeze = False  # Useful to stop backprogation if choice has already been made
 
     def expand(self):
         """
@@ -52,16 +53,17 @@ class Counter(Node):
         Given a new_reward update the average reward, sum of square rewards and top reward
         and backprogate the information to the parent node
         """
-        self.sum_rewards += new_reward
-        self.sum_of_square_rewards += new_reward ** 2
+        if not self.freeze:
+            self.sum_rewards += new_reward
+            self.sum_of_square_rewards += new_reward ** 2
 
-        if new_reward > self.top_reward:
-            self.top_reward = new_reward
-            self.top_leaf_node = leaf
-        self.top_reward = max(self.top_reward, new_reward)
+            if new_reward > self.top_reward:
+                self.top_reward = new_reward
+                self.top_leaf_node = leaf
+            self.top_reward = max(self.top_reward, new_reward)
 
-        if self.parent is not None:
-            self.parent.backpropagate(new_reward, leaf)
+            if self.parent is not None:
+                self.parent.backpropagate(new_reward, leaf)
 
     def top_children(self):
         """

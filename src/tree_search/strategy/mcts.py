@@ -70,12 +70,15 @@ class MonteCarloTreeSearch(TreeSearch):
             progress_bar.reset()
             progress_bar.set_postfix(root_node=str(current_root.reference_node))
 
+            # Perform nb of tree walks
             for _ in range(self.nb_of_tree_walks // self.batch_size):
                 self.batch_tree_walks(current_root, self.batch_size)
                 progress_bar.update(self.batch_size)
             if self.nb_of_tree_walks % self.batch_size != 0:
                 self.batch_tree_walks(current_root, self.nb_of_tree_walks % self.batch_size)
 
+            # Choose the best node among the childrens and continue the search from here
+            current_root.freeze = True  # To avoid modifying the counter of previous roots in futur backpropagations
             current_root = current_root.top_children()
             self.__path.append(current_root)
             self.total_nb_of_walks += self.nb_of_tree_walks
