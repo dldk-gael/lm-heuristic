@@ -100,10 +100,12 @@ class Counter(Node):
                 "\t count: %d\n"
                 "\t average_reward: %f\n"
                 "\t top_reward: %f\n"
-                "\t top_leaf_associated : %s"
+                "\t top_leaf_associated : %s\n"
+                "\t is solved : %s"
                 ) % (str(self.reference_node),
                      self.count,
                      self.sum_rewards / self.count,
                      self.top_reward,
-                     str(self.top_leaf_node))
+                     str(self.top_leaf_node),
+                     "yes" if self.solved else "no")
 
