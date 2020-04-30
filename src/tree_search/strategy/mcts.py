@@ -72,9 +72,11 @@ class MonteCarloTreeSearch(TreeSearch):
 
             # Perform nb of tree walks
             for _ in range(self.nb_of_tree_walks // self.batch_size):
+                if current_root.solved:
+                    break
                 self.batch_tree_walks(current_root, self.batch_size)
                 progress_bar.update(self.batch_size)
-            if self.nb_of_tree_walks % self.batch_size != 0:
+            if self.nb_of_tree_walks % self.batch_size != 0 and not current_root.solved:
                 self.batch_tree_walks(current_root, self.nb_of_tree_walks % self.batch_size)
 
             # Choose the best node among the childrens and continue the search from here
@@ -96,7 +98,12 @@ class MonteCarloTreeSearch(TreeSearch):
         2. Evaluate all the terminal node from the root tree
         3. Backpropagate the reward informations in the counter tree
         """
-        buffer = [self.single_tree_walk(current_root) for _ in range(nb_tree_walks)]
+        buffer = []
+        for _ in range(nb_tree_walks):
+            if current_root.solved:
+                break
+            buffer.append(self.single_tree_walk(current_root))
+
         nodes = [x[0] for x in buffer]
         leafs = [x[1] for x in buffer]
         rewards = self.evaluation_fn(leafs)
@@ -124,6 +131,9 @@ class MonteCarloTreeSearch(TreeSearch):
         if not counter_node.reference_node.is_terminal() and counter_node.count + 1 > self.t:
             counter_node.expand()
 
+        if counter_node.reference_node.is_terminal():
+            counter_node.set_as_solved()
+
         # perform a random walk from there
         random_leaf = counter_node.reference_node.random_walk()
 
@@ -139,7 +149,12 @@ class MonteCarloTreeSearch(TreeSearch):
                 return children
 
         total_selection = counter_node.count
-        return max(counter_node.childrens(), key=lambda node: self.node_upper_confidence_bound(node, total_selection))
+
+        # Select node that maximise UPC + skip node that have been solved
+        unsolved_childrens = [children for children in counter_node.childrens() if not children.solved]
+        assert len(unsolved_childrens) > 0, "Try to select from solved node"
+
+        return max(unsolved_childrens, key=lambda node: self.node_upper_confidence_bound(node, total_selection))
 
     def node_upper_confidence_bound(self, node, total_nb_of_selections):
         """

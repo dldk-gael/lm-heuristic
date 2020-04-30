@@ -33,6 +33,11 @@ class Counter(Node):
         self.top_leaf_node = None  # Useful to analyse and debug MCTS, will be remove later
         self.freeze = False  # Useful to stop backprogation if choice has already been made
 
+        # Idea taken from 'Attacking SameGame using Monte-Carlo Tree Search', Klein
+        # A node is completely solved either if its reference node is a terminal node
+        # or if all its children are completely solved.
+        self.solved = False
+
     def expand(self):
         """
         Expand a counter node :
@@ -75,6 +80,20 @@ class Counter(Node):
     def random_children(self):
         assert not self.is_terminal(), "Try to access childrens of a terminal node"
         return random.choice(self.childrens())
+
+    def set_as_solved(self):
+        """
+        Set the counter node as solved
+        If all his brothers are also solved, back-propagate this information to his parent
+        """
+        self.solved = True
+
+        if self.parent is not None:
+            brothers = self.parent.childrens()
+            for brother in brothers:
+                if not brother.solved:
+                    return
+            self.parent.set_as_solved()
 
     def __str__(self):
         return ("Reference node : %s\n"
