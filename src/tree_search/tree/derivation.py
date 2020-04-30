@@ -17,15 +17,18 @@ class Derivation(Node):
     The childrens of one node consist of all the string that derivated from the current derivation using only
     one production rule from P
     """
-    def __init__(self, symbols: tuple,  cfg: CFG):
+    def __init__(self, symbols: tuple,  cfg: CFG, shrink=False):
         """
         Initalize a Derivation Node
         :param symbols ordered sequences of symbol representing the current derivation string
         :param cfg : reference to context free grammar containing the production rules
+        :param shrink: bool, if true when asking for the childrens and there is only one,
+                                will directly return grandchildrens
         """
         Node.__init__(self)
         self.cfg = cfg
         self.symbols = (symbols, ) if type(symbols) != tuple else symbols
+        self.shrink = shrink
 
     def is_terminal(self):
         """
@@ -40,6 +43,7 @@ class Derivation(Node):
         """
         return all the Derivations nodes corresponding to sentences that can be derivated f
         from the current derivation using only one production rule from P
+        if shrink option has been selected, will directly grand childrens if there is only one single children
         """
         childrens = []
         for idx, symbol in enumerate(self.symbols):
@@ -47,6 +51,10 @@ class Derivation(Node):
                 productions = self.cfg.productions(lhs=symbol)
                 for production in productions:
                     childrens.append(Derivation(self.symbols[:idx] + production.rhs() + self.symbols[idx+1:], self.cfg))
+
+        if self.shrink and len(childrens) == 1:
+            return childrens[0].childrens()
+
         return childrens
 
     def random_children(self):
