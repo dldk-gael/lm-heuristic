@@ -2,5 +2,5 @@
 	path = src/amr/amr-reader
 	url = https://github.com/panx27/amr-reader.git
 [submodule "lm-scorer"]
-	path = src/lm-scorer
+	path = src/lm_scorer
 	url = git@github.com:dldk-gael/lm-scorer.git
