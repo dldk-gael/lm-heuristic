@@ -200,6 +200,7 @@ class MonteCarloTreeSearch(TreeSearch):
         )
 
     def path(self) -> List[Node]:
+        assert self.__path != [], "Requesting path but no search was launched before"
         return list(map(lambda counter_node: counter_node.reference_node, self.__path))
 
     def counter_path(self) -> List[CounterNode]:

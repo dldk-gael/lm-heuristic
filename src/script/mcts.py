@@ -4,7 +4,6 @@ import nltk
 from heuristic import GPT2Score
 import random
 
-
 random.seed(3)
 GRAMMAR_FOLDER = "data/cfg/"
 GRAMMAR_NAME = "ex_2"
