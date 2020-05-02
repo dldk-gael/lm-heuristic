@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
-from tree_search.tree import Node
-from typing import List
+from typing import *
+from src.tree_search.tree import Node
 
 
 class TreeSearch(ABC):
@@ -12,7 +12,16 @@ class TreeSearch(ABC):
 
     A TreeSearch object will search for the terminal node that maximise this evalution function
     """
-    def __init__(self, root: Node, evaluation_fn, **kwargs):
+
+    def __init__(
+        self, root: Node, evaluation_fn: Callable[[List[Node]], List[float]], **kwargs
+    ):
+        """
+        Initialize a tree searcher
+        :param root: Node
+        :param evaluation_fn:
+        :param kwargs:
+        """
         self.root = root
         self.evaluation_fn = evaluation_fn
 
@@ -21,14 +30,14 @@ class TreeSearch(ABC):
         """
         search and return the terminal node that maximise the evalution function
         """
-        pass
+        ...
 
     @abstractmethod
     def path(self) -> List[Node]:
         """
         return path taken from root node to best terminal node that has been found
         """
-        pass
+        ...
 
     def __call__(self) -> Node:
         return self.search()
@@ -46,17 +55,24 @@ class TreeSearch(ABC):
                     - best leaf found
                     - value of the best leaf
         """
-        pass
+        ...
 
     def print_search_info(self):
+        """
+        Print several informations about the last search performed
+        """
         info = self.search_info()
-        print("--- Search information ---\n"
-              "%d tree walks was performed in %.1f s" % (info['total_nb_of_walks'], info['time']))
+        print(
+            "--- Search information ---\n"
+            "%d tree walks was performed in %.1f s"
+            % (info["total_nb_of_walks"], info["time"])
+        )
 
-        print("Best leaf that have been found: %s \n"
-              "It has a score of %f" % (str(info['best_leaf']), info['best_leaf_value']))
+        print(
+            "Best leaf that have been found: %s \n"
+            "It has a score of %f" % (str(info["best_leaf"]), info["best_leaf_value"])
+        )
 
         print("The following path was taken :")
-        for i, node in enumerate(info['path']):
+        for i, node in enumerate(info["path"]):
             print("%d: %s" % (i, str(node)))
-
