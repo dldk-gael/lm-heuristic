@@ -2,7 +2,7 @@ from tree_search.strategy.search import TreeSearch
 from tree_search.tree import Node
 
 from tqdm.autonotebook import tqdm
-from typing import List
+from typing import *
 import random
 import numpy as np
 from time import time
@@ -12,7 +12,14 @@ class RandomSearch(TreeSearch):
     """
     Perfom a random search in the tree
     """
-    def __init__(self, root: Node, evaluation_fn, n_samples=1, batch_size=1):
+
+    def __init__(
+        self,
+        root: Node,
+        evaluation_fn: Callable[[List[Node]], List[float]],
+        n_samples: int = 1,
+        batch_size: int = 1,
+    ):
         """
         :param root : Node from which the search will start
         :param evaluation_fn : function which give a score to terminal node
@@ -44,7 +51,7 @@ class RandomSearch(TreeSearch):
         :return tuple(Node, float, List[Node]) the best terminal node contained in the buffer, its path and its value
         """
         scores = self._eval_node([n[0] for n in buffer])
-        return buffer[np.argmax(scores)] + (max(scores), )
+        return buffer[np.argmax(scores)] + (max(scores),)
 
     def search(self) -> Node:
         """
@@ -59,20 +66,32 @@ class RandomSearch(TreeSearch):
         for _ in tqdm(range(self.n_samples)):
             buffer.append(self.random_expansion())
             if len(buffer) == self.batch_size:
-                best_buffer_node, path, best_buffer_node_value = self.__best_in_buffer(buffer)
+                best_buffer_node, path, best_buffer_node_value = self.__best_in_buffer(
+                    buffer
+                )
                 if best_buffer_node_value > best_node_value:
-                    best_node, self.__path, best_node_value = best_buffer_node, path, best_buffer_node_value,
+                    best_node, self.__path, best_node_value = (
+                        best_buffer_node,
+                        path,
+                        best_buffer_node_value,
+                    )
                 buffer = []
 
         if len(buffer) > 0:
-            best_buffer_node, path, best_buffer_node_value = self.__best_in_buffer(buffer)
+            best_buffer_node, path, best_buffer_node_value = self.__best_in_buffer(
+                buffer
+            )
             if best_buffer_node_value > best_node_value:
-                best_node, self.__path, best_node_value = best_buffer_node, path, best_buffer_node_value
+                best_node, self.__path, best_node_value = (
+                    best_buffer_node,
+                    path,
+                    best_buffer_node_value,
+                )
 
         self.__time = time() - begin_time
         return best_node
 
-    def path(self):
+    def path(self) -> List[Node]:
         """
         :return path taken from root node to best terminal node that has been found
         """
@@ -84,5 +103,5 @@ class RandomSearch(TreeSearch):
             "path": self.__path,
             "total_nb_of_walks": self.n_samples,
             "best_leaf": self.__path[-1],
-            "best_leaf_value": self._eval_node([self.__path[-1]])[0]
+            "best_leaf_value": self._eval_node([self.__path[-1]])[0],
         }
