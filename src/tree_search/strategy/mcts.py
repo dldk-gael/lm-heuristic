@@ -37,7 +37,7 @@ class MonteCarloTreeSearch(TreeSearch):
         """
         assert (
             nb_of_tree_walks > t
-        ), "You give a lower number of tree walks that threshold t : the root node will not be able to expand"
+        ), "You give a lower number of tree walks that threshold t : the root node will never expand"
         TreeSearch.__init__(self, root, evaluation_fn)
         self.nb_of_tree_walks = nb_of_tree_walks
         self.batch_size = batch_size
