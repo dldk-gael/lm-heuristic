@@ -27,7 +27,7 @@ class RandomSearch(TreeSearch):
         :param batch_size: number of terminal nodes to store in a buffer before evaluating them in an single batch
         """
         TreeSearch.__init__(self, root, evaluation_fn)
-        self.__path = None
+        self.__path = []
         self.n_samples = n_samples
         self.batch_size = batch_size
         self.__time = 0
@@ -95,6 +95,7 @@ class RandomSearch(TreeSearch):
         """
         :return path taken from root node to best terminal node that has been found
         """
+        assert self.__path != [], "Requesting path but no search was launched before"
         return self.__path
 
     def search_info(self):
