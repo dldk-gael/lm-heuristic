@@ -1,3 +1,6 @@
 [submodule "src/amr/amr-reader"]
 	path = src/amr/amr-reader
 	url = https://github.com/panx27/amr-reader.git
+[submodule "lm-scorer"]
+	path = src/lm-scorer
+	url = git@github.com:dldk-gael/lm-scorer.git
