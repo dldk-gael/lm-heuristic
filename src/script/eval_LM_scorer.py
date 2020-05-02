@@ -1,4 +1,4 @@
-from lm_scorer.models.auto import AutoLMScorer as LMScorer
+from lm_scorer.lm_scorer.models.auto import AutoLMScorer as LMScorer
 import torch
 
 

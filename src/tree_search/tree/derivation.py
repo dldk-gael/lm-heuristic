@@ -17,7 +17,8 @@ class Derivation(Node):
     The childrens of one node consist of all the string that derivated from the current derivation using only
     one production rule from P
     """
-    def __init__(self, symbols: tuple,  cfg: CFG, shrink=False):
+
+    def __init__(self, symbols: tuple, cfg: CFG, shrink=False):
         """
         Initalize a Derivation Node
         :param symbols ordered sequences of symbol representing the current derivation string
@@ -27,10 +28,10 @@ class Derivation(Node):
         """
         Node.__init__(self)
         self.cfg = cfg
-        self.symbols = (symbols, ) if type(symbols) != tuple else symbols
+        self.symbols = (symbols,) if type(symbols) != tuple else symbols
         self.shrink = shrink
 
-    def is_terminal(self):
+    def is_terminal(self) -> bool:
         """
         return True if the current derivation string is only composed of terminal symbols
         """
@@ -39,7 +40,7 @@ class Derivation(Node):
                 return False
         return True
 
-    def childrens(self):
+    def childrens(self) -> List["Derivation"]:
         """
         return all the Derivations nodes corresponding to sentences that can be derivated f
         from the current derivation using only one production rule from P
@@ -50,14 +51,22 @@ class Derivation(Node):
             if type(symbol) == grammar.Nonterminal:
                 productions = self.cfg.productions(lhs=symbol)
                 for production in productions:
-                    childrens.append(Derivation(self.symbols[:idx] + production.rhs() + self.symbols[idx+1:], self.cfg))
+                    childrens.append(
+                        Derivation(
+                            self.symbols[:idx]
+                            + production.rhs()
+                            + self.symbols[idx + 1 :],
+                            self.cfg,
+                        )
+                    )
 
         if self.shrink and len(childrens) == 1:
             return childrens[0].childrens()
 
         return childrens
 
-    def random_children(self):
+    def random_children(self) -> "Derivation":
+        assert not self.is_terminal(), "Try to access children of a terminal node"
         return random.choice(self.childrens())
 
     def __str__(self):
