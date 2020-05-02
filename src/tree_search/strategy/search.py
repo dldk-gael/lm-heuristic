@@ -33,7 +33,7 @@ class TreeSearch(ABC):
     def __call__(self) -> Node:
         return self.search()
 
-    def _eval_node(self, node: List[Node]):
+    def _eval_node(self, node: List[Node]) -> List[float]:
         return self.evaluation_fn(node)
 
     @abstractmethod

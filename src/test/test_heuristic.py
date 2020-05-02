@@ -6,10 +6,26 @@ logger.setLevel(logging.INFO)
 
 if __name__ == "__main__":
     print("Loading the transformers model in memory")
-    gpt2_score = GPT2Score(model_name='gpt2', batch_size=2, length_normalization=True)
+    gpt2_score = GPT2Score(model_name="gpt2", batch_size=2, length_normalization=True)
 
     print("Computing sentences's score")
+    sentences = ["I like it.", "I like it"]
 
-    print(gpt2_score.compute_score("London emergency service said that 11 people was sent to hospital."))
-    print(gpt2_score.compute_score("emergency service to London has said that 11 people are sent to hospital."))
-    print(gpt2_score.compute_score("The London emergency services said that 11 people had been sent to hospital."))
+    gpt2_score.print_sentences_score(sentences)
+
+    del gpt2_score
+
+    print("Loading the transformers model in memory")
+    bert_score = BertScore(
+        model_name="bert-base-uncased", batch_size=1, length_normalization=True
+    )
+
+    print("Computing sentences's score")
+    sentences = [
+        "It is a private matter between him and me.",
+        "It is a private matter between him but me.",
+    ]
+
+    bert_score.print_sentences_score("")
+
+    del bert_score

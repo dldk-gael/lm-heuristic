@@ -1,8 +1,9 @@
 from tree_search.tree.node import Node
 import random
+from typing import *
 
 
-class Counter(Node):
+class CounterNode(Node):
     """
     Class to wrap a node object inside a counter object.
 
@@ -15,6 +16,7 @@ class Counter(Node):
     Moreover, in order to be able to back-propagate the information, the counter node keep in memory a reference
     to his parent node
     """
+
     def __init__(self, reference_node, parent=None):
         """
         Create a new counter node
@@ -30,8 +32,12 @@ class Counter(Node):
         self.sum_rewards = 0
         self.sum_of_square_rewards = 0
         self.top_reward = 0
-        self.top_leaf_node = None  # Useful to analyse and debug MCTS, will be remove later
-        self.freeze = False  # Useful to stop backprogation if choice has already been made
+        self.top_leaf_node = (
+            None  # Useful to analyse and debug MCTS, will be remove later
+        )
+        self.freeze = (
+            False  # Useful to stop backprogation if choice has already been made
+        )
 
         # Idea taken from 'Attacking SameGame using Monte-Carlo Tree Search', Klein
         # A node is completely solved either if its reference node is a terminal node
@@ -43,14 +49,19 @@ class Counter(Node):
         Expand a counter node :
         - generate and save in memory all childrens
         """
-        assert not self.reference_node.is_terminal(), 'Try to expand from a terminal node'
-        self.__childrens = [Counter(children_node, parent=self) for children_node in self.reference_node.childrens()]
+        assert (
+            not self.reference_node.is_terminal()
+        ), "Try to expand from a terminal node"
+        self.__childrens = [
+            CounterNode(children_node, parent=self)
+            for children_node in self.reference_node.childrens()
+        ]
         self.__is_terminal = False
 
-    def childrens(self):
+    def childrens(self) -> List["CounterNode"]:
         return self.__childrens
 
-    def is_terminal(self):
+    def is_terminal(self) -> bool:
         return self.__is_terminal
 
     def backpropagate(self, new_reward, leaf):
@@ -70,14 +81,14 @@ class Counter(Node):
             if self.parent is not None:
                 self.parent.backpropagate(new_reward, leaf)
 
-    def top_children(self):
+    def top_children(self) -> "CounterNode":
         """
         Return the children that have the best top_reward value
         """
-        assert not self.is_terminal(), 'Try to access childrens of a terminal node'
+        assert not self.is_terminal(), "Try to access childrens of a terminal node"
         return max(self.__childrens, key=lambda child: child.top_reward)
 
-    def random_children(self):
+    def random_children(self) -> "CounterNode":
         assert not self.is_terminal(), "Try to access childrens of a terminal node"
         return random.choice(self.childrens())
 
@@ -104,16 +115,18 @@ class Counter(Node):
                 print(str(children))
 
     def __str__(self):
-        return ("Reference node : %s\n"
-                "\t count: %d\n"
-                "\t average_reward: %f\n"
-                "\t top_reward: %f\n"
-                "\t top_leaf_associated : %s\n"
-                "\t is solved : %s"
-                ) % (str(self.reference_node),
-                     self.count,
-                     self.sum_rewards / self.count,
-                     self.top_reward,
-                     str(self.top_leaf_node),
-                     "yes" if self.solved else "no")
-
+        return (
+            "Reference node : %s\n"
+            "\t count: %d\n"
+            "\t average_reward: %f\n"
+            "\t top_reward: %f\n"
+            "\t top_leaf_associated : %s\n"
+            "\t is solved : %s"
+        ) % (
+            str(self.reference_node),
+            self.count,
+            self.sum_rewards / self.count,
+            self.top_reward,
+            str(self.top_leaf_node),
+            "yes" if self.solved else "no",
+        )

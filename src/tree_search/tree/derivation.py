@@ -30,7 +30,7 @@ class Derivation(Node):
         self.symbols = (symbols, ) if type(symbols) != tuple else symbols
         self.shrink = shrink
 
-    def is_terminal(self):
+    def is_terminal(self) -> bool:
         """
         return True if the current derivation string is only composed of terminal symbols
         """
@@ -39,7 +39,7 @@ class Derivation(Node):
                 return False
         return True
 
-    def childrens(self):
+    def childrens(self) -> List["Derivation"]:
         """
         return all the Derivations nodes corresponding to sentences that can be derivated f
         from the current derivation using only one production rule from P
@@ -57,7 +57,7 @@ class Derivation(Node):
 
         return childrens
 
-    def random_children(self):
+    def random_children(self) -> "Derivation":
         return random.choice(self.childrens())
 
     def __str__(self):
