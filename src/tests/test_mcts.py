@@ -1,7 +1,7 @@
 import pytest
 import nltk
-from src.tree_search.tree import Derivation
-from src.tree_search.strategy import MonteCarloTreeSearch
+from tree_search.tree import Derivation
+from tree_search.strategy import MonteCarloTreeSearch
 
 
 @pytest.fixture
