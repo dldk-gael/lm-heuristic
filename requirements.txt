@@ -3,6 +3,8 @@ numpy
 transformers
 tqdm
 
+# lm_scorer
+
 # for AMR-reader
 # pygraphviz~=1.5
 
