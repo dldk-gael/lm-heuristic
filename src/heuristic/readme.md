@@ -1,4 +1,4 @@
-I am currently contributing to lm-scorer library so that it support input batching.
+I am currently contributing to lm-scorer library to add input batching features.
 As soon as this feature will be supported by lm-score, this module will be removed and I will directly used
 lm-scorer library in the code.
 
