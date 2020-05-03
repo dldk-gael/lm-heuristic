@@ -1,0 +1,1 @@
+As soon as lm-scorer library will support input batching, this module will not be used.
