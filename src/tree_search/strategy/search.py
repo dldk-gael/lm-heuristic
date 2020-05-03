@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import *
-from src.tree_search.tree import Node
+from tree_search.tree import Node
 
 
 class TreeSearch(ABC):
