@@ -9,7 +9,7 @@ This script :
 2/ rank all sentences using a gpt2 scorer,
 3/ print the X best results
 
-Should only be used with CFG that can generates only small amount of sentences 
+Should only be used with CFG that can generate only small amount of sentences 
 """
 GRAMMAR_FOLDER = "data/cfg/"
 RESULT_FOLDER = "results/"
