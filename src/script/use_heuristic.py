@@ -9,7 +9,7 @@ if __name__ == "__main__":
     gpt2_score = GPT2Score(model_name="gpt2", batch_size=2, length_normalization=True)
 
     print("Computing sentences's score")
-    sentences = ["I like it.", "I like it"]
+    sentences = ["I likes it.", "I like it."]
 
     gpt2_score.print_sentences_score(sentences)
 
@@ -26,6 +26,6 @@ if __name__ == "__main__":
         "It is a private matter between him but me.",
     ]
 
-    bert_score.print_sentences_score("")
+    bert_score.print_sentences_score(sentences)
 
     del bert_score

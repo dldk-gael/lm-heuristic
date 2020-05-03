@@ -3,11 +3,10 @@ from tree_search.tree import Derivation
 from heuristic import GPT2Score
 
 import nltk
-import logging
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
+"""
+This script shows how to use a random searcher 
+"""
 
 GRAMMAR_FOLDER = 'data/cfg/'
 if __name__ == '__main__':

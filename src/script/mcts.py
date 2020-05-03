@@ -4,11 +4,13 @@ import nltk
 from heuristic import GPT2Score
 import random
 
+"""
+This script shows how to use a MCTS searcher
+"""
 random.seed(3)
 GRAMMAR_FOLDER = "data/cfg/"
 GRAMMAR_NAME = "ex_2"
-
-BATCH_SIZE = 16  #
+BATCH_SIZE = 16
 
 if __name__ == "__main__":
     # Load grammar

@@ -29,7 +29,7 @@ class Score(ABC):
         """
         ...
 
-    def rank_sentences(self, sentences: List[str]) -> List[(str, float)]:
+    def rank_sentences(self, sentences: List[str]) -> List[Tuple[str, float]]:
         """
         Rank the sentences by their scores
         :param sentences: list[str]
