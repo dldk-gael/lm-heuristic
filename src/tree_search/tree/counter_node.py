@@ -32,12 +32,12 @@ class CounterNode(Node):
         self.sum_rewards = 0
         self.sum_of_square_rewards = 0
         self.top_reward = 0
-        self.top_leaf_node = (
-            None  # Useful to analyse and debug MCTS, will be remove later
-        )
-        self.freeze = (
-            False  # Useful to stop backprogation if choice has already been made
-        )
+
+        # Useful to analyse and debug MCTS
+        self.top_leaf_node = None
+
+        # Use to stop backprogation if choice has already been made
+        self.freeze = False
 
         # Idea taken from 'Attacking SameGame using Monte-Carlo Tree Search', Klein
         # A node is completely solved either if its reference node is a terminal node

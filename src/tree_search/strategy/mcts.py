@@ -9,10 +9,13 @@ from time import time
 
 class MonteCarloTreeSearch(TreeSearch):
     """
-    Implement a Single Player Monte Carlo Tree Search as desbribe in
-    Single-Player Monte-Carlo Tree Search for SameGame by Schadda, Winandsan, Taka, Uiterwijka in 2011
+    Searcher using a MCTS strategy, it mainly follows the ideas describe in
+    Single-Player Monte-Carlo Tree Search for SameGame by Schadda, Winandsan, Taka, Uiterwijka
 
-    Add a modification in order to be able to evaluate leaf node by batch
+    Some other improvments have been implemented :
+    - possibility to store the tree's leaves in buffer to evaluate them by batch
+    - mark the node that have been solved to accelerate the exploration
+        (ie all terminal childrens that can been access from this node has been evaluated once)
     """
 
     def __init__(
@@ -89,10 +92,9 @@ class MonteCarloTreeSearch(TreeSearch):
                     break
                 self.batch_tree_walks(current_root, self.batch_size)
                 progress_bar.update(self.batch_size)
-            if self.nb_of_tree_walks % self.batch_size != 0 and not current_root.solved:
-                self.batch_tree_walks(
-                    current_root, self.nb_of_tree_walks % self.batch_size
-                )
+            remaining_walks = self.nb_of_tree_walks % self.batch_size
+            if remaining_walks != 0 and not current_root.solved:
+                self.batch_tree_walks(current_root, remaining_walks)
 
             # Choose the best node among the childrens and continue the search from here
             current_root.freeze = True  # To avoid modifying the counter of previous roots in futur backpropagations
@@ -129,7 +131,7 @@ class MonteCarloTreeSearch(TreeSearch):
         """
         Perform a single tree walk.
         1. The 'bandit phase' / selection step: if current node has been explored so far,
-            we choose as a next node the children node with the maximum upper bound confidence value
+            we choose next node w.r.t selection policy
         2. The expension step: once at the frontier of the counter tree, we randomly choose one new node to expand
         3. The play-out step: from there we go randomly to the end of the tree
         """
@@ -150,7 +152,7 @@ class MonteCarloTreeSearch(TreeSearch):
             counter_node.expand()
 
         if counter_node.reference_node.is_terminal():
-            counter_node.set_as_solved()
+            counter_node.set_as_solved()  # this also backpropagates the information to previous node if needed
 
         # perform a random walk from there
         random_leaf = counter_node.reference_node.random_walk()
@@ -159,8 +161,9 @@ class MonteCarloTreeSearch(TreeSearch):
 
     def selection_policy(self, counter_node: CounterNode) -> CounterNode:
         """
-        if a children of current node has been visited yet: visit it
-        if all children has been visited already one: select the children with the biggest upper bound confidence
+        1/ if a children of current node has not been visited yet: visit it
+        2/ if all childrens has been visited already once:
+            select the children with the biggest UPC value from the node that has not been solved yet
         """
         for children in counter_node.childrens():
             if children.count == 0:
@@ -172,7 +175,7 @@ class MonteCarloTreeSearch(TreeSearch):
         unsolved_childrens = [
             children for children in counter_node.childrens() if not children.solved
         ]
-        assert len(unsolved_childrens) > 0, "Try to select from solved node"
+        assert len(unsolved_childrens) > 0, "Try to select from a solved node"
 
         return max(
             unsolved_childrens,
