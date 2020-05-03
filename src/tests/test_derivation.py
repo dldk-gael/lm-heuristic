@@ -1,6 +1,6 @@
 import pytest
 import nltk
-from tree_search.tree import Derivation
+from src.tree_search.tree import Derivation
 
 
 @pytest.fixture

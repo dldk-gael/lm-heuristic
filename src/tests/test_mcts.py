@@ -43,6 +43,7 @@ def test_mcts_path_raise_assertion_error_when_no_search(basic_mcts):
 
 
 def test_mcts_path(basic_mcts):
+    basic_mcts.search()
     path = basic_mcts.path()
     print(path)
     assert str(path[0]) == "s."
