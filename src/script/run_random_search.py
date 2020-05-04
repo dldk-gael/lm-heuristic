@@ -27,3 +27,4 @@ if __name__ == '__main__':
     final_derivation = random_search.search()
 
     random_search.print_search_info()
+    random_search.plot_leaf_values_distribution()
