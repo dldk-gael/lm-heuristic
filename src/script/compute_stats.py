@@ -1,4 +1,5 @@
-from tree_search.tree import Derivation, TreeStats
+from tree_search.tree import Derivation
+from tree_search.evaluation import TreeStats
 
 
 GRAMMAR_FOLDER = "data/cfg/"
