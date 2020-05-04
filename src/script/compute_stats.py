@@ -3,7 +3,7 @@ from tree_search.evaluation import TreeStats
 
 
 GRAMMAR_FOLDER = "data/cfg/"
-GRAMMAR_NAME = "ex_3"
+GRAMMAR_NAME = "ex_4"
 
 if __name__ == "__main__":
 
@@ -13,4 +13,5 @@ if __name__ == "__main__":
     # Compute stats
     stats = TreeStats(grammar_root)
     stats.accumulate_stats(nb_samples=1000)
-    print(stats.depths_info())
+    print("depth : ", stats.depths_info())
+    print("branching factor : ", stats.branching_factors_info())

@@ -28,6 +28,7 @@ class RandomSearch(TreeSearch):
         self.__path = []
         self.batch_size = batch_size
         self.__time = 0
+        self.__evaluation_time = 0
         self.__values = []
         self.nb_of_tree_walks_performed = 0
 
@@ -49,7 +50,9 @@ class RandomSearch(TreeSearch):
         :param buffer list of terminal nodes
         :return tuple(Node, float, List[Node]) the best terminal node contained in the buffer, its path and its value
         """
+        begin_eval_time = time()
         scores = self._eval_node([n[0] for n in buffer])
+        self.__evaluation_time += time() - begin_eval_time
         self.__values += scores
         return buffer[np.argmax(scores)] + (max(scores),)
 
@@ -105,6 +108,7 @@ class RandomSearch(TreeSearch):
     def search_info(self):
         return {
             "time": self.__time,
+            "evaluation_time": self.__evaluation_time,
             "path": self.__path,
             "total_nb_of_walks": self.nb_of_tree_walks_performed,
             "best_leaf": self.__path[-1],

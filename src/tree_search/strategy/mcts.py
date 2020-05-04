@@ -48,7 +48,8 @@ class MonteCarloTreeSearch(TreeSearch):
         )
 
         self.__path = []
-        self.__time = 0
+        self.__total_time = 0
+        self.__evaluation_time = 0
         self.total_nb_of_walks = 0
         self.search_result = None
 
@@ -100,7 +101,7 @@ class MonteCarloTreeSearch(TreeSearch):
             self.__path.append(current_root)
             self.total_nb_of_walks += nb_of_tree_walks
 
-        self.__time = time() - begin_time
+        self.__total_time = time() - begin_time
         self.search_result = current_root
 
         return current_root.reference_node
@@ -121,7 +122,11 @@ class MonteCarloTreeSearch(TreeSearch):
 
         nodes = [x[0] for x in buffer]
         leafs = [x[1] for x in buffer]
+
+        begin_eval_time = time()
         rewards = self.evaluation_fn(leafs)
+        self.__evaluation_time += time() - begin_eval_time
+
         for node, leaf, reward in zip(nodes, leafs, rewards):
             node.backpropagate(reward, leaf)
 
@@ -212,7 +217,8 @@ class MonteCarloTreeSearch(TreeSearch):
             self.search_result is not None
         ), "try to access search info but no search was computed"
         return {
-            "time": self.__time,
+            "time": self.__total_time,
+            "evaluation_time": self.__evaluation_time,
             "path": self.path(),
             "total_nb_of_walks": self.total_nb_of_walks,
             "best_leaf": self.search_result.reference_node,

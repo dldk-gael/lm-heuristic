@@ -10,7 +10,7 @@ This script shows how to use a MCTS searcher
 random.seed(3)
 GRAMMAR_FOLDER = "data/cfg/"
 GRAMMAR_NAME = "ex_2"
-BATCH_SIZE = 16
+BATCH_SIZE = 1
 
 if __name__ == "__main__":
     # Load grammar tree
@@ -30,7 +30,7 @@ if __name__ == "__main__":
     )
 
     # Perform the search and print some info
-    best_node = mtcs.search(grammar_root, nb_of_tree_walks=100)
+    best_node = mtcs.search(grammar_root, nb_of_tree_walks=5)
     mtcs.print_search_info()
 
     # Example on how to print more info on internal node located on the best path

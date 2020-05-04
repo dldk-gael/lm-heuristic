@@ -19,7 +19,7 @@ if __name__ == '__main__':
     heuristic = lambda terminal_nodes: gpt_2_scorer(list(map(str, terminal_nodes)))
 
     # Initialize a random strategy
-    random_strategy = RandomSearch(evaluation_fn=heuristic, n_samples=100)
+    random_strategy = RandomSearch(evaluation_fn=heuristic)
 
     # Initialize the evaluation framework
     evaluate = EvalStrategy(verbose=True)

@@ -50,6 +50,7 @@ class TreeSearch(ABC):
         """
         :return: dict containing the following information
                     - time needed to perform the search
+                    - time spent on leaves evaluation
                     - path taken
                     - total number of tree walks
                     - best leaf found
@@ -64,8 +65,9 @@ class TreeSearch(ABC):
         info = self.search_info()
         print(
             "--- Search information ---\n"
-            "%d tree walks was performed in %.1f s"
-            % (info["total_nb_of_walks"], info["time"])
+            "%d tree walks was performed in %.1f s\n"
+            "%.2f%%  of the time was spent on leave evaluation"
+            % (info["total_nb_of_walks"], info["time"], info['evaluation_time'])
         )
 
         print(
