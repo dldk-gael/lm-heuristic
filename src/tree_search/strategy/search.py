@@ -8,12 +8,13 @@ from tree_search.tree import Node
 
 class TreeSearch(ABC):
     """
-    Abstract class that define a tree search
-    Given :
-    - a starting node
-    - an evaluation function : list of terminal_node -> list of scores
+    Abstract class that define a tree searcher
+    The objective of a tree searcher is to find the leaf that maximise an evaluation function
 
-    A TreeSearch object will search for the terminal node that maximise this evalution function
+    This class will keep update different informations during the search :
+    - time needed to perform the search
+    - time spent to evaluate the leaves
+    - values that has been computed
     """
 
     def __init__(self, evaluation_fn: Callable[[List[Node]], List[float]], **kwargs):
@@ -34,6 +35,12 @@ class TreeSearch(ABC):
         self._values = []
 
     def __call__(self, root: Node, nb_of_tree_walks: int) -> Node:
+        """
+        Launch the search + keep in memory informations about the search
+        :param root: Node from which the search will start
+        :param nb_of_tree_walks
+        :return: best leave that was found
+        """
         self.reset()
         self._keep_track = True
         begin_time = time()
@@ -43,6 +50,11 @@ class TreeSearch(ABC):
         return result
 
     def _eval_node(self, nodes: List[Node]) -> List[float]:
+        """
+        Handle the call to the evaluation_fn + keep in memory informations about the call
+        :param nodes: list of leaves
+        :return: leaves' scores
+        """
         begin_eval_time = time()
         results = self._evaluation_fn(nodes)
         if self._keep_track:
