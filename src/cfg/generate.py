@@ -24,3 +24,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     all_sentences = generate_all_sentences(args.path_file)
     print("Number of sentences : ", len(all_sentences))
+    for i in range(min(len(all_sentences),10)):
+        print(all_sentences[i])
