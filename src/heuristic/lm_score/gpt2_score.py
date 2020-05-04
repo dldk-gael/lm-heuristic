@@ -97,7 +97,9 @@ class GPT2Score(Score):
         :return: List[float], list of score
         """
         # Prepare the input ids
-        tokens_ids = [self._add_bos_token_and_encode(sentence) for sentence in sentences]
+        tokens_ids = [
+            self._add_bos_token_and_encode(sentence) for sentence in sentences
+        ]
         # don't count the bos token
         sentences_len = torch.tensor(
             [len(toks) - 1 for toks in tokens_ids], device=self.device
@@ -109,9 +111,8 @@ class GPT2Score(Score):
 
         # Compute all prediction logits by batch of batch_size
         with torch.no_grad():
-            pred_logits = self.model(input_ids)[
-                0
-            ]  # shape = [batch_size, seq_len, vocab_size]
+            # shape = [batch_size, seq_len, vocab_size]
+            pred_logits = self.model(input_ids)[0]
 
         pred_scores = torch.nn.LogSoftmax(dim=2)(pred_logits)
 
