@@ -19,6 +19,6 @@ if __name__ == '__main__':
 
     # Initialize and perform the search
     random_search = RandomSearch(evaluation_fn=heuristic)
-    final_derivation = random_search(root, nb_of_tree_walks=100)
+    final_derivation = random_search(root, nb_of_tree_walks=10)
 
     random_search.print_search_info()

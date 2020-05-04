@@ -42,18 +42,10 @@ class MonteCarloTreeSearch(TreeSearch):
         self.d = d
         self.t = t
 
-        print(
-            "Initialize Monte Carlo Tree search \n"
-            "\tthe parameters are C = %d, D= %d, t= %d\n" % (self.c, self.d, self.t)
-        )
-
-        self.__path = []
-        self.__total_time = 0
-        self.__evaluation_time = 0
-        self.total_nb_of_walks = 0
+        self._path = []
         self.search_result = None
 
-    def search(self, root: Node, nb_of_tree_walks) -> Node:
+    def _search(self, root: Node, nb_of_tree_walks) -> Node:
         """
         Given the root nodes and all the parameters, search for the best leaf
         As describe in section 4.2 of 'Single-Player Monte-Carlo Tree Search for SameGame',
@@ -78,7 +70,7 @@ class MonteCarloTreeSearch(TreeSearch):
 
         begin_time = time()
         self.total_nb_of_walks = 0
-        self.__path = [current_root]
+        self._path = [current_root]
 
         progress_bar = tqdm(total=nb_of_tree_walks, desc="Tree walks", unit="walks")
         while not current_root.reference_node.is_terminal():
@@ -89,16 +81,16 @@ class MonteCarloTreeSearch(TreeSearch):
             for _ in range(nb_of_tree_walks // self.batch_size):
                 if current_root.solved:
                     break
-                self.batch_tree_walks(current_root, self.batch_size)
+                self._batch_tree_walks(current_root, self.batch_size)
                 progress_bar.update(self.batch_size)
             remaining_walks = nb_of_tree_walks % self.batch_size
             if remaining_walks != 0 and not current_root.solved:
-                self.batch_tree_walks(current_root, remaining_walks)
+                self._batch_tree_walks(current_root, remaining_walks)
 
             # Choose the best node among the childrens and continue the search from here
             current_root.freeze = True  # To avoid modifying the counter of previous roots in futur backpropagations
             current_root = current_root.top_children()
-            self.__path.append(current_root)
+            self._path.append(current_root)
             self.total_nb_of_walks += nb_of_tree_walks
 
         self.__total_time = time() - begin_time
@@ -106,7 +98,7 @@ class MonteCarloTreeSearch(TreeSearch):
 
         return current_root.reference_node
 
-    def batch_tree_walks(self, current_root: CounterNode, nb_tree_walks: int):
+    def _batch_tree_walks(self, current_root: CounterNode, nb_tree_walks: int):
         """
         1. Perform batch_size tree walks keeping in memory at each time :
             - the terminal node from the counter tree (from which a random walk has been launched)
@@ -118,19 +110,17 @@ class MonteCarloTreeSearch(TreeSearch):
         for _ in range(nb_tree_walks):
             if current_root.solved:
                 break
-            buffer.append(self.single_tree_walk(current_root))
+            buffer.append(self._single_tree_walk(current_root))
 
         nodes = [x[0] for x in buffer]
         leafs = [x[1] for x in buffer]
 
-        begin_eval_time = time()
-        rewards = self.evaluation_fn(leafs)
-        self.__evaluation_time += time() - begin_eval_time
+        rewards = self._eval_node(leafs)
 
         for node, leaf, reward in zip(nodes, leafs, rewards):
             node.backpropagate(reward, leaf)
 
-    def single_tree_walk(self, current_root: CounterNode) -> (CounterNode, Node):
+    def _single_tree_walk(self, current_root: CounterNode) -> (CounterNode, Node):
         """
         Perform a single tree walk.
         1. The 'bandit phase' / selection step: if current node has been explored so far,
@@ -206,24 +196,21 @@ class MonteCarloTreeSearch(TreeSearch):
         )
 
     def path(self) -> List[Node]:
-        assert self.__path != [], "Requesting path but no search was launched before"
-        return list(map(lambda counter_node: counter_node.reference_node, self.__path))
+        assert self._path != [], "Requesting path but no search was launched before"
+        return list(map(lambda counter_node: counter_node.reference_node, self._path))
 
     def counter_path(self) -> List[CounterNode]:
-        return self.__path  # useful for analyse / debug
+        return self._path  # useful for analyse / debug
 
-    def search_info(self) -> Dict:
+    def search_info(self) -> Tuple[List[Node], Node, float]:
         assert (
             self.search_result is not None
         ), "try to access search info but no search was computed"
-        return {
-            "time": self.__total_time,
-            "evaluation_time": self.__evaluation_time,
-            "path": self.path(),
-            "total_nb_of_walks": self.total_nb_of_walks,
-            "best_leaf": self.search_result.reference_node,
-            "best_leaf_value": self._eval_node([self.search_result.reference_node])[0],
-        }
+        return (
+            self.path(),
+            self.search_result.reference_node,
+            self._eval_node([self.search_result.reference_node])[0],
+        )
 
     def __str__(self):
         return "MCTS c=%d d=%d t=%d" % (self.c, self.d, self.t)

@@ -1,5 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import *
+from time import time
+import pandas as pd
+import seaborn as sns
 from tree_search.tree import Node
 
 
@@ -19,17 +22,74 @@ class TreeSearch(ABC):
         :param evaluation_fn:
         :param kwargs:
         """
-        self.evaluation_fn = evaluation_fn
+        self._evaluation_fn = evaluation_fn
+        self._total_time = 0
+        self._evaluation_time = 0
+        self._values = []
+        self._keep_track = False
+
+    def reset(self):
+        self._total_time = 0
+        self._evaluation_time = 0
+        self._values = []
+
+    def __call__(self, root: Node, nb_of_tree_walks: int) -> Node:
+        self.reset()
+        self._keep_track = True
+        begin_time = time()
+        result = self._search(root, nb_of_tree_walks)
+        self._total_time = time() - begin_time
+        self._keep_track = False
+        return result
+
+    def _eval_node(self, nodes: List[Node]) -> List[float]:
+        begin_eval_time = time()
+        results = self._evaluation_fn(nodes)
+        if self._keep_track:
+            self._evaluation_time += time() - begin_eval_time
+            self._values += results
+        return results
+
+    def print_search_info(self):
+        """
+        Print several informations about the last search performed
+        """
+        path, best_leaf, best_value = self.search_info()
+        print(
+            "--- Search information ---\n"
+            "%d tree walks was performed in %.1f s\n"
+            "%.2f%%  of the time was spent on leave evaluation"
+            % (
+                len(self._values),
+                self._total_time,
+                (self._evaluation_time / self._total_time) * 100,
+            )
+        )
+
+        print(
+            "Best leaf that have been found: %s \n"
+            "It has a score of %f" % (str(best_leaf), best_value)
+        )
+
+        print("The following path was taken :")
+        for i, node in enumerate(path):
+            print("%d: %s" % (i, str(node)))
+
+    def plot_leaf_values_distribution(self):
+        assert (
+            self._values != []
+        ), "Try to plot leaf values distribution, but no search was performed yet"
+
+        values = pd.Series(self._values, name="Leaf values")
+        sns.set()
+        sns.distplot(values)
 
     @abstractmethod
-    def search(self, root: Node, nb_of_tree_walks: int) -> Node:
+    def _search(self, root: Node, nb_of_tree_walks: int) -> Node:
         """
         search and return the terminal node that maximise the evalution function
         """
         ...
-
-    def __call__(self, root: Node, nb_of_tree_walks: int) -> Node:
-        return self.search(root, nb_of_tree_walks)
 
     @abstractmethod
     def path(self) -> List[Node]:
@@ -42,43 +102,9 @@ class TreeSearch(ABC):
     def __str__(self) -> str:
         ...
 
-    def _eval_node(self, node: List[Node]) -> List[float]:
-        return self.evaluation_fn(node)
-
     @abstractmethod
-    def search_info(self):
+    def search_info(self) -> Tuple[List[Node], Node, float]:
         """
-        :return: dict containing the following information
-                    - time needed to perform the search
-                    - time spent on leaves evaluation
-                    - path taken
-                    - total number of tree walks
-                    - best leaf found
-                    - value of the best leaf
+        :return: tupple path taken, best leaf found, value of the best leaf
         """
         ...
-
-    def print_search_info(self):
-        """
-        Print several informations about the last search performed
-        """
-        info = self.search_info()
-        print(
-            "--- Search information ---\n"
-            "%d tree walks was performed in %.1f s\n"
-            "%.2f%%  of the time was spent on leave evaluation"
-            % (
-                info["total_nb_of_walks"],
-                info["time"],
-                info["evaluation_time"] / info["time"] * 100,
-            )
-        )
-
-        print(
-            "Best leaf that have been found: %s \n"
-            "It has a score of %f" % (str(info["best_leaf"]), info["best_leaf_value"])
-        )
-
-        print("The following path was taken :")
-        for i, node in enumerate(info["path"]):
-            print("%d: %s" % (i, str(node)))

@@ -1,6 +1,5 @@
 from tree_search.tree import Derivation
 from tree_search.strategy import MonteCarloTreeSearch
-import nltk
 from heuristic import GPT2Score
 import random
 
@@ -30,7 +29,7 @@ if __name__ == "__main__":
     )
 
     # Perform the search and print some info
-    best_node = mtcs.search(grammar_root, nb_of_tree_walks=5)
+    best_node = mtcs(grammar_root, nb_of_tree_walks=5)
     mtcs.print_search_info()
 
     # Example on how to print more info on internal node located on the best path
