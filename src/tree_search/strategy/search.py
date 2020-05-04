@@ -94,7 +94,7 @@ class TreeSearch(ABC):
 
         values = pd.Series(self._values, name="Leaf values")
         sns.set()
-        sns.distplot(values)
+        sns.distplot(values, label=str(self))
 
     @abstractmethod
     def _search(self, root: Node, nb_of_tree_walks: int) -> Node:
