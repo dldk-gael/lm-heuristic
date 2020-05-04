@@ -1,7 +1,9 @@
-from tree_search.tree import Node
 from nltk import CFG, grammar
 from typing import List
 import random
+import os
+
+from tree_search.tree import Node
 
 
 class Derivation(Node):
@@ -30,6 +32,18 @@ class Derivation(Node):
         self.cfg = cfg
         self.symbols = (symbols,) if type(symbols) != tuple else symbols
         self.shrink = shrink
+
+    @classmethod
+    def from_cfg_file(cls, file: str, **kwargs) -> 'Derivation':
+        """
+        :param file: path to file containing a context-free grammar
+        :return: new Derivation tree node
+        """
+        assert os.path.exists(file)
+        with open(file) as f:
+            str_grammar = f.read()
+        nltk_grammar = CFG.fromstring(str_grammar)
+        return cls(nltk_grammar.start(), nltk_grammar, **kwargs)
 
     def is_terminal(self) -> bool:
         """

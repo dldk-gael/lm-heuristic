@@ -13,17 +13,12 @@ GRAMMAR_NAME = "ex_2"
 BATCH_SIZE = 16
 
 if __name__ == "__main__":
-    # Load grammar
-    with open(GRAMMAR_FOLDER + GRAMMAR_NAME + ".cfg") as f:
-        str_grammar = f.read()
-    grammar = nltk.CFG.fromstring(str_grammar)
+    # Load grammar tree
+    grammar_root = Derivation.from_cfg_file(GRAMMAR_FOLDER + GRAMMAR_NAME + ".cfg", shrink=True)
 
     # Load heuristic function <- GPT2 score
     gpt_2_scorer = GPT2Score("gpt2", batch_size=BATCH_SIZE, length_normalization=True)
     heuristic = lambda terminal_nodes: gpt_2_scorer(list(map(str, terminal_nodes)))
-
-    # Prepare grammar tree
-    grammar_root = Derivation(grammar.start(), grammar, shrink=True)
 
     # Initialize the search parameters
     mtcs = MonteCarloTreeSearch(
