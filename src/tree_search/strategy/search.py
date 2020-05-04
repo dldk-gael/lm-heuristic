@@ -13,24 +13,23 @@ class TreeSearch(ABC):
     A TreeSearch object will search for the terminal node that maximise this evalution function
     """
 
-    def __init__(
-        self, root: Node, evaluation_fn: Callable[[List[Node]], List[float]], **kwargs
-    ):
+    def __init__(self, evaluation_fn: Callable[[List[Node]], List[float]], **kwargs):
         """
         Initialize a tree searcher
-        :param root: Node
         :param evaluation_fn:
         :param kwargs:
         """
-        self.root = root
         self.evaluation_fn = evaluation_fn
 
     @abstractmethod
-    def search(self) -> Node:
+    def search(self, root: Node, nb_of_tree_walks: int) -> Node:
         """
         search and return the terminal node that maximise the evalution function
         """
         ...
+
+    def __call__(self, root: Node, nb_of_tree_walks: int) -> Node:
+        return self.search(root, nb_of_tree_walks)
 
     @abstractmethod
     def path(self) -> List[Node]:
@@ -39,8 +38,9 @@ class TreeSearch(ABC):
         """
         ...
 
-    def __call__(self) -> Node:
-        return self.search()
+    @abstractmethod
+    def __str__(self) -> str:
+        ...
 
     def _eval_node(self, node: List[Node]) -> List[float]:
         return self.evaluation_fn(node)

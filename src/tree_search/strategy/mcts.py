@@ -20,41 +20,31 @@ class MonteCarloTreeSearch(TreeSearch):
 
     def __init__(
         self,
-        root: Node,
         evaluation_fn: Callable[[List[Node]], List[float]],
         batch_size: int = 1,
-        nb_of_tree_walks: int = 1,
         c: int = 1,
         d: int = 1000,
         t: int = 0,
     ):
         """
         Initialize the MCTS paramater and create the counter object that will be use to perform the MCTS
-        :param root: Node object from which to perform the tree search
         :param evaluation_fn: scoring function that evaluate node (must be able to evaluate list of nodes in batch)
         :param batch_size: number of leaf to store in memory before evaluating them in one pass
-        :param nb_of_tree_walks: number of tree walks to compute before selecting an action
         :param c: hyperparameter for upper confidence bound, control the exploration vs exploitation ratio
         :param d: hyperparameter for upper confidence bound
         :param t: threshold for expansion policy (see expansion_policy method)
         """
-        assert (
-            nb_of_tree_walks > t
-        ), "You give a lower number of tree walks that threshold t : the root node will never expand"
-        TreeSearch.__init__(self, root, evaluation_fn)
-        self.nb_of_tree_walks = nb_of_tree_walks
+        self.counter_root = None
+
+        TreeSearch.__init__(self, evaluation_fn)
         self.batch_size = batch_size
         self.c = c
         self.d = d
         self.t = t
 
-        # Wrap the root node in a counter object in order to maintain statistic on the path and rewards
-        self.counter_root = CounterNode(reference_node=root, parent=None)
         print(
             "Initialize Monte Carlo Tree search \n"
-            "\tthe parameters are C = %d, D= %d, t= %d\n"
-            "\tit will perform %d of tree walks at each step"
-            % (self.c, self.d, self.t, self.nb_of_tree_walks)
+            "\tthe parameters are C = %d, D= %d, t= %d\n" % (self.c, self.d, self.t)
         )
 
         self.__path = []
@@ -62,7 +52,7 @@ class MonteCarloTreeSearch(TreeSearch):
         self.total_nb_of_walks = 0
         self.search_result = None
 
-    def search(self) -> Node:
+    def search(self, root: Node, nb_of_tree_walks) -> Node:
         """
         Given the root nodes and all the parameters, search for the best leaf
         As describe in section 4.2 of 'Single-Player Monte-Carlo Tree Search for SameGame',
@@ -72,27 +62,35 @@ class MonteCarloTreeSearch(TreeSearch):
         1. Compute nb_of_tree_walks by batch of batch_size
         2. Select the best node of the root
         3. Re-start the search from this node
+
+        :param root: Node object from which to perform the tree search
+        :param nb_of_tree_walks: number of tree walks to compute before selecting an action
         """
+        assert (
+            nb_of_tree_walks > self.t
+        ), "You give a lower number of tree walks that threshold t : the root node will never expand"
+
+        # Wrap the root node in a counter object in order to maintain statistic on the path and rewards
+        self.counter_root = CounterNode(reference_node=root, parent=None)
+
         current_root = self.counter_root
 
         begin_time = time()
         self.total_nb_of_walks = 0
         self.__path = [current_root]
 
-        progress_bar = tqdm(
-            total=self.nb_of_tree_walks, desc="Tree walks", unit="walks"
-        )
+        progress_bar = tqdm(total=nb_of_tree_walks, desc="Tree walks", unit="walks")
         while not current_root.reference_node.is_terminal():
             progress_bar.reset()
             progress_bar.set_postfix(root_node=str(current_root.reference_node))
 
             # Perform nb of tree walks
-            for _ in range(self.nb_of_tree_walks // self.batch_size):
+            for _ in range(nb_of_tree_walks // self.batch_size):
                 if current_root.solved:
                     break
                 self.batch_tree_walks(current_root, self.batch_size)
                 progress_bar.update(self.batch_size)
-            remaining_walks = self.nb_of_tree_walks % self.batch_size
+            remaining_walks = nb_of_tree_walks % self.batch_size
             if remaining_walks != 0 and not current_root.solved:
                 self.batch_tree_walks(current_root, remaining_walks)
 
@@ -100,7 +98,7 @@ class MonteCarloTreeSearch(TreeSearch):
             current_root.freeze = True  # To avoid modifying the counter of previous roots in futur backpropagations
             current_root = current_root.top_children()
             self.__path.append(current_root)
-            self.total_nb_of_walks += self.nb_of_tree_walks
+            self.total_nb_of_walks += nb_of_tree_walks
 
         self.__time = time() - begin_time
         self.search_result = current_root
@@ -220,3 +218,6 @@ class MonteCarloTreeSearch(TreeSearch):
             "best_leaf": self.search_result.reference_node,
             "best_leaf_value": self._eval_node([self.search_result.reference_node])[0],
         }
+
+    def __str__(self):
+        return "MCTS c=%d d=%d t=%d" % (self.c, self.d, self.t)

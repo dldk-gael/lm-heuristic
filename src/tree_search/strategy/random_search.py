@@ -17,30 +17,27 @@ class RandomSearch(TreeSearch):
 
     def __init__(
         self,
-        root: Node,
         evaluation_fn: Callable[[List[Node]], List[float]],
         n_samples: int = 1,
         batch_size: int = 1,
     ):
         """
-        :param root : Node from which the search will start
         :param evaluation_fn : function which give a score to terminal node
-        :param n_samples: number of random expensions that will be computed
         :param batch_size: number of terminal nodes to store in a buffer before evaluating them in an single batch
         """
-        TreeSearch.__init__(self, root, evaluation_fn)
+        TreeSearch.__init__(self, evaluation_fn)
         self.__path = []
-        self.n_samples = n_samples
         self.batch_size = batch_size
         self.__time = 0
         self.__values = []
+        self.nb_of_tree_walks_performed = 0
 
-    def random_expansion(self) -> (Node, List[Node]):
+    def random_expansion(self, root: Node) -> (Node, List[Node]):
         """
         Perform a random expension from the root to a terminal node
         :return : the terminal node and the path taken
         """
-        node = self.root
+        node = root
         path = [node]
         while True:
             if node.is_terminal():
@@ -57,9 +54,12 @@ class RandomSearch(TreeSearch):
         self.__values += scores
         return buffer[np.argmax(scores)] + (max(scores),)
 
-    def search(self) -> Node:
+    def search(self, root: Node, nb_of_tree_walks: int) -> Node:
         """
-        Perform n_samples random expension and return the terminal node that has been found
+        :param root : Node from which the search will start
+        :param nb_of_tree_walks: number of random expensions that will be computed
+
+        Perform nb_of_tree_walks random expension and return the terminal node that has been found
         and that maximize the evaluation_fn
         """
         begin_time = time()
@@ -67,8 +67,9 @@ class RandomSearch(TreeSearch):
         best_node = None
         buffer = []
         best_node_value = -1
-        for _ in tqdm(range(self.n_samples)):
-            buffer.append(self.random_expansion())
+        for _ in tqdm(range(nb_of_tree_walks)):
+            buffer.append(self.random_expansion(root))
+            self.nb_of_tree_walks_performed += 1
             if len(buffer) == self.batch_size:
                 best_buffer_node, path, best_buffer_node_value = self.__best_in_buffer(
                     buffer
@@ -106,7 +107,7 @@ class RandomSearch(TreeSearch):
         return {
             "time": self.__time,
             "path": self.__path,
-            "total_nb_of_walks": self.n_samples,
+            "total_nb_of_walks": self.nb_of_tree_walks_performed,
             "best_leaf": self.__path[-1],
             "best_leaf_value": self._eval_node([self.__path[-1]])[0],
         }
@@ -119,3 +120,6 @@ class RandomSearch(TreeSearch):
         values = pd.Series(self.__values, name="Leaf values")
         sns.set()
         sns.distplot(values)
+
+    def __str__(self) -> str:
+        return "RandomSearch"

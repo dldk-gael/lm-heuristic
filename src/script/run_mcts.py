@@ -22,17 +22,15 @@ if __name__ == "__main__":
 
     # Initialize the search parameters
     mtcs = MonteCarloTreeSearch(
-        root=grammar_root,
         evaluation_fn=heuristic,
         batch_size=BATCH_SIZE,
-        nb_of_tree_walks=10,
         c=1,
         d=1000,
         t=0,
     )
 
     # Perform the search and print some info
-    best_node = mtcs.search()
+    best_node = mtcs.search(grammar_root, nb_of_tree_walks=100)
     mtcs.print_search_info()
 
     # Example on how to print more info on internal node located on the best path

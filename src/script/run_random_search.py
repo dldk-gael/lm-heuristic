@@ -2,9 +2,6 @@ from tree_search.strategy import RandomSearch
 from tree_search.tree import Derivation
 from heuristic import GPT2Score
 
-import nltk
-import matplotlib.pyplot as plt
-
 """
 This script shows how to use a random searcher 
 """
@@ -19,9 +16,7 @@ if __name__ == '__main__':
     heuristic = lambda terminal_nodes: gpt_2_scorer(list(map(str, terminal_nodes)))
 
     # Initialize and perform the search
-    random_search = RandomSearch(root, evaluation_fn=heuristic, n_samples=100, batch_size=16)
-    final_derivation = random_search.search()
+    random_search = RandomSearch(evaluation_fn=heuristic, n_samples=100)
+    final_derivation = random_search(root, nb_of_tree_walks=100)
 
     random_search.print_search_info()
-    random_search.plot_leaf_values_distribution()
-    plt.show()
