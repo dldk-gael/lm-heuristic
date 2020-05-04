@@ -67,7 +67,11 @@ class TreeSearch(ABC):
             "--- Search information ---\n"
             "%d tree walks was performed in %.1f s\n"
             "%.2f%%  of the time was spent on leave evaluation"
-            % (info["total_nb_of_walks"], info["time"], info['evaluation_time'])
+            % (
+                info["total_nb_of_walks"],
+                info["time"],
+                info["evaluation_time"] / info["time"] * 100,
+            )
         )
 
         print(
