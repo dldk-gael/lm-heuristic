@@ -18,7 +18,6 @@ class RandomSearch(TreeSearch):
     def __init__(
         self,
         evaluation_fn: Callable[[List[Node]], List[float]],
-        n_samples: int = 1,
         batch_size: int = 1,
     ):
         """
