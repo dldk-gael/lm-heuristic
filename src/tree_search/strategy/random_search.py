@@ -1,11 +1,13 @@
-from tree_search.strategy.search import TreeSearch
-from tree_search.tree import Node
-
 from tqdm.autonotebook import tqdm
 from typing import *
 import random
 import numpy as np
 from time import time
+import pandas as pd
+import seaborn as sns
+
+from tree_search.strategy.search import TreeSearch
+from tree_search.tree import Node
 
 
 class RandomSearch(TreeSearch):
@@ -31,6 +33,7 @@ class RandomSearch(TreeSearch):
         self.n_samples = n_samples
         self.batch_size = batch_size
         self.__time = 0
+        self.__values = []
 
     def random_expansion(self) -> (Node, List[Node]):
         """
@@ -51,6 +54,7 @@ class RandomSearch(TreeSearch):
         :return tuple(Node, float, List[Node]) the best terminal node contained in the buffer, its path and its value
         """
         scores = self._eval_node([n[0] for n in buffer])
+        self.__values += scores
         return buffer[np.argmax(scores)] + (max(scores),)
 
     def search(self) -> Node:
@@ -95,7 +99,7 @@ class RandomSearch(TreeSearch):
         """
         :return path taken from root node to best terminal node that has been found
         """
-        assert self.__path != [], "Requesting path but no search was launched before"
+        assert self.__path != [], "Requesting best path but no search was performed yet"
         return self.__path
 
     def search_info(self):
@@ -106,3 +110,12 @@ class RandomSearch(TreeSearch):
             "best_leaf": self.__path[-1],
             "best_leaf_value": self._eval_node([self.__path[-1]])[0],
         }
+
+    def plot_leaf_values_distribution(self):
+        assert (
+            self.__values != []
+        ), "Try to plot leaf values distribution, but no search was performed yet"
+
+        values = pd.Series(self.__values, name="Leaf values")
+        sns.set()
+        sns.distplot(values)

@@ -17,4 +17,4 @@ if __name__ == "__main__":
     # Compute stats
     stats = TreeStats(grammar_root)
     stats.accumulate_stats(nb_samples=1000)
-
+    print(stats.depths_info())
