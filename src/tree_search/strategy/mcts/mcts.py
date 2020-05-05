@@ -110,6 +110,7 @@ class MonteCarloTreeSearch(TreeSearch):
         self.__total_time = time() - begin_time
         self.search_result = current_root
 
+        print("")
         return current_root.reference_node
 
     def _batch_tree_walks(self, current_root: CounterNode, nb_tree_walks: int):
