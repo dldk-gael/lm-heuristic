@@ -28,9 +28,11 @@ class TreeSearch(ABC):
         self._evaluation_time = 0
         self._values = []
         self._leaves = []
+        self._best_leaf_value = None
         self._keep_track = False
 
     def reset(self):
+        self._best_leaf_value = None
         self._total_time = 0
         self._evaluation_time = 0
         self._values = []
@@ -46,10 +48,10 @@ class TreeSearch(ABC):
         self.reset()
         self._keep_track = True
         begin_time = time()
-        result = self._search(root, nb_of_tree_walks)
+        self._best_leaf_value = self._search(root, nb_of_tree_walks)
         self._total_time = time() - begin_time
         self._keep_track = False
-        return result
+        return self._best_leaf_value
 
     def _eval_node(self, nodes: List[Node]) -> List[float]:
         """
@@ -64,6 +66,9 @@ class TreeSearch(ABC):
             self._values += results
             self._leaves += list(map(str, nodes))
         return results
+
+    def time_needed(self):
+        return self._total_time
 
     def print_search_info(self):
         """

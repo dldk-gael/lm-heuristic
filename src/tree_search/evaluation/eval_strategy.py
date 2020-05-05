@@ -48,11 +48,13 @@ class EvalStrategy:
                 self.eval_results[strategy_name][i] = []
                 for j in range(nb_random_restarts):
                     random.seed(j)
-                    strategy.search(root_sample, nb_of_tree_walks=nb_of_tree_walks)
-                    search_info = strategy.search_info()
+                    best_leaf_value = strategy.search(
+                        root_sample, nb_of_tree_walks=nb_of_tree_walks
+                    )
+                    time_needed = strategy.time_needed()
 
                     self.eval_results[strategy_name][i].append(
-                        {k: search_info[k] for k in ("time", "best_leaf_value")}
+                        {"time": time_needed, "best_leaf_value": best_leaf_value}
                     )
 
     def save_results(self, path):
