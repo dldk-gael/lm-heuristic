@@ -27,12 +27,14 @@ class TreeSearch(ABC):
         self._total_time = 0
         self._evaluation_time = 0
         self._values = []
+        self._leaves = []
         self._keep_track = False
 
     def reset(self):
         self._total_time = 0
         self._evaluation_time = 0
         self._values = []
+        self._leaves = []
 
     def __call__(self, root: Node, nb_of_tree_walks: int) -> Node:
         """
@@ -60,6 +62,7 @@ class TreeSearch(ABC):
         if self._keep_track:
             self._evaluation_time += time() - begin_eval_time
             self._values += results
+            self._leaves += list(map(str, nodes))
         return results
 
     def print_search_info(self):
@@ -81,6 +84,11 @@ class TreeSearch(ABC):
         print(
             "Best leaf that have been found: %s \n"
             "It has a score of %f" % (str(best_leaf), best_value)
+        )
+
+        print(
+            "%d leaves have been evaluated, %d of them were duplicates"
+            % (len(self._leaves), len(self._leaves) - len(set(self._leaves)))
         )
 
         print("The following path was taken :")
