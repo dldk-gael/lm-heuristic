@@ -74,7 +74,7 @@ class TreeSearch(ABC):
         """
         Print several informations about the last search performed
         """
-        path, best_leaf, best_value = self.search_info()
+        _, best_leaf, best_value = self.search_info()
         print(
             "--- Search information ---\n"
             "%d tree walks was performed in %.1f s\n"
@@ -96,8 +96,9 @@ class TreeSearch(ABC):
             % (len(self._leaves), len(self._leaves) - len(set(self._leaves)))
         )
 
+    def print_path(self):
         print("The following path was taken :")
-        for i, node in enumerate(path):
+        for i, node in enumerate(self.path()):
             print("%d: %s" % (i, str(node)))
 
     def plot_leaf_values_distribution(self):

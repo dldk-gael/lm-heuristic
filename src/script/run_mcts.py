@@ -29,8 +29,6 @@ if __name__ == "__main__":
     )
 
     # Perform the search and print some info
-    best_node = mtcs(grammar_root, nb_of_tree_walks=5)
+    best_node = mtcs(grammar_root, nb_of_tree_walks=150)
     mtcs.print_search_info()
 
-    # Example on how to print more info on internal node located on the best path
-    mtcs.counter_path()[1].detailed_node_info()

@@ -1,10 +1,11 @@
-from tree_search.strategy.search import TreeSearch
-from tree_search.tree import CounterNode, Node
-from typing import *
-
 import math
-from tqdm.autonotebook import tqdm
 from time import time
+
+from tree_search.strategy.search import TreeSearch
+from .allocation_strategy import AllocationStrategy, RessourceAllocation
+from tree_search.tree import CounterNode, Node
+from tree_search.evaluation import TreeStats
+from typing import *
 
 
 class MonteCarloTreeSearch(TreeSearch):
@@ -25,6 +26,7 @@ class MonteCarloTreeSearch(TreeSearch):
         c: int = 1,
         d: int = 1000,
         t: int = 0,
+        allocation_strategy: AllocationStrategy = AllocationStrategy.UNIFORM,
     ):
         """
         Initialize the MCTS paramater and create the counter object that will be use to perform the MCTS
@@ -33,6 +35,7 @@ class MonteCarloTreeSearch(TreeSearch):
         :param c: hyperparameter for upper confidence bound, control the exploration vs exploitation ratio
         :param d: hyperparameter for upper confidence bound
         :param t: threshold for expansion policy (see expansion_policy method)
+        :param allocation_strategy:
         """
         self.counter_root = None
 
@@ -41,11 +44,11 @@ class MonteCarloTreeSearch(TreeSearch):
         self.c = c
         self.d = d
         self.t = t
-
+        self.allocation_strategy = allocation_strategy
         self._path = []
         self.search_result = None
 
-    def _search(self, root: Node, nb_of_tree_walks) -> Node:
+    def _search(self, root: Node, nb_of_tree_walks: int) -> Node:
         """
         Given the root nodes and all the parameters, search for the best leaf
         As describe in section 4.2 of 'Single-Player Monte-Carlo Tree Search for SameGame',
@@ -62,7 +65,18 @@ class MonteCarloTreeSearch(TreeSearch):
         assert (
             nb_of_tree_walks > self.t
         ), "You give a lower number of tree walks that threshold t : the root node will never expand"
+        # Perfom few quick walks to assess tree's depth (time is negligeable compare to rest of algorithms)
+        stats = TreeStats(root)
+        stats.accumulate_stats(nb_samples=100)
+        mean_depth = int(stats.depths_info()["mean"])
 
+        # Initialize the resource allocator
+        resource_allocator = RessourceAllocation(
+            allocation_strategy=self.allocation_strategy,
+            total_ressources=nb_of_tree_walks,
+            max_depth=mean_depth,  # this could end up with computing more tree walks than what is allowed
+            min_ressources_per_move=10,  # fix arbitrarly for now
+        )
         # Wrap the root node in a counter object in order to maintain statistic on the path and rewards
         self.counter_root = CounterNode(reference_node=root, parent=None)
 
@@ -70,19 +84,18 @@ class MonteCarloTreeSearch(TreeSearch):
 
         begin_time = time()
         self.total_nb_of_walks = 0
+        current_depth = 1
         self._path = [current_root]
 
-        progress_bar = tqdm(total=nb_of_tree_walks, desc="Tree walks", unit="walks")
         while not current_root.reference_node.is_terminal():
-            progress_bar.reset()
-            progress_bar.set_postfix(root_node=str(current_root.reference_node))
-
+            nb_of_tree_walks = resource_allocator(current_depth)
+            print("\rCurrent depth %d - will perform %d tree walks"
+                  % (current_depth, nb_of_tree_walks), end=" ")
             # Perform nb of tree walks
             for _ in range(nb_of_tree_walks // self.batch_size):
                 if current_root.solved:
                     break
                 self._batch_tree_walks(current_root, self.batch_size)
-                progress_bar.update(self.batch_size)
             remaining_walks = nb_of_tree_walks % self.batch_size
             if remaining_walks != 0 and not current_root.solved:
                 self._batch_tree_walks(current_root, remaining_walks)
@@ -90,6 +103,7 @@ class MonteCarloTreeSearch(TreeSearch):
             # Choose the best node among the childrens and continue the search from here
             current_root.freeze = True  # To avoid modifying the counter of previous roots in futur backpropagations
             current_root = current_root.top_children()
+            current_depth += 1
             self._path.append(current_root)
             self.total_nb_of_walks += nb_of_tree_walks
 

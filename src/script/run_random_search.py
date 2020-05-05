@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 from tree_search.strategy import RandomSearch
 from tree_search.tree import Derivation
 from heuristic import GPT2Score
@@ -22,3 +23,7 @@ if __name__ == '__main__':
     final_derivation = random_search(root, nb_of_tree_walks=10)
 
     random_search.print_search_info()
+    random_search.plot_leaf_values_distribution()
+
+    plt.legend()
+    plt.show()

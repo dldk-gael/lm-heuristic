@@ -8,6 +8,7 @@ class TreeStats:
     Class use to accumulate informations about a tree
     and compute several statistics on depth and branching factor
     """
+
     def __init__(self, root: Node):
         """
         :param root: root of the tree to evaluate
@@ -16,7 +17,7 @@ class TreeStats:
         self._depths = []
         self._branching_factors = dict()
 
-    def accumulate_stats(self, nb_samples:int=1):
+    def accumulate_stats(self, nb_samples: int = 1):
         """
         Accumulate statistics on the tree by performing nb_samples tree walks
         :param nb_samples: number of tree walks to perform
@@ -31,7 +32,7 @@ class TreeStats:
         Perform a single tree walk and update statistics value
         """
         node = self.root
-        depth = 0
+        depth = 1  # by choice root's depth = 1 (and not 0)
         while not node.is_terminal():
             branching_factor = len(node.childrens())
             self._branching_factors.setdefault(depth, []).append(branching_factor)
@@ -44,6 +45,8 @@ class TreeStats:
             self._depths != []
         ), "Try to access statistic informations before browsing the tree"
         return {
+            "min": np.min(self._depths),
+            "max": np.max(self._depths),
             "mean": np.mean(self._depths),
             "median": np.median(self._depths),
             "std": np.std(self._depths),
@@ -51,12 +54,13 @@ class TreeStats:
 
     def branching_factors_info(self) -> Dict:
         assert (
-                self._depths != []
+            self._depths != []
         ), "Try to access statistic informations before browsing the tree"
         mean_by_depth_b_factors = list(map(np.mean, self._branching_factors.values()))
         return {
+            "min": np.min(mean_by_depth_b_factors),
+            "max": np.max(mean_by_depth_b_factors),
             "mean": np.mean(mean_by_depth_b_factors),
             "median": np.median(mean_by_depth_b_factors),
             "std": np.std(mean_by_depth_b_factors),
         }
-
