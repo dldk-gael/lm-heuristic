@@ -1,7 +1,8 @@
 from typing import *
 import numpy as np
-from tree import Node
-from utils.timer import timeit, Timer
+
+from .node import Node
+from ..utils.timer import timeit, Timer
 
 
 class TreeStats(Timer):

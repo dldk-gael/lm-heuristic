@@ -2,9 +2,9 @@ from typing import *
 import random
 import numpy as np
 
-from tree_search import TreeSearch
-from tree import Node
-from heuristic import Heuristic
+from ..search import TreeSearch
+from lm_heuristic.tree import Node
+from lm_heuristic.heuristic import Heuristic
 
 
 class RandomSearch(TreeSearch):

@@ -1,7 +1,7 @@
 from typing import *
 
-from tree import Node
-from utils.timer import timeit, Timer
+from ..tree import Node
+from ..utils.timer import timeit, Timer
 
 
 class Heuristic(Timer):
@@ -12,9 +12,7 @@ class Heuristic(Timer):
     """
 
     def __init__(
-        self,
-        evaluation_fct: Callable[[List[Node]], List[float]],
-        use_memory: bool = False,
+        self, evaluation_fct: Callable[[List[Node]], List[float]], use_memory: bool = False,
     ):
         Timer.__init__(self)
         self.memory = dict()

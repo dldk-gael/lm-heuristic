@@ -3,7 +3,7 @@ from typing import List
 import random
 import os
 
-from tree import Node
+from .node import Node
 
 
 class CFGrammarNode(Node):

@@ -2,8 +2,8 @@ from typing import *
 import random
 import pandas as pd
 
-from tree_search import TreeSearch
-from tree import Node
+from lm_heuristic.tree_search import TreeSearch
+from lm_heuristic.tree import Node
 
 
 class EvalStrategy:

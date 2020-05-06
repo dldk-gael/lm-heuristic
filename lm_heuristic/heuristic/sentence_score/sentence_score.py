@@ -19,9 +19,7 @@ class SentenceScore(ABC):
         ...
 
     @abstractmethod
-    def compute_score(
-        self, text: Union[str, List[str]]
-    ) -> Union[float, List[float]]:
+    def compute_score(self, text: Union[str, List[str]]) -> Union[float, List[float]]:
         """
         Compute the naturalness score of sentences
         :param text: single sentence or list of sentences

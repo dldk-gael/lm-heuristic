@@ -1,6 +1,7 @@
 from enum import Enum
 import math
 
+
 class AllocationStrategy(Enum):
     UNIFORM = 1
     LINEAR = 2
@@ -62,14 +63,8 @@ class RessourceAllocation:
         #   f(d_max) = min_ressources per move
         #   sum over d (= 1 .. d_max) of f(d) = total_ressources
         if allocation_strategy == AllocationStrategy.LINEAR:
-            self.a = (
-                2
-                / (1 - depth)
-                * (total_ressources / depth - min_ressources_per_move)
-            )
-            self.b = min_ressources_per_move - 2 / (1 - depth) * (
-                total_ressources - depth * min_ressources_per_move
-            )
+            self.a = 2 / (1 - depth) * (total_ressources / depth - min_ressources_per_move)
+            self.b = min_ressources_per_move - 2 / (1 - depth) * (total_ressources - depth * min_ressources_per_move)
 
     def uniform(self) -> int:
         return self.total_ressources // self.depth + self.correction

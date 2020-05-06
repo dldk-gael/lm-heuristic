@@ -1,10 +1,10 @@
 import math
 from typing import *
 
-from heuristic import Heuristic
-from tree_search import TreeSearch
+from lm_heuristic.heuristic import Heuristic
+from ..search import TreeSearch
 from .allocation_strategy import AllocationStrategy, RessourceAllocation
-from tree import CounterNode, Node, TreeStats
+from lm_heuristic.tree import CounterNode, Node, TreeStats
 
 
 class MonteCarloTreeSearch(TreeSearch):
@@ -75,15 +75,11 @@ class MonteCarloTreeSearch(TreeSearch):
         mean_depth = int(stats.depths_info()["mean"])
         mean_branching_factor = int(stats.branching_factors_info()["mean"])
         if self.verbose:
-            print(
-                "A statistic search was performed on the tree\n"
-                "\t- time spent : %0.3fs" % stats.time_spent()
-            )
+            print("A statistic search was performed on the tree\n" "\t- time spent : %0.3fs" % stats.time_spent())
             print(
                 "\t- Results :\n"
                 "\t\tdepth : %s\n"
-                "\t\tbranching factor : %s\n"
-                % (str(stats.depths_info()), str(stats.branching_factors_info()))
+                "\t\tbranching factor : %s\n" % (str(stats.depths_info()), str(stats.branching_factors_info()))
             )
 
         # Initialize the resource allocator
@@ -110,9 +106,7 @@ class MonteCarloTreeSearch(TreeSearch):
             nb_of_tree_walks = resource_allocator(current_depth)
             if self.verbose:
                 print(
-                    "\rCurrent depth %d - will perform %d tree walks"
-                    % (current_depth, nb_of_tree_walks),
-                    end=" ",
+                    "\rCurrent depth %d - will perform %d tree walks" % (current_depth, nb_of_tree_walks), end=" ",
                 )
             # Perform nb of tree walks
             self._perform_tree_walks(current_root, nb_of_tree_walks)
@@ -195,10 +189,7 @@ class MonteCarloTreeSearch(TreeSearch):
         # expansion phase
         # Expand a node only if he has been visited t times so far as desbribe in
         # Coulom, R., 2007. Efficient Selectivity and Backup Operators in Monte-Carlo Tree Search
-        if (
-            not counter_node.reference_node.is_terminal()
-            and counter_node.count + 1 > self.t
-        ):
+        if not counter_node.reference_node.is_terminal() and counter_node.count + 1 > self.t:
             counter_node.expand()
 
         if counter_node.reference_node.is_terminal():
@@ -222,19 +213,12 @@ class MonteCarloTreeSearch(TreeSearch):
         total_selection = counter_node.count
 
         # Select node that maximise UPC + skip node that have been solved
-        unsolved_childrens = [
-            children for children in counter_node.childrens() if not children.solved
-        ]
+        unsolved_childrens = [children for children in counter_node.childrens() if not children.solved]
         assert len(unsolved_childrens) > 0, "Try to select from a solved node"
 
-        return max(
-            unsolved_childrens,
-            key=lambda node: self.node_upper_confidence_bound(node, total_selection),
-        )
+        return max(unsolved_childrens, key=lambda node: self.node_upper_confidence_bound(node, total_selection),)
 
-    def node_upper_confidence_bound(
-        self, node: CounterNode, total_nb_of_selections: int
-    ) -> float:
+    def node_upper_confidence_bound(self, node: CounterNode, total_nb_of_selections: int) -> float:
         """
         Compute the upper confidence bound as describe in section 4.1 of
         'Single-Player Monte-Carlo Tree Search for SameGame'
@@ -243,11 +227,7 @@ class MonteCarloTreeSearch(TreeSearch):
             node.sum_rewards / node.count
             + math.sqrt(self.c * math.log(total_nb_of_selections / node.count))
             + math.sqrt(
-                (
-                    node.sum_of_square_rewards
-                    - node.count * ((node.sum_rewards / node.count) ** 2)
-                    + self.d
-                )
+                (node.sum_of_square_rewards - node.count * ((node.sum_rewards / node.count) ** 2) + self.d)
                 / node.count
             )
         )
@@ -260,9 +240,4 @@ class MonteCarloTreeSearch(TreeSearch):
         return self._path  # useful for analyse / debug
 
     def __str__(self):
-        return "MCTS c=%d d=%d t=%d %s" % (
-            self.c,
-            self.d,
-            self.t,
-            str(self.allocation_strategy),
-        )
+        return "MCTS c=%d d=%d t=%d %s" % (self.c, self.d, self.t, str(self.allocation_strategy),)

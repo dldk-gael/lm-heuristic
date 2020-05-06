@@ -1,1 +1,1 @@
-from lm_heuristic import heuristic
+from lm_heuristic.tree import TreeStats

@@ -4,9 +4,9 @@ from copy import copy
 import pandas as pd
 import seaborn as sns
 
-from tree import Node
-from heuristic import Heuristic
-from utils.timer import Timer, timeit
+from ..tree import Node
+from ..heuristic import Heuristic
+from ..utils.timer import Timer, timeit
 
 
 class TreeSearch(ABC, Timer):
@@ -77,9 +77,7 @@ class TreeSearch(ABC, Timer):
 
     def plot_leaf_values_distribution(self):
         values = self.heuristic.history_of_values()
-        assert (
-            values != []
-        ), "Try to plot leaf values distribution, but no search was performed yet"
+        assert values != [], "Try to plot leaf values distribution, but no search was performed yet"
 
         series_values = pd.Series(values, name="Leaf values")
         sns.set()

@@ -1,7 +1,7 @@
-from tree import Node
 import random
 from typing import *
 
+from .node import Node
 
 class CounterNode(Node):
     """
