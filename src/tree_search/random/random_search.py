@@ -1,4 +1,3 @@
-from tqdm.autonotebook import tqdm
 from typing import *
 import random
 import numpy as np
@@ -14,7 +13,7 @@ class RandomSearch(TreeSearch):
     """
 
     def __init__(
-        self, heuristic: Heuristic, buffer_size: int = 1,
+        self, heuristic: Heuristic, buffer_size: int = 1, verbose: bool = False
     ):
         """
         :param heuristic : heuristic to eval leaves score
@@ -22,6 +21,10 @@ class RandomSearch(TreeSearch):
         """
         TreeSearch.__init__(self, heuristic, buffer_size)
         self._path = []
+        self.verbose = verbose
+
+        if self.verbose:
+            print("--- INITIALIZATION ---\n %s\n" % str(self))
 
     @staticmethod
     def _random_expansion(root: Node) -> (Node, List[Node]):
@@ -53,6 +56,9 @@ class RandomSearch(TreeSearch):
         Perform nb_of_tree_walks random expension and return the terminal node that has been found
         and that maximize the evaluation_fn
         """
+        if self.verbose:
+            print("--- SEARCHING ---")
+
         best_leaf = None
         best_leaf_value = -1
         buffer = []
@@ -69,13 +75,18 @@ class RandomSearch(TreeSearch):
                 self.__path = best_path_in_buffer
             buffer = []
 
-        for _ in tqdm(range(nb_of_tree_walks)):
+        for i in range(nb_of_tree_walks):
+            if self.verbose and int(i / nb_of_tree_walks * 100) % 5 == 0:
+                print("\rtree walks performed: %d%%" % int(i / nb_of_tree_walks * 100), end="")
             buffer.append(self._random_expansion(root))
             if len(buffer) == self.buffer_size:
                 flush_buffer()
 
         if len(buffer) > 0:
             flush_buffer()
+
+        if self.verbose:
+            print("\rtree walks performed: 100%\n")
 
         return best_leaf, best_leaf_value
 

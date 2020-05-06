@@ -18,16 +18,12 @@ if __name__ == "__main__":
 
     # Load heuristic function <- GPT2 score
     gpt_2_scorer = GPT2Score("gpt2", length_normalization=True, batch_size=1)
-    heuristic = Heuristic(
-        evaluation_fct=lambda terminal_nodes: gpt_2_scorer(
-            list(map(str, terminal_nodes))
-        )
-    )
+    evaluation_fct = lambda terminal_nodes: gpt_2_scorer(list(map(str, terminal_nodes)))
+    heuristic = Heuristic(evaluation_fct)
 
     # Initialize and perform the search
-    random_search = RandomSearch(heuristic=heuristic)
+    random_search = RandomSearch(heuristic=heuristic, verbose=True)
     final_derivation = random_search(root, nb_of_tree_walks=10)
 
     random_search.print_search_info()
     random_search.plot_leaf_values_distribution()
-    plt.show()
