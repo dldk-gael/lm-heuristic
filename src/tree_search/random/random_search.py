@@ -14,15 +14,14 @@ class RandomSearch(TreeSearch):
     """
 
     def __init__(
-        self, heuristic: Heuristic, batch_size: int = 1,
+        self, heuristic: Heuristic, buffer_size: int = 1,
     ):
         """
         :param heuristic : heuristic to eval leaves score
-        :param batch_size: number of terminal nodes to store in a buffer before evaluating them in an single batch
+        :param buffer_size: number of terminal nodes to store in a buffer before evaluating them in an single batch
         """
         TreeSearch.__init__(self, heuristic)
         self._path = []
-        self.batch_size = batch_size
 
     @staticmethod
     def _random_expansion(root: Node) -> (Node, List[Node]):
@@ -72,7 +71,7 @@ class RandomSearch(TreeSearch):
 
         for _ in tqdm(range(nb_of_tree_walks)):
             buffer.append(self._random_expansion(root))
-            if len(buffer) == self.batch_size:
+            if len(buffer) == self.buffer_size:
                 flush_buffer()
 
         if len(buffer) > 0:

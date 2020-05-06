@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from typing import *
+from copy import copy
 import pandas as pd
 import seaborn as sns
 
@@ -14,9 +15,10 @@ class TreeSearch(ABC, Timer):
     The objective of a tree searcher is to find the leaf that maximise an evaluation function
     """
 
-    def __init__(self, heuristic: Heuristic, **kwargs):
+    def __init__(self, heuristic: Heuristic, buffer_size: int = 1, **kwargs):
         Timer.__init__(self)
-        self.heuristic = heuristic
+        self.heuristic = copy(heuristic)
+        self.buffer_size = buffer_size
         self.best_leaf = None
         self.best_leaf_value = None
 
@@ -64,7 +66,7 @@ class TreeSearch(ABC, Timer):
                 total_time,
                 evaluation_time / total_time * 100,
                 str(self.best_leaf),
-                self.best_leaf_value
+                self.best_leaf_value,
             )
         )
 
