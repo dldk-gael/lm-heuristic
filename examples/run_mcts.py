@@ -22,7 +22,7 @@ if __name__ == "__main__":
     heuristic = Heuristic(evaluation_fn)
 
     # Initialize the search parameters
-    mtcs = MonteCarloTreeSearch(
+    mcts = MonteCarloTreeSearch(
         heuristic=heuristic,
         batch_size=BATCH_SIZE,
         c=1,
@@ -32,6 +32,6 @@ if __name__ == "__main__":
     )
 
     # Perform the search and print some info
-    best_node = mtcs(grammar_root, nb_of_tree_walks=150)
-    mtcs.print_search_info()
+    best_node = mcts(grammar_root, nb_of_tree_walks=150)
+    mcts.print_search_info()
 

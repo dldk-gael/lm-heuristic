@@ -57,12 +57,6 @@ class RessourceAllocation:
         return self.total_ressources // self.max_depth
 
     def linear(self, current_depth: int) -> int:
-        """
-        the parameter a and b are computed such as :
-        -> f(d) = a * d + b give the number of ressources allowed at depth d
-        -> f(d_max) = min_ressources per move
-        -> sum over d (= 1 .. d_max) of f(d) = total_ressources
-        """
         return int(max(self.a * current_depth + self.b, self.min_ressources_per_move))
 
     def __call__(self, current_depth: int) -> int:

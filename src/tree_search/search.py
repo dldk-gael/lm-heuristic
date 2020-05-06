@@ -23,6 +23,7 @@ class TreeSearch(ABC, Timer):
     def reset(self):
         self.best_leaf = None
         self.best_leaf_value = None
+        self.heuristic.reset()
         self.reset_timer()
 
     @timeit
@@ -73,7 +74,7 @@ class TreeSearch(ABC, Timer):
             print("%d: %s" % (i, str(node)))
 
     def plot_leaf_values_distribution(self):
-        values = self.heuristic.history_of_terminal_nodes()
+        values = self.heuristic.history_of_values()
         assert (
             values != []
         ), "Try to plot leaf values distribution, but no search was performed yet"

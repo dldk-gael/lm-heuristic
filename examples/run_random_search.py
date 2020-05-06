@@ -1,3 +1,5 @@
+import matplotlib.pyplot as plt
+
 from src.tree_search import RandomSearch
 from src.tree import CFGrammarNode
 from src.heuristic import Heuristic
@@ -27,4 +29,5 @@ if __name__ == "__main__":
     final_derivation = random_search(root, nb_of_tree_walks=10)
 
     random_search.print_search_info()
-
+    random_search.plot_leaf_values_distribution()
+    plt.show()
