@@ -1,9 +1,8 @@
 import math
-from time import time
 from typing import *
 
 from heuristic import Heuristic
-from tree_search.search import TreeSearch
+from tree_search import TreeSearch
 from .allocation_strategy import AllocationStrategy, RessourceAllocation
 from tree import CounterNode, Node, TreeStats
 
@@ -22,7 +21,7 @@ class MonteCarloTreeSearch(TreeSearch):
     def __init__(
         self,
         heuristic: Heuristic,
-        batch_size: int = 1,
+        buffer_size: int = 1,
         c: int = 1,
         d: int = 1000,
         t: int = 0,
@@ -32,14 +31,13 @@ class MonteCarloTreeSearch(TreeSearch):
         """
         Initialize the MCTS paramater and create the counter object that will be use to perform the MCTS
         :param heuristic: Heuristic instance
-        :param batch_size: number of leaf to store in memory before evaluating them in one pass
+        :param buffer_size: number of leaf to store in memory before evaluating them in one pass
         :param c: hyperparameter for upper confidence bound, control the exploration vs exploitation ratio
         :param d: hyperparameter for upper confidence bound
         :param t: threshold for expansion policy (see expansion_policy method)
-        :param allocation_strategy:
+        :param allocation_strategy: strategy that determine how many tree walks will be performed at each layer
         """
-        TreeSearch.__init__(self, heuristic)
-        self.batch_size = batch_size
+        TreeSearch.__init__(self, heuristic, buffer_size)
         self.c = c
         self.d = d
         self.t = t
@@ -58,9 +56,10 @@ class MonteCarloTreeSearch(TreeSearch):
         we allocate ressorce move by move rather than using all the ressources from the tree node.
 
         Concretely :
-        1. Compute nb_of_tree_walks by batch of batch_size
-        2. Select the best node of the root
-        3. Re-start the search from this node
+        1. Use allocation strategy to determine how many tree walks can be performed from current root
+        2. Perform the tree walks and update statistics on the fly
+        3. Choose and go to the best children of current root
+        4. Repeat until we reach a terminal node
 
         :param root: Node object from which to perform the tree search
         :param nb_of_tree_walks: total number of tree walks allowed
@@ -170,7 +169,7 @@ class MonteCarloTreeSearch(TreeSearch):
                 buffer.setdefault(hash(leaf), []).append(counter_node)
                 buffer_idx[hash(leaf)] = leaf
 
-            if len(buffer) == self.batch_size:
+            if len(buffer) == self.buffer_size:
                 flush_buffer()
 
         if len(buffer) > 0:
