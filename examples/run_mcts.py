@@ -1,7 +1,7 @@
-from src.tree import CFGrammarNode
-from src.tree_search.mcts import MonteCarloTreeSearch, AllocationStrategy
-from src.heuristic import Heuristic
-from src.heuristic.sentence_score import GPT2Score
+from lm_heuristic.tree import CFGrammarNode
+from lm_heuristic.tree_search.mcts import MonteCarloTreeSearch, AllocationStrategy
+from lm_heuristic.heuristic import Heuristic
+from lm_heuristic.heuristic.sentence_score import GPT2Score
 import random
 
 """

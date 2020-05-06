@@ -1,5 +1,5 @@
-from src.cfg import generate_all_sentences
-from src.heuristic.sentence_score import GPT2Score
+from lm_heuristic.cfg import generate_all_sentences
+from lm_heuristic.heuristic.sentence_score import GPT2Score
 import os
 import pickle
 

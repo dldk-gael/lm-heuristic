@@ -1,7 +1,7 @@
 import pytest
 import nltk
 from tree import Derivation
-from src.tree_search.strategy import RandomSearch
+from lm_heuristic.tree_search.strategy import RandomSearch
 
 
 @pytest.fixture

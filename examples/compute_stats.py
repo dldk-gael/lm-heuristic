@@ -1,4 +1,4 @@
-from src.tree import CFGrammarNode, TreeStats
+from lm_heuristic.tree import CFGrammarNode, TreeStats
 
 
 GRAMMAR_FOLDER = "../data/cfg/"

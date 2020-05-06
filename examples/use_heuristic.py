@@ -1,4 +1,4 @@
-from src.heuristic.sentence_score import GPT2Score, BertScore
+from lm_heuristic.heuristic.sentence_score import GPT2Score, BertScore
 import logging
 
 logger = logging.getLogger()

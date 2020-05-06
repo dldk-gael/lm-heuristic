@@ -1,9 +1,9 @@
-from src.tree_search.random import RandomSearch
-from src.tree_search.mcts import MonteCarloTreeSearch, AllocationStrategy
-from src.tree import CFGrammarNode
-from src.evaluation import EvalStrategy
-from src.heuristic import Heuristic
-from src.heuristic.sentence_score import GPT2Score
+from lm_heuristic.tree_search.random import RandomSearch
+from lm_heuristic.tree_search.mcts import MonteCarloTreeSearch, AllocationStrategy
+from lm_heuristic.tree import CFGrammarNode
+from lm_heuristic.evaluation import EvalStrategy
+from lm_heuristic.heuristic import Heuristic
+from lm_heuristic.heuristic.sentence_score import GPT2Score
 
 """
 This script shows how to use the evaluation framework 

@@ -1,9 +1,9 @@
 import matplotlib.pyplot as plt
 
-from src.tree_search import RandomSearch
-from src.tree import CFGrammarNode
-from src.heuristic import Heuristic
-from src.heuristic.sentence_score import GPT2Score
+from lm_heuristic.tree_search import RandomSearch
+from lm_heuristic.tree import CFGrammarNode
+from lm_heuristic.heuristic import Heuristic
+from lm_heuristic.heuristic.sentence_score import GPT2Score
 
 """
 This script shows how to use a random searcher 
