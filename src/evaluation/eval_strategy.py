@@ -1,6 +1,7 @@
 from typing import *
 import random
 import json
+import pandas as pd
 
 from tree_search import TreeSearch
 from tree import Node
@@ -17,51 +18,61 @@ class EvalStrategy:
         """
         :param verbose: use True to print information about evaluation progress
         """
-        self.eval_results = dict()
+        self.eval_results = pd.DataFrame(
+            columns=[
+                "strategy",
+                "dataset",
+                "nb_tree_walks",
+                "random_seed",
+                "time_needed",
+                "best_value",
+            ]
+        )
         self.verbose = verbose
 
     def __call__(
         self,
         strategies: Union[TreeSearch, List[TreeSearch]],
         dataset: Union[Node, List[Node]],
-        nb_random_restarts: int = 1,
-        nb_of_tree_walks: int = 1,
-    ):
+        nb_tree_walks: Union[int, List[int]],
+        nb_random_restarts: int,
+    ) -> pd.DataFrame:
         """
         :param strategies: list (or single) search strategy to evaluate
         :param dataset: list of tree that will be used to evaluate the search strategies
+        :param nb_tree_walks: number of tree_walks to try for each strategy
         :param nb_random_restarts: number of search to perform on each example of the dataset
                                     a different random seed will be used at each restart
-        :param nb_of_tree_walks: number of tree_walks
         """
-        self.eval_results = dict()
+        experiments_list = []
 
         strategies = [strategies] if isinstance(strategies, TreeSearch) else strategies
         dataset = [dataset] if isinstance(dataset, Node) else dataset
+        nb_tree_walks = (
+            [nb_tree_walks] if isinstance(nb_tree_walks, int) else nb_tree_walks
+        )
 
         for strategy in strategies:
             strategy_name = str(strategy)
-            self.eval_results[strategy_name] = dict()
             if self.verbose:
-                print("Evaluating %s ...", strategy_name)
+                print("Evaluating %s ..." % strategy_name)
             for i, root_sample in enumerate(dataset):
-                self.eval_results[strategy_name][i] = []
-                for j in range(nb_random_restarts):
-                    random.seed(j)
-                    _, best_leaf_value = strategy.search(root_sample, nb_of_tree_walks)
-                    time_needed = strategy.time_spent()
+                for k in nb_tree_walks:
+                    for j in range(nb_random_restarts):
+                        random.seed(j)
+                        best_leaf, best_leaf_value = strategy(root_sample, nb_of_tree_walks=k)
+                        time_needed = strategy.time_spent()
 
-                    self.eval_results[strategy_name][i].append(
-                        {"time": time_needed, "best_leaf_value": best_leaf_value}
-                    )
+                        experiment_results = {
+                            "strategy": strategy_name,
+                            "dataset": i,
+                            "nb_tree_walks": k,
+                            "random_seed": j,
+                            "time_needed": time_needed,
+                            "best_value": best_leaf_value,
+                            "best_leaf": str(best_leaf)
+                        }
+                        experiments_list.append(experiment_results)
 
-    def save_results(self, path):
-        with open(path, "w") as file:
-            json.dump(self.eval_results, file)
-
-    @classmethod
-    def from_json(cls, path):
-        eval_strategy = cls(verbose=False)
-        with open(path, "r") as file:
-            eval_strategy.eval_results = json.load(file)
-        return eval_strategy
+        self.eval_results = pd.DataFrame(experiments_list)
+        return self.eval_results
