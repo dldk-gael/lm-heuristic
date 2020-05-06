@@ -20,7 +20,7 @@ class RandomSearch(TreeSearch):
         :param heuristic : heuristic to eval leaves score
         :param buffer_size: number of terminal nodes to store in a buffer before evaluating them in an single batch
         """
-        TreeSearch.__init__(self, heuristic)
+        TreeSearch.__init__(self, heuristic, buffer_size)
         self._path = []
 
     @staticmethod
