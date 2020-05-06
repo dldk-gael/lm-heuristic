@@ -1,6 +1,5 @@
 from typing import *
 import random
-import json
 import pandas as pd
 
 from tree_search import TreeSearch
@@ -10,6 +9,13 @@ from tree import Node
 class EvalStrategy:
     """
     Class use to evaluate and compare different search strategy on a dataset
+    The idea is to evaluate each strategy :
+    - on different tree
+    - with different number of allowed tree walks
+    - with different random seeds
+
+    This class is use to run all the experiments and produce a dataframe
+    gathering all the results
     """
 
     def __init__(

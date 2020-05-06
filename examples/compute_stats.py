@@ -2,7 +2,7 @@ from src.tree import CFGrammarNode, TreeStats
 
 
 GRAMMAR_FOLDER = "../data/cfg/"
-GRAMMAR_NAME = "ex_4"
+GRAMMAR_NAME = "ex_5"
 
 if __name__ == "__main__":
 
