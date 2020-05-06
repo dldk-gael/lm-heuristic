@@ -55,10 +55,13 @@ class EvalStrategy:
         for strategy in strategies:
             strategy_name = str(strategy)
             if self.verbose:
-                print("Evaluating %s ..." % strategy_name)
+                print("\rEvaluating %s ..." % strategy_name)
             for i, root_sample in enumerate(dataset):
                 for k in nb_tree_walks:
                     for j in range(nb_random_restarts):
+                        if self.verbose:
+                            print("\rCurrent evaluation : example n°%d "
+                                  "with %d tree walks and random_seed(%d)" % (i, k, j), end="")
                         random.seed(j)
                         best_leaf, best_leaf_value = strategy(root_sample, nb_of_tree_walks=k)
                         time_needed = strategy.time_spent()
@@ -73,6 +76,7 @@ class EvalStrategy:
                             "best_leaf": str(best_leaf)
                         }
                         experiments_list.append(experiment_results)
-
+        if self.verbose:
+            print("\n")
         self.eval_results = pd.DataFrame(experiments_list)
         return self.eval_results
