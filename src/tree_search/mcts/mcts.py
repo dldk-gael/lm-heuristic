@@ -73,6 +73,7 @@ class MonteCarloTreeSearch(TreeSearch):
         stats = TreeStats(root)
         stats.accumulate_stats(nb_samples=100)
         mean_depth = int(stats.depths_info()["mean"])
+        mean_branching_factor = int(stats.branching_factors_info()["mean"])
         if self.verbose:
             print(
                 "A statistic search was performed on the tree\n"
@@ -89,7 +90,8 @@ class MonteCarloTreeSearch(TreeSearch):
         resource_allocator = RessourceAllocation(
             allocation_strategy=self.allocation_strategy,
             total_ressources=nb_of_tree_walks,
-            max_depth=mean_depth,  # this could end up with computing more tree walks than allowed
+            depth=mean_depth,
+            branching_factor=mean_branching_factor,
             min_ressources_per_move=10,  # this has been fixed arbitrarly for now
         )
 
@@ -258,4 +260,9 @@ class MonteCarloTreeSearch(TreeSearch):
         return self._path  # useful for analyse / debug
 
     def __str__(self):
-        return "MCTS c=%d d=%d t=%d" % (self.c, self.d, self.t)
+        return "MCTS c=%d d=%d t=%d %s" % (
+            self.c,
+            self.d,
+            self.t,
+            str(self.allocation_strategy),
+        )
