@@ -44,8 +44,8 @@ class TreeSearch(ABC, Timer):
         """
         Print several informations about the last search performed
         """
-        nb_leaves_evaluation = len(self.heuristic.history_of_terminal_nodes())
-        nb_unique_leaves = len(self.heuristic.memory)
+        nb_leaves_evaluated = len(self.heuristic.history_of_terminal_nodes())
+        nb_unique_leaves = len(set(self.heuristic.history_of_terminal_nodes()))
         total_time = self.time_spent()
         evaluation_time = self.heuristic.time_spent()
 
@@ -53,7 +53,7 @@ class TreeSearch(ABC, Timer):
             "--- SEARCH RESULT ---\n"
             "LEAVE EVALUATION : \n"
             "%d leaves evaluation was performed\n"
-            "%0.2f%% of leaves was evaluated multiples times (using cache values)\n"
+            "%0.2f%% of leaves was evaluated multiples times\n"
             "\nTIMING : \n"
             "The search tooks %.2fs\n"
             "%.2f%%  of the time was spent on leave evaluation\n"
@@ -61,8 +61,8 @@ class TreeSearch(ABC, Timer):
             "Best leaf that have been found: %s \n"
             "It has a score of %f"
             % (
-                nb_leaves_evaluation,
-                (nb_leaves_evaluation - nb_unique_leaves) / nb_leaves_evaluation * 100,
+                nb_leaves_evaluated,
+                (nb_leaves_evaluated - nb_unique_leaves) / nb_leaves_evaluated * 100,
                 total_time,
                 evaluation_time / total_time * 100,
                 str(self.best_leaf),

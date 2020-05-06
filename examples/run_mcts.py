@@ -19,12 +19,12 @@ if __name__ == "__main__":
     # Load heuristic function <- GPT2 score
     gpt_2_scorer = GPT2Score("gpt2", batch_size=BATCH_SIZE, length_normalization=True)
     evaluation_fn = lambda terminal_nodes: gpt_2_scorer(list(map(str, terminal_nodes)))
-    heuristic = Heuristic(evaluation_fn)
+    heuristic = Heuristic(evaluation_fn, use_memory=False)
 
     # Initialize the search parameters
     mcts = MonteCarloTreeSearch(
         heuristic=heuristic,
-        batch_size=BATCH_SIZE,
+        buffer_size=BATCH_SIZE,
         c=1,
         d=1000,
         t=0,

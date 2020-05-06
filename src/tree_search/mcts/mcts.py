@@ -127,7 +127,7 @@ class MonteCarloTreeSearch(TreeSearch):
 
         return (
             current_root.reference_node,
-            self.heuristic.value_from_memory(current_root.reference_node),
+            current_root.top_reward,
         )
 
     def _perform_tree_walks(self, current_root: CounterNode, nb_tree_walks: int):

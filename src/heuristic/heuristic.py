@@ -11,25 +11,27 @@ class Heuristic(Timer):
     - add a memory to not re-evaluate a leaf
     """
 
-    evaluation_fct: Callable[[List[Node]], List[float]]
-    memory: Dict[int, float]
-    history: List[Tuple[Node, float]]
-
-    def __init__(self, evaluation_fct: Callable[[List[Node]], List[float]]):
+    def __init__(
+        self,
+        evaluation_fct: Callable[[List[Node]], List[float]],
+        use_memory: bool = False,
+    ):
         Timer.__init__(self)
         self.memory = dict()
         self.evaluation_fct = evaluation_fct
         self.history = []
+        self.use_memory = use_memory
 
     @timeit
     def has_already_eval(self, node: Node) -> bool:
         """
         return True if a leaf has already been evaluated
         """
-        return str(node) in self.memory
+        return (str(node) in self.memory) if self.use_memory else False
 
     @timeit
     def value_from_memory(self, node: Node) -> float:
+        assert self.use_memory, "Try to access memory, but use_memory is set to false"
         self.history.append((node, self.memory[hash(node)]))
         return self.memory[hash(node)]
 
@@ -40,9 +42,10 @@ class Heuristic(Timer):
         """
         values = self.evaluation_fct(nodes)
 
-        # update memory
-        for node, value in zip(nodes, values):
-            self.memory[hash(node)] = value
+        if self.use_memory:
+            # update memory
+            for node, value in zip(nodes, values):
+                self.memory[hash(node)] = value
 
         # update history
         self.history += list(zip(nodes, values))
