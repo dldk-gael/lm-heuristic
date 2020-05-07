@@ -4,7 +4,7 @@ import time
 def timeit(func):
     """
     In order to evaluate the time spent in a class :
-    - define a _time_spent attribut each class object
+    - make the class inheritate from Timer
     - decorate the method you want to track time with @timeit
     :param func: method to decorate
     """
@@ -20,8 +20,7 @@ def timeit(func):
 
 class Timer:
     """
-    Timer class allows to keep track of time spent in
-    methods that are decorated with @timeit
+    Timer class allows to keep track of time spent in methods that are decorated with @timeit
     """
 
     def __init__(self):

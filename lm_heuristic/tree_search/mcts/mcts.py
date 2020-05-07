@@ -84,7 +84,7 @@ class MonteCarloTreeSearch(TreeSearch):
             total_ressources=nb_of_tree_walks,
             depth=mean_depth,
             branching_factor=mean_branching_factor,
-            min_ressources_per_move=10,  # this has been fixed arbitrarly for now
+            min_ressources_per_move=self.t + 1,  # this has been fixed arbitrarly for now
         )
 
         # Wrap the root node in a counter object in order to maintain statistic on the path and rewards
@@ -101,7 +101,7 @@ class MonteCarloTreeSearch(TreeSearch):
         while not current_root.reference_node.is_terminal():
             # by default, we will always compute at least t + 1 tree walks
             # in order to enable the expension of current root
-            nb_of_tree_walks = max(resource_allocator(current_depth), self.t + 1)
+            nb_of_tree_walks = resource_allocator(current_depth)
             if self.verbose:
                 print(
                     "\rCurrent depth %d - will perform %d tree walks" % (current_depth, nb_of_tree_walks), end=" ",
@@ -119,10 +119,14 @@ class MonteCarloTreeSearch(TreeSearch):
         if self.verbose:
             print("\n")
 
-        return (
-            current_root.reference_node,
-            current_root.top_reward,
-        )
+        best_leaf = current_root.reference_node
+        if self.heuristic.has_already_eval(best_leaf):
+            value = self.heuristic.value_from_memory(best_leaf)
+        else:  # This might be the case when you allows only very few tree walks
+               # In practice we will already have this value in memory
+            value = self.heuristic.eval([best_leaf])[0]
+
+        return (best_leaf, value)
 
     def _perform_tree_walks(self, current_root: CounterNode, nb_tree_walks: int):
         # use a buffer to store in memory couple(counter_node, leaf)
@@ -187,7 +191,7 @@ class MonteCarloTreeSearch(TreeSearch):
         # expansion phase
         # Expand a node only if he has been visited t times so far as desbribe in
         # Coulom, R., 2007. Efficient Selectivity and Backup Operators in Monte-Carlo Tree Search
-        if not counter_node.reference_node.is_terminal() and counter_node.count + 1 > self.t:
+        if not counter_node.reference_node.is_terminal() and counter_node.count > self.t:
             counter_node.expand()
 
         if counter_node.reference_node.is_terminal():

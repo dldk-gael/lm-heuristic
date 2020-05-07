@@ -1,11 +1,11 @@
-from lm_heuristic.heuristic.sentence_score import GPT2Score, BertScore
+from lm_heuristic.sentence_score import GPT2Score, BertScore
 import logging
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 if __name__ == "__main__":
-    print("Loading the transformers model in memory")
+    print("Loading GPT2 model in memory")
     gpt2_score = GPT2Score(model_name="gpt2", batch_size=2, length_normalization=True)
 
     print("Computing sentences's score")
@@ -15,7 +15,7 @@ if __name__ == "__main__":
 
     del gpt2_score
 
-    print("Loading the transformers model in memory")
+    print("Loading BERT model in memory")
     bert_score = BertScore(model_name="bert-base-uncased", batch_size=1, length_normalization=True)
 
     print("Computing sentences's score")

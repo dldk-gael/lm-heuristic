@@ -1,7 +1,8 @@
 import pytest
 import nltk
-from tree import CFGrammarNode
-from lm_heuristic.tree_search.random import RandomSearch
+
+from lm_heuristic.tree import CFGrammarNode
+from lm_heuristic.tree_search import RandomSearch
 from lm_heuristic.heuristic import Heuristic
 
 

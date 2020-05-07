@@ -1,9 +1,9 @@
 import random
 
 from lm_heuristic.tree import CFGrammarNode
-from lm_heuristic.tree_search.mcts import MonteCarloTreeSearch, AllocationStrategy
+from lm_heuristic.tree_search import MonteCarloTreeSearch, AllocationStrategy
 from lm_heuristic.heuristic import Heuristic
-from lm_heuristic.heuristic.sentence_score import GPT2Score
+from lm_heuristic.sentence_score import GPT2Score
 
 """
 This script shows how to use a MCTS searcher
@@ -35,5 +35,5 @@ if __name__ == "__main__":
     )
 
     # Perform the search and print some info
-    best_node = mcts(grammar_root, nb_of_tree_walks=150)
+    best_node = mcts(grammar_root, nb_of_tree_walks=1)
     mcts.print_search_info()

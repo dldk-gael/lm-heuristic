@@ -1,5 +1,6 @@
 import pytest
 import nltk
+
 from lm_heuristic.tree import CFGrammarNode
 from lm_heuristic.tree_search.mcts import MonteCarloTreeSearch
 from lm_heuristic.heuristic import Heuristic

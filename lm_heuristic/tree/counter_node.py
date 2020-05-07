@@ -26,9 +26,9 @@ class CounterNode(Node):
         """
         Node.__init__(self)
         self.reference_node = reference_node
-        self.__childrens = None
+        self._childrens = None
         self.parent = parent
-        self.__is_terminal = True
+        self._is_terminal = True
         self.count = 0
         self.sum_rewards = 0
         self.sum_of_square_rewards = 0
@@ -51,16 +51,16 @@ class CounterNode(Node):
         - generate and save in memory all childrens
         """
         assert not self.reference_node.is_terminal(), "Try to expand from a terminal node"
-        self.__childrens = [
+        self._childrens = [
             CounterNode(children_node, parent=self) for children_node in self.reference_node.childrens()
         ]
-        self.__is_terminal = False
+        self._is_terminal = False
 
     def childrens(self) -> List["CounterNode"]:
-        return self.__childrens
+        return self._childrens
 
     def is_terminal(self) -> bool:
-        return self.__is_terminal
+        return self._is_terminal
 
     def backpropagate(self, new_reward, leaf):
         """
@@ -74,7 +74,6 @@ class CounterNode(Node):
             if new_reward > self.top_reward:
                 self.top_reward = new_reward
                 self.top_leaf_node = leaf
-            self.top_reward = max(self.top_reward, new_reward)
 
             if self.parent is not None:
                 self.parent.backpropagate(new_reward, leaf)
@@ -84,7 +83,7 @@ class CounterNode(Node):
         Return the children that have the best top_reward value
         """
         assert not self.is_terminal(), "Try to access childrens of a terminal node :%s" % str(self.reference_node)
-        return max(self.__childrens, key=lambda child: child.top_reward)
+        return max(self._childrens, key=lambda child: child.top_reward)
 
     def random_children(self) -> "CounterNode":
         assert not self.is_terminal(), "Try to access childrens of a terminal node :%s" % str(self.reference_node)
@@ -93,7 +92,7 @@ class CounterNode(Node):
     def set_as_solved(self):
         """
         Set the counter node as solved
-        If all his brothers are also solved, back-propagate this information to his parent
+        If all his brothers are also solved, back-propagate the information to his parent
         """
         self.solved = True
 

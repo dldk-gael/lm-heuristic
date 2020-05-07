@@ -68,12 +68,7 @@ class CFGrammarNode(Node):
                 productions = self.cfg.productions(lhs=symbol)
                 for production in productions:
                     childrens.append(
-                        CFGrammarNode(
-                            self.symbols[:idx]
-                            + production.rhs()
-                            + self.symbols[idx + 1 :],
-                            self.cfg,
-                        )
+                        CFGrammarNode(self.symbols[:idx] + production.rhs() + self.symbols[idx + 1 :], self.cfg,)
                     )
 
         if self.shrink and len(childrens) == 1:
@@ -82,8 +77,7 @@ class CFGrammarNode(Node):
         return childrens
 
     def random_children(self) -> "CFGrammarNode":
-        assert not self.is_terminal(), \
-            "Try to access children of a terminal node :%s" % str(self)
+        assert not self.is_terminal(), "Try to access children of a terminal node :%s" % str(self)
         return random.choice(self.childrens())
 
     def __str__(self):

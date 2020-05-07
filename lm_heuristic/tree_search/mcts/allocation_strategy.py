@@ -70,10 +70,10 @@ class RessourceAllocation:
         return self.total_ressources // self.depth + self.correction
 
     def linear(self, current_depth: int) -> int:
-        return int(max(self.a * current_depth + self.b, self.min_ressources_per_move))
+        return int(self.a * current_depth + self.b)
 
     def __call__(self, current_depth: int) -> int:
         if self.allocation_strategy == AllocationStrategy.UNIFORM:
-            return self.uniform()
+            return max(self.uniform(), self.min_ressources_per_move)
         if self.allocation_strategy == AllocationStrategy.LINEAR:
-            return self.linear(current_depth)
+            return max(self.uniform(), self.linear(current_depth))
