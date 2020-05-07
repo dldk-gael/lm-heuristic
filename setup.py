@@ -11,6 +11,8 @@ setup(
         "lm_heuristic.heuristic",
         "lm_heuristic.evaluation",
         "lm_heuristic.tree_search",
+        "lm_heuristic.tree_search.random",
+        "lm_heuristic.tree_search.mcts"
     ],
     install_requires=[
         "matplotlib",
