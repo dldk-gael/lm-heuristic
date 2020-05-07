@@ -1,7 +1,7 @@
 from typing import *
 
-from ..tree import Node
-from ..utils.timer import timeit, Timer
+from lm_heuristic.tree import Node
+from lm_heuristic.utils.timer import timeit, Timer
 
 
 class Heuristic(Timer):

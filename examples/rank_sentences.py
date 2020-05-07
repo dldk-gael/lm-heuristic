@@ -1,5 +1,6 @@
-from lm_heuristic.cfg import generate_all_sentences
-from lm_heuristic.heuristic.sentence_score import GPT2Score
+import nltk
+from nltk.parse.generate import generate
+from lm_heuristic.sentence_score import GPT2Score
 import os
 import pickle
 
@@ -11,10 +12,23 @@ This script :
 
 Should only be used with CFG that can generate only small amount of sentences 
 """
-GRAMMAR_FOLDER = "data/cfg/"
-RESULT_FOLDER = "results/"
-GRAMMAR_NAME = "ex_1"
+
+GRAMMAR_FOLDER = "../data/cfg/"
+RESULT_FOLDER = "../results/"
+GRAMMAR_NAME = "bas"
 X_BEST_RESULTS = 100
+
+
+def generate_all_sentences(grammar):
+    """
+    grammar : file containing the grammar rules (.cfg)
+    return : list[str] all the sentence that can been derivated from the grammar
+    """
+    with open(grammar) as f:
+        str_grammar = f.read()
+    grammar = nltk.CFG.fromstring(str_grammar)
+    return list(map(lambda l: " ".join(l), generate(grammar)))
+
 
 if __name__ == "__main__":
 

@@ -1,15 +1,17 @@
+import random
+
 from lm_heuristic.tree import CFGrammarNode
 from lm_heuristic.tree_search.mcts import MonteCarloTreeSearch, AllocationStrategy
 from lm_heuristic.heuristic import Heuristic
 from lm_heuristic.heuristic.sentence_score import GPT2Score
-import random
 
 """
 This script shows how to use a MCTS searcher
 """
+
 random.seed(3)
 GRAMMAR_FOLDER = "../data/cfg/"
-GRAMMAR_NAME = "ex_2"
+GRAMMAR_NAME = "ex_1_small"
 BATCH_SIZE = 1
 
 if __name__ == "__main__":
@@ -28,10 +30,10 @@ if __name__ == "__main__":
         c=1,
         d=1000,
         t=0,
-        verbose=True
+        allocation_strategy=AllocationStrategy.UNIFORM,
+        verbose=True,
     )
 
     # Perform the search and print some info
     best_node = mcts(grammar_root, nb_of_tree_walks=150)
     mcts.print_search_info()
-

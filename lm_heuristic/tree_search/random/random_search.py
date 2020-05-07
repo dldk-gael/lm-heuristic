@@ -2,7 +2,7 @@ from typing import *
 import random
 import numpy as np
 
-from ..search import TreeSearch
+from lm_heuristic.tree_search import TreeSearch
 from lm_heuristic.tree import Node
 from lm_heuristic.heuristic import Heuristic
 
@@ -72,7 +72,7 @@ class RandomSearch(TreeSearch):
             if best_leaf_value_in_buffer > best_leaf_value:
                 best_leaf = best_leaf_in_buffer
                 best_leaf_value = best_leaf_value_in_buffer
-                self.__path = best_path_in_buffer
+                self._path = best_path_in_buffer
             buffer = []
 
         for i in range(nb_of_tree_walks):

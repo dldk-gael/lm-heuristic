@@ -16,9 +16,7 @@ if __name__ == "__main__":
     del gpt2_score
 
     print("Loading the transformers model in memory")
-    bert_score = BertScore(
-        model_name="bert-base-uncased", batch_size=1, length_normalization=True
-    )
+    bert_score = BertScore(model_name="bert-base-uncased", batch_size=1, length_normalization=True)
 
     print("Computing sentences's score")
     sentences = [

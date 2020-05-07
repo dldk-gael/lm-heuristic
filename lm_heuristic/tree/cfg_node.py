@@ -82,7 +82,8 @@ class CFGrammarNode(Node):
         return childrens
 
     def random_children(self) -> "CFGrammarNode":
-        assert not self.is_terminal(), "Try to access children of a terminal node"
+        assert not self.is_terminal(), \
+            "Try to access children of a terminal node :%s" % str(self)
         return random.choice(self.childrens())
 
     def __str__(self):

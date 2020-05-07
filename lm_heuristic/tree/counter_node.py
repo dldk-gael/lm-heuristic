@@ -3,6 +3,7 @@ from typing import *
 
 from .node import Node
 
+
 class CounterNode(Node):
     """
     Class to wrap a node object inside a counter object.
@@ -49,12 +50,9 @@ class CounterNode(Node):
         Expand a counter node :
         - generate and save in memory all childrens
         """
-        assert (
-            not self.reference_node.is_terminal()
-        ), "Try to expand from a terminal node"
+        assert not self.reference_node.is_terminal(), "Try to expand from a terminal node"
         self.__childrens = [
-            CounterNode(children_node, parent=self)
-            for children_node in self.reference_node.childrens()
+            CounterNode(children_node, parent=self) for children_node in self.reference_node.childrens()
         ]
         self.__is_terminal = False
 
@@ -85,11 +83,11 @@ class CounterNode(Node):
         """
         Return the children that have the best top_reward value
         """
-        assert not self.is_terminal(), "Try to access childrens of a terminal node"
+        assert not self.is_terminal(), "Try to access childrens of a terminal node :%s" % str(self.reference_node)
         return max(self.__childrens, key=lambda child: child.top_reward)
 
     def random_children(self) -> "CounterNode":
-        assert not self.is_terminal(), "Try to access childrens of a terminal node"
+        assert not self.is_terminal(), "Try to access childrens of a terminal node :%s" % str(self.reference_node)
         return random.choice(self.childrens())
 
     def set_as_solved(self):

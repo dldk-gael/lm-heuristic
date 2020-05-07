@@ -2,7 +2,7 @@ from typing import *
 import numpy as np
 
 from .node import Node
-from ..utils.timer import timeit, Timer
+from lm_heuristic.utils.timer import timeit, Timer
 
 
 class TreeStats(Timer):

@@ -1,11 +1,12 @@
 import pytest
 import nltk
-from tree import Derivation
-from tree_search.strategy import MonteCarloTreeSearch
+from lm_heuristic.tree import CFGrammarNode
+from lm_heuristic.tree_search.mcts import MonteCarloTreeSearch
+from lm_heuristic.heuristic import Heuristic
 
 
 @pytest.fixture
-def toy_grammar():
+def root():
     grammar_str = """
         s -> snp vp
         vp -> v onp
@@ -22,19 +23,19 @@ def toy_grammar():
         n -> 'man'
         v -> 'knows'
         """
-    return nltk.CFG.fromstring(grammar_str)
+    toy_grammar = nltk.CFG.fromstring(grammar_str)
+    return CFGrammarNode(toy_grammar.start(), toy_grammar)
 
 
 @pytest.fixture
-def basic_mcts(toy_grammar):
-    root = Derivation(toy_grammar.start(), toy_grammar)
-    return MonteCarloTreeSearch(
-        root=root, evaluation_fn=lambda nodes: [0] * len(nodes), nb_of_tree_walks=1
-    )
+def basic_mcts():
+    heuristic = Heuristic(lambda nodes: [0] * len(nodes))
+    return MonteCarloTreeSearch(heuristic)
 
 
-def test_mcts_search_find_a_leaf(basic_mcts):
-    assert basic_mcts.search().is_terminal()
+def test_mcts_search_find_a_leaf(basic_mcts, root):
+    best_leaf, value = basic_mcts(root, nb_of_tree_walks=1)
+    assert best_leaf.is_terminal()
 
 
 def test_mcts_path_raise_assertion_error_when_no_search(basic_mcts):
@@ -42,9 +43,8 @@ def test_mcts_path_raise_assertion_error_when_no_search(basic_mcts):
         basic_mcts.path()
 
 
-def test_mcts_path(basic_mcts):
-    basic_mcts.search()
+def test_mcts_path(basic_mcts, root):
+    basic_mcts(root, nb_of_tree_walks=1)
     path = basic_mcts.path()
-    print(path)
     assert str(path[0]) == "s."
     assert path[-1].is_terminal()

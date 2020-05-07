@@ -6,7 +6,7 @@ from lm_heuristic.heuristic import Heuristic
 from lm_heuristic.heuristic.sentence_score import GPT2Score
 
 """
-This script shows how to use a random searcher 
+This script shows how to use a random searcher and plot the distribution of leaf values 
 """
 
 GRAMMAR_FOLDER = "../data/cfg/"
@@ -23,7 +23,8 @@ if __name__ == "__main__":
 
     # Initialize and perform the search
     random_search = RandomSearch(heuristic=heuristic, verbose=True)
-    final_derivation = random_search(root, nb_of_tree_walks=10)
+    final_derivation = random_search(root, nb_of_tree_walks=100)
 
     random_search.print_search_info()
     random_search.plot_leaf_values_distribution()
+    plt.show()

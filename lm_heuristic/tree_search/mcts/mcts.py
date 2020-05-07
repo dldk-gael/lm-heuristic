@@ -2,9 +2,9 @@ import math
 from typing import *
 
 from lm_heuristic.heuristic import Heuristic
-from ..search import TreeSearch
-from .allocation_strategy import AllocationStrategy, RessourceAllocation
 from lm_heuristic.tree import CounterNode, Node, TreeStats
+from lm_heuristic.tree_search import TreeSearch
+from .allocation_strategy import AllocationStrategy, RessourceAllocation
 
 
 class MonteCarloTreeSearch(TreeSearch):
@@ -65,10 +65,6 @@ class MonteCarloTreeSearch(TreeSearch):
         :param nb_of_tree_walks: total number of tree walks allowed
                 -> for now this number is not strictly respected
         """
-        assert (
-            nb_of_tree_walks > self.t
-        ), "You give a lower number of tree walks that threshold t : the root node will never expand"
-
         # Perfom few quick walks to assess tree's depth (time is negligeable compare to rest of algorithms)
         stats = TreeStats(root)
         stats.accumulate_stats(nb_samples=100)
@@ -103,7 +99,9 @@ class MonteCarloTreeSearch(TreeSearch):
             print("--- SEARCHING ---")
 
         while not current_root.reference_node.is_terminal():
-            nb_of_tree_walks = resource_allocator(current_depth)
+            # by default, we will always compute at least t + 1 tree walks
+            # in order to enable the expension of current root
+            nb_of_tree_walks = max(resource_allocator(current_depth), self.t + 1)
             if self.verbose:
                 print(
                     "\rCurrent depth %d - will perform %d tree walks" % (current_depth, nb_of_tree_walks), end=" ",

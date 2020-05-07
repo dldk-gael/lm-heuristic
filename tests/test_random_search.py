@@ -1,35 +1,36 @@
 import pytest
 import nltk
-from tree import Derivation
-from lm_heuristic.tree_search.strategy import RandomSearch
+from tree import CFGrammarNode
+from lm_heuristic.tree_search.random import RandomSearch
+from lm_heuristic.heuristic import Heuristic
 
 
 @pytest.fixture
-def random_searcher():
+def toy_grammar():
     grammar_str = """
     s -> n v
     n -> 'gael'
     v -> 'eats'"""
     grammar = nltk.CFG.fromstring(grammar_str)
-    root = Derivation(grammar.start(), grammar)
-    return RandomSearch(
-        root=root,
-        evaluation_fn=lambda nodes: [0] * len(nodes),
-        n_samples=1,
-        batch_size=1,
-    )
+    return CFGrammarNode(grammar.start(), grammar)
 
 
-def test_search(random_searcher):
-    assert str(random_searcher()) == "gael eats."
+@pytest.fixture
+def basic_random_searcher():
+    return RandomSearch(heuristic=Heuristic(lambda nodes: [0] * len(nodes)),)
 
 
-def test_path(random_searcher):
+def test_search(toy_grammar, basic_random_searcher):
+    best_leaf, _ = basic_random_searcher(toy_grammar, nb_of_tree_walks=1)
+    assert str(best_leaf) == "gael eats."
+
+
+def test_path(toy_grammar, basic_random_searcher):
     with pytest.raises(AssertionError):
-        random_searcher.path()
+        basic_random_searcher.path()
 
-    random_searcher.search()
-    path = random_searcher.path()
+    _ = basic_random_searcher(toy_grammar, nb_of_tree_walks=10)
+    path = basic_random_searcher.path()
     assert str(path[0]) == "s."
     assert str(path[-1]) == "gael eats."
     assert len(path) == 4

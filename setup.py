@@ -24,6 +24,7 @@ setup(
         "numpy",
         "transformers",
         "tqdm",
+        "lm-scorer"
     ],
     url="https://github.com/dldk-gael/lm-heuristic",
     license="",

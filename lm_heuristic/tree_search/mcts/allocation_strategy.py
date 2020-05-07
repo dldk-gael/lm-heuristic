@@ -54,7 +54,7 @@ class RessourceAllocation:
         # total_ressources // max_depth will be sufficient to visit all leaves
         # so we will re-attribute the ressources of child to parents
         # this is not an exact calculus but it will allow to better respect the total_ressources
-        ressource_per_layer = total_ressources // depth
+        ressource_per_layer = max(total_ressources // depth, 1)
         nb_of_layers_non_evaluated = math.log(ressource_per_layer) / branching_factor
         self.correction = int(ressource_per_layer / (depth - nb_of_layers_non_evaluated))
 
