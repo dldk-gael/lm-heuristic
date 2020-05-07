@@ -39,13 +39,13 @@ class EvalStrategy:
     def __call__(
         self,
         strategies: Union[TreeSearch, List[TreeSearch]],
-        dataset: Union[Node, List[Node]],
+        dataset: Union[Tuple[Node, str], List[Tuple[Node, str]]],
         nb_tree_walks: Union[int, List[int]],
         nb_random_restarts: int,
     ) -> pd.DataFrame:
         """
         :param strategies: list (or single) search strategy to evaluate
-        :param dataset: list of tree that will be used to evaluate the search strategies
+        :param dataset: list of tree and their associated name that will be used to evaluate the search strategies
         :param nb_tree_walks: number of tree_walks to try for each strategy
         :param nb_random_restarts: number of search to perform on each example of the dataset
                                     a different random seed will be used at each restart
@@ -53,7 +53,7 @@ class EvalStrategy:
         experiments_list = []
 
         strategies = [strategies] if isinstance(strategies, TreeSearch) else strategies
-        dataset = [dataset] if isinstance(dataset, Node) else dataset
+        dataset = dataset if isinstance(dataset, List) else [dataset]
         nb_tree_walks = (
             [nb_tree_walks] if isinstance(nb_tree_walks, int) else nb_tree_walks
         )
@@ -62,19 +62,19 @@ class EvalStrategy:
             strategy_name = str(strategy)
             if self.verbose:
                 print("\rEvaluating %s ..." % strategy_name)
-            for i, root_sample in enumerate(dataset):
+            for root_sample, sample_name in dataset:
                 for k in nb_tree_walks:
                     for j in range(nb_random_restarts):
                         if self.verbose:
-                            print("\rCurrent evaluation : example n°%d "
-                                  "with %d tree walks and random_seed(%d)" % (i, k, j), end="")
+                            print("\rCurrent evaluation : example %s "
+                                  "with %d tree walks and random_seed(%d)" % (sample_name, k, j), end="")
                         random.seed(j)
                         best_leaf, best_leaf_value = strategy(root_sample, nb_of_tree_walks=k)
                         time_needed = strategy.time_spent()
 
                         experiment_results = {
                             "strategy": strategy_name,
-                            "dataset": i,
+                            "dataset": sample_name,
                             "nb_tree_walks": k,
                             "random_seed": j,
                             "time_needed": time_needed,
