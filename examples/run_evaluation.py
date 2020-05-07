@@ -8,9 +8,9 @@ from lm_heuristic.sentence_score import GPT2Score
 This script shows how to use the evaluation framework 
 """
 
-GRAMMAR_FOLDER = "../data/cfg/"
+GRAMMAR_FOLDER = "data/cfg/"
 GRAMMAR_NAMES = ["ex_1_small", "ex_2_small"]
-RESULTS_FOLDER = "../results/"
+RESULTS_FOLDER = "results/"
 BATCH_SIZE = 1
 
 if __name__ == "__main__":

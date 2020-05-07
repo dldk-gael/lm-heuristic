@@ -15,8 +15,8 @@ This script :
 Should only be used with CFG that can generate only small amount of sentences 
 """
 
-GRAMMAR_FOLDER = "../data/cfg/"
-RESULT_FOLDER = "../results/"
+GRAMMAR_FOLDER = "data/cfg/"
+RESULT_FOLDER = "results/"
 GRAMMAR_NAME = "bas"
 X_BEST_RESULTS = 100
 BATCH_SIZE = 1  # to batch GPT2 input

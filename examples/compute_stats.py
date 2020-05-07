@@ -4,7 +4,7 @@ from lm_heuristic.tree import CFGrammarNode, TreeStats
 Use to evaluate depth and branching factor of tree by performing random sampling on it 
 """
 
-GRAMMAR_FOLDER = "../data/cfg/"
+GRAMMAR_FOLDER = "data/cfg/"
 GRAMMAR_NAME = "ex_1_small"
 NB_SAMPLES = 1000
 

@@ -9,7 +9,7 @@ from lm_heuristic.sentence_score import GPT2Score
 This script shows how to use a random searcher and plot the distribution of leaf values 
 """
 
-GRAMMAR_FOLDER = "../data/cfg/"
+GRAMMAR_FOLDER = "data/cfg/"
 GRAMMAR_NAME = "ex_4"
 
 if __name__ == "__main__":

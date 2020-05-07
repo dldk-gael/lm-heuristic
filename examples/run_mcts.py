@@ -10,7 +10,7 @@ This script shows how to use a MCTS searcher
 """
 
 random.seed(3)
-GRAMMAR_FOLDER = "../data/cfg/"
+GRAMMAR_FOLDER = "data/cfg/"
 GRAMMAR_NAME = "ex_1_small"
 BATCH_SIZE = 1
 
