@@ -17,6 +17,7 @@ class TreeSearch(ABC, Timer):
 
     def __init__(self, heuristic: Heuristic, buffer_size: int = 1, **kwargs):
         Timer.__init__(self)
+        self._name = ""
         self.heuristic = copy(heuristic)
         self.buffer_size = buffer_size
         self.best_leaf = None
@@ -83,6 +84,12 @@ class TreeSearch(ABC, Timer):
         sns.set()
         sns.distplot(series_values, label=str(self))
 
+    def set_name(self, name: str):
+        self._name = name
+
+    def __str__(self) -> str:
+        return self._name
+
     @abstractmethod
     def _search(self, root: Node, nb_of_tree_walks: int) -> (Node, float):
         """
@@ -97,6 +104,3 @@ class TreeSearch(ABC, Timer):
         """
         ...
 
-    @abstractmethod
-    def __str__(self) -> str:
-        ...

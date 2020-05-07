@@ -22,6 +22,7 @@ class RandomSearch(TreeSearch):
         TreeSearch.__init__(self, heuristic, buffer_size)
         self._path = []
         self.verbose = verbose
+        self._name = "Random Search"
 
         if self.verbose:
             print("--- INITIALIZATION ---\n %s\n" % str(self))
@@ -97,5 +98,3 @@ class RandomSearch(TreeSearch):
         assert self._path != [], "Requesting best path but no search was performed yet"
         return self._path
 
-    def __str__(self) -> str:
-        return "RandomSearch"

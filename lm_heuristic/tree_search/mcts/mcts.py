@@ -26,7 +26,8 @@ class MonteCarloTreeSearch(TreeSearch):
         d: int = 1000,
         t: int = 0,
         allocation_strategy: AllocationStrategy = AllocationStrategy.UNIFORM,
-        verbose=False,
+        verbose: bool = False,
+        name: str = "MCTS",
     ):
         """
         Initialize the MCTS paramater and create the counter object that will be use to perform the MCTS
@@ -41,6 +42,7 @@ class MonteCarloTreeSearch(TreeSearch):
         self.c = c
         self.d = d
         self.t = t
+        self._name = name
         self.allocation_strategy = allocation_strategy
         self._path = []
         self.counter_root = None
@@ -123,7 +125,7 @@ class MonteCarloTreeSearch(TreeSearch):
         if self.heuristic.has_already_eval(best_leaf):
             value = self.heuristic.value_from_memory(best_leaf)
         else:  # This might be the case when you allows only very few tree walks
-               # In practice we will already have this value in memory
+            # In practice we will already have this value in memory
             value = self.heuristic.eval([best_leaf])[0]
 
         return (best_leaf, value)
@@ -240,6 +242,3 @@ class MonteCarloTreeSearch(TreeSearch):
 
     def counter_path(self) -> List[CounterNode]:
         return self._path  # useful for analyse / debug
-
-    def __str__(self):
-        return "MCTS c=%d d=%d t=%d %s" % (self.c, self.d, self.t, str(self.allocation_strategy),)
