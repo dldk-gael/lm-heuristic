@@ -53,6 +53,25 @@ class MonteCarloTreeSearch(TreeSearch):
 
     def _search(self, root: Node, nb_of_tree_walks: int) -> (Node, float):
         """
+        First we accumulate some stats about the tree search in order to be able to correctly parameters
+        the ressource allocator then we launch the real search using _single_search method
+        This had to be split in order to not recompute several times this step when using meta-search strategy
+        """
+        stats = TreeStats(root)
+        stats.accumulate_stats(nb_samples=100)
+
+        if self.verbose:
+            print("A statistic search was performed on the tree\n" "\t- time spent : %0.3fs" % stats.time_spent())
+            print(
+                "\t- Results :\n"
+                "\t\tdepth : %s\n"
+                "\t\tbranching factor : %s\n" % (str(stats.depths_info()), str(stats.branching_factors_info()))
+            )
+
+        return self._single_search(root, nb_of_tree_walks, stats)
+
+    def _single_search(self, root: Node, nb_of_tree_walks: int, stats: TreeStats) -> (Node, float):
+        """
         Given the root nodes and all the parameters, search for the best leaf
         As describe in section 4.2 of 'Single-Player Monte-Carlo Tree Search for SameGame',
         we allocate ressorce move by move rather than using all the ressources from the tree node.
@@ -67,18 +86,8 @@ class MonteCarloTreeSearch(TreeSearch):
         :param nb_of_tree_walks: total number of tree walks allowed
                 -> for now this number is not strictly respected
         """
-        # Perfom few quick walks to assess tree's depth (time is negligeable compare to rest of algorithms)
-        stats = TreeStats(root)
-        stats.accumulate_stats(nb_samples=100)
         mean_depth = int(stats.depths_info()["mean"])
         mean_branching_factor = int(stats.branching_factors_info()["mean"])
-        if self.verbose:
-            print("A statistic search was performed on the tree\n" "\t- time spent : %0.3fs" % stats.time_spent())
-            print(
-                "\t- Results :\n"
-                "\t\tdepth : %s\n"
-                "\t\tbranching factor : %s\n" % (str(stats.depths_info()), str(stats.branching_factors_info()))
-            )
 
         # Initialize the resource allocator
         resource_allocator = RessourceAllocation(
@@ -90,6 +99,7 @@ class MonteCarloTreeSearch(TreeSearch):
         )
 
         # Wrap the root node in a counter object in order to maintain statistic on the path and rewards
+        self.counter_root = CounterNode(reference_node=root, parent=None)
         self.counter_root = CounterNode(reference_node=root, parent=None)
 
         current_root = self.counter_root
