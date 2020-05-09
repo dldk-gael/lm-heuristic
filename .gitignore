@@ -4,3 +4,7 @@
 /data/amr/graphs/7766617c-7954-43cf-b946-060787fe269f.png
 /script/grammamvp.py
 /.ipynb_checkpoints/transformers_test-checkpoint.ipynb
+*.pyc
+*.pytest_cache 
+*DS_store
+lm-heuristic.code-workspace

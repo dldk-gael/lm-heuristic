@@ -16,7 +16,7 @@ BATCH_SIZE = 1
 if __name__ == "__main__":
     # Prepare a toy dataset
     dataset = [
-        (CFGrammarNode.from_cfg_file(GRAMMAR_FOLDER + grammar_name + ".cfg"), grammar_name)
+        (CFGrammarNode.from_cfg_file(GRAMMAR_FOLDER + grammar_name + ".cfg"), grammar_name,)
         for grammar_name in GRAMMAR_NAMES
     ]
 

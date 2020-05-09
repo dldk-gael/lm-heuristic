@@ -1,0 +1,17 @@
+,strategy,dataset,nb_tree_walks,random_seed,time_needed,best_value,best_leaf
+0,Random Search,ex_1_small,5,0,0.40006934400000027,0.0036271882709115744,he wanting to ride a bicycle that be red.
+1,Random Search,ex_1_small,5,1,0.3155724460000009,0.0033852425403892994,him wants to ride the red bicycle.
+2,Random Search,ex_1_small,10,0,0.6668941460000006,0.0036271882709115744,he wanting to ride a bicycle that be red.
+3,Random Search,ex_1_small,10,1,0.6641576560000004,0.0033852425403892994,him wants to ride the red bicycle.
+4,Random Search,ex_2_small,5,0,0.4445992150000002,0.0009971919935196638,London emergency services has is saying that a 11 persons had sent hospital.
+5,Random Search,ex_2_small,5,1,0.43697280299999974,0.0031799515709280968,emergency services London has been say that 11 people having been sent by hospital.
+6,Random Search,ex_2_small,10,0,0.8890560450000002,0.0009971919935196638,London emergency services has is saying that a 11 persons had sent hospital.
+7,Random Search,ex_2_small,10,1,0.844669077999999,0.0031799515709280968,emergency services London has been say that 11 people having been sent by hospital.
+8,MCTS,ex_1_small,5,0,1.1583042029999984,0.005954422987997532,a boy want to ride a red bicycle.
+9,MCTS,ex_1_small,5,1,1.2111127510000017,0.005954422987997532,a boy want to ride a red bicycle.
+10,MCTS,ex_1_small,10,0,1.2009488019999992,0.005954422987997532,a boy want to ride a red bicycle.
+11,MCTS,ex_1_small,10,1,1.3731626139999982,0.005954422987997532,a boy want to ride a red bicycle.
+12,MCTS,ex_2_small,5,0,2.9520792259999986,0.00034592259908095,a service to London emergency say that 11 persons has send by hospital.
+13,MCTS,ex_2_small,5,1,2.7442989240000024,0.00034592259908095,a service to London emergency say that 11 persons has send by hospital.
+14,MCTS,ex_2_small,10,0,3.0234480169999998,0.00034592259908095,a service to London emergency say that 11 persons has send by hospital.
+15,MCTS,ex_2_small,10,1,3.1193238570000013,0.00034592259908095,a service to London emergency say that 11 persons has send by hospital.
