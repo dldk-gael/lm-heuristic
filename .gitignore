@@ -8,3 +8,6 @@
 *.pytest_cache 
 *DS_store
 lm-heuristic.code-workspace
+/.vscode/*
+/.mypy_cache/*
+.vscode/settings.json

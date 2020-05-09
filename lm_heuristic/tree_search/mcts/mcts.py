@@ -1,5 +1,5 @@
 import math
-from typing import *
+from typing import List, Tuple, Dict 
 
 from lm_heuristic.heuristic import Heuristic
 from lm_heuristic.tree import CounterNode, Node, TreeStats
@@ -44,14 +44,14 @@ class MonteCarloTreeSearch(TreeSearch):
         self.t = t
         self._name = name
         self.allocation_strategy = allocation_strategy
-        self._path = []
-        self.counter_root = None
+        self._path: List[CounterNode] = []
+        self.counter_root : CounterNode
         self.verbose = verbose
 
         if self.verbose:
             print("--- INITIALIZATION ---\n %s\n" % str(self))
 
-    def _search(self, root: Node, nb_of_tree_walks: int) -> (Node, float):
+    def _search(self, root: Node, nb_of_tree_walks: int) -> Tuple[Node, float]:
         """
         First we accumulate some stats about the tree search in order to be able to correctly parameters
         the ressource allocator then we launch the real search using _single_search method
@@ -70,7 +70,7 @@ class MonteCarloTreeSearch(TreeSearch):
 
         return self._single_search(root, nb_of_tree_walks, stats)
 
-    def _single_search(self, root: Node, nb_of_tree_walks: int, stats: TreeStats) -> (Node, float):
+    def _single_search(self, root: Node, nb_of_tree_walks: int, stats: TreeStats) -> Tuple[Node, float]:
         """
         Given the root nodes and all the parameters, search for the best leaf
         As describe in section 4.2 of 'Single-Player Monte-Carlo Tree Search for SameGame',
@@ -146,8 +146,8 @@ class MonteCarloTreeSearch(TreeSearch):
         # this is usefull for evaluation function that can beneficiate of //
         # by using a dict and not a list for the buffer representation,
         # we can handle the case where same leaf end up several times in the buffer
-        buffer = dict()  # dict (hash(leaf)  -> List[counter_node])
-        buffer_idx = dict()  # dict (hash(leaf) -> leaf)
+        buffer: Dict[int, List[CounterNode]] = dict()  
+        buffer_idx : Dict[int, Node] = dict() 
 
         def flush_buffer():
             """
@@ -185,7 +185,7 @@ class MonteCarloTreeSearch(TreeSearch):
         if len(buffer) > 0:
             flush_buffer()
 
-    def _single_tree_walk(self, current_root: CounterNode) -> (CounterNode, Node):
+    def _single_tree_walk(self, current_root: CounterNode) -> Tuple[CounterNode, Node]:
         """
         Perform a single tree walk.
         1. The 'bandit phase' / selection step: if current node has been explored so far,

@@ -75,5 +75,5 @@ class RessourceAllocation:
     def __call__(self, current_depth: int) -> int:
         if self.allocation_strategy == AllocationStrategy.UNIFORM:
             return max(self.uniform(), self.min_ressources_per_move)
-        if self.allocation_strategy == AllocationStrategy.LINEAR:
+        else:
             return max(self.uniform(), self.linear(current_depth))

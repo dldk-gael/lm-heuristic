@@ -1,4 +1,5 @@
 import random
+from typing import Tuple
 
 from lm_heuristic.tree_search.mcts import MonteCarloTreeSearch
 from lm_heuristic.tree import Node, TreeStats
@@ -18,7 +19,7 @@ class RandomRestartsMCTS(MonteCarloTreeSearch):
         MonteCarloTreeSearch.__init__(self, **mcts_parameters)
         self.nb_random_restarts = nb_random_restarts
 
-    def _search(self, root: Node, nb_of_tree_walks: int) -> (Node, float):
+    def _search(self, root: Node, nb_of_tree_walks: int) -> Tuple[Node, float]:
         """
         As in MCTS, accumulate some stats about the tree.
         But now, it will divide the nb_of_tree_walks between the nb_random_restarts search and keep the
@@ -36,7 +37,10 @@ class RandomRestartsMCTS(MonteCarloTreeSearch):
             )
 
         tree_walks_per_search = nb_of_tree_walks // self.nb_random_restarts
-        best_leaf, best_value, best_path = None, 0, []
+        
+        best_leaf : Node
+        best_value  = 0.
+        best_path = []
 
         for i in range(self.nb_random_restarts):
             if self.verbose:
