@@ -1,13 +1,13 @@
-import random
+"""
+This script shows how to use a MCTS searcher
+"""
 
+import random
 from lm_heuristic.tree import CFGrammarNode
 from lm_heuristic.tree_search import MonteCarloTreeSearch, AllocationStrategy
 from lm_heuristic.heuristic import Heuristic
 from lm_heuristic.sentence_score import GPT2Score
 
-"""
-This script shows how to use a MCTS searcher
-"""
 
 random.seed(3)
 GRAMMAR_FOLDER = "data/cfg/"

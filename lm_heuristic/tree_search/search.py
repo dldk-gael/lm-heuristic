@@ -15,22 +15,25 @@ class TreeSearch(ABC, Timer):
     The objective of a tree searcher is to find the leaf that maximise an evaluation function
     """
 
-    def __init__(self, heuristic: Heuristic, buffer_size: int = 1, **kwargs):
+    def __init__(self, heuristic: Heuristic, buffer_size: int = 1):
         Timer.__init__(self)
         self._name = ""
         self.heuristic = copy(heuristic)
         self.buffer_size = buffer_size
-        self.best_leaf = None
-        self.best_leaf_value = None
+        self.best_leaf: Node
+        self.best_leaf_value: float
 
     def reset(self):
+        """
+        Reset the search memory, the heuristic memory and the timer 
+        """
         self.best_leaf = None
         self.best_leaf_value = None
         self.heuristic.reset()
         self.reset_timer()
 
     @timeit
-    def __call__(self, root: Node, nb_of_tree_walks: int) -> (Node, float):
+    def __call__(self, root: Node, nb_of_tree_walks: int) -> Tuple[Node, float]:
         """
         Launch the search + keep in memory informations about the search
         :param root: Node from which the search will start
@@ -72,11 +75,17 @@ class TreeSearch(ABC, Timer):
         )
 
     def print_path(self):
+        """
+        Print the path from root to best leaf that was found
+        """
         print("The following path was taken :")
         for i, node in enumerate(self.path()):
             print("%d: %s" % (i, str(node)))
 
     def plot_leaf_values_distribution(self):
+        """
+        Plot the leaf value distribution 
+        """
         values = self.heuristic.history_of_values()
         assert values != [], "Try to plot leaf values distribution, but no search was performed yet"
 
@@ -91,7 +100,7 @@ class TreeSearch(ABC, Timer):
         return self._name
 
     @abstractmethod
-    def _search(self, root: Node, nb_of_tree_walks: int) -> (Node, float):
+    def _search(self, root: Node, nb_of_tree_walks: int) -> Tuple[Node, float]:
         """
         search and return the terminal node that maximise the evalution function and its value
         """
@@ -103,4 +112,3 @@ class TreeSearch(ABC, Timer):
         return path taken from root node to best terminal node that has been found
         """
         ...
-

@@ -7,7 +7,7 @@ class Node(ABC):
     Abstract class to implement a node class that can be used in tree-based algorithm
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self):
         ...
 
     @abstractmethod

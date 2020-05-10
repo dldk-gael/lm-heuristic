@@ -1,8 +1,7 @@
-from nltk import CFG, grammar
 from typing import List
 import random
 import os
-
+from nltk import CFG, grammar
 from .node import Node
 
 
@@ -32,18 +31,18 @@ class CFGrammarNode(Node):
         """
         Node.__init__(self)
         self.cfg = cfg
-        self.symbols = (symbols,) if type(symbols) != tuple else symbols
+        self.symbols = (symbols,) if not isinstance(symbols, tuple) else symbols
         self.shrink = shrink
 
     @classmethod
-    def from_cfg_file(cls, file: str, **kwargs) -> "CFGrammarNode":
+    def from_cfg_file(cls, path: str, **kwargs) -> "CFGrammarNode":
         """
-        :param file: path to file containing a context-free grammar
+        :param path: path to file containing a context-free grammar
         :return: new Derivation tree node
         """
-        assert os.path.exists(file)
-        with open(file) as f:
-            str_grammar = f.read()
+        assert os.path.exists(path)
+        with open(path) as file:
+            str_grammar = file.read()
         nltk_grammar = CFG.fromstring(str_grammar)
         return cls(nltk_grammar.start(), nltk_grammar, **kwargs)
 
@@ -52,11 +51,11 @@ class CFGrammarNode(Node):
         return True if the current derivation string is only composed of terminal symbols
         """
         for symbol in self.symbols:
-            if type(symbol) == grammar.Nonterminal:
+            if isinstance(symbol, grammar.Nonterminal):
                 return False
         return True
 
-    def childrens(self) -> List["CFGrammarNode"]:
+    def childrens(self) -> List["CFGrammarNode"]: # type: ignore
         """
         return all the Derivations nodes corresponding to sentences that can be derivated f
         from the current derivation using only one production rule from P
@@ -64,7 +63,7 @@ class CFGrammarNode(Node):
         """
         childrens = []
         for idx, symbol in enumerate(self.symbols):
-            if type(symbol) == grammar.Nonterminal:
+            if isinstance(symbol, grammar.Nonterminal):
                 productions = self.cfg.productions(lhs=symbol)
                 for production in productions:
                     childrens.append(

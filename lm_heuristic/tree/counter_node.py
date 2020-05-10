@@ -17,6 +17,7 @@ class CounterNode(Node):
     Moreover, in order to be able to back-propagate the information, the counter node keep in memory a reference
     to his parent node
     """
+    # pylint: disable=too-many-instance-attributes
 
     def __init__(self, reference_node, parent=None):
         """
@@ -56,7 +57,7 @@ class CounterNode(Node):
         ]
         self._is_terminal = False
 
-    def childrens(self) -> List["CounterNode"]:
+    def childrens(self) -> List["CounterNode"]:  # type: ignore
         return self._childrens
 
     def is_terminal(self) -> bool:
@@ -104,6 +105,9 @@ class CounterNode(Node):
             self.parent.set_as_solved()
 
     def detailed_node_info(self):
+        """
+        Print the children of a given node 
+        """
         print(self)
         if not self.is_terminal():
             print("\t has %d children" % len(self.childrens()))

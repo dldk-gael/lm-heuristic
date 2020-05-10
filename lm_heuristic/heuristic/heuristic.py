@@ -15,9 +15,9 @@ class Heuristic(Timer):
         self, evaluation_fct: Callable[[List[Node]], List[float]], use_memory: bool = False,
     ):
         Timer.__init__(self)
-        self.memory = dict()
+        self.memory: Dict[int, float] = dict()
         self.evaluation_fct = evaluation_fct
-        self.history = []
+        self.history: List[Tuple[Node, float]] = []
         self.use_memory = use_memory
 
     @timeit

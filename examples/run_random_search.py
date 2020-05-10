@@ -1,13 +1,13 @@
-import matplotlib.pyplot as plt
+"""
+This script shows how to use a random searcher and plot the distribution of leaf values
+"""
 
+import matplotlib.pyplot as plt
 from lm_heuristic.tree_search import RandomSearch
 from lm_heuristic.tree import CFGrammarNode
 from lm_heuristic.heuristic import Heuristic
 from lm_heuristic.sentence_score import GPT2Score
 
-"""
-This script shows how to use a random searcher and plot the distribution of leaf values 
-"""
 
 GRAMMAR_FOLDER = "data/cfg/"
 GRAMMAR_NAME = "ex_4"

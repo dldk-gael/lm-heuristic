@@ -5,6 +5,7 @@ from lm_heuristic.tree import CFGrammarNode
 from lm_heuristic.tree_search import RandomSearch
 from lm_heuristic.heuristic import Heuristic
 
+# pylint: disable=redefined-outer-name, missing-function-docstring
 
 @pytest.fixture
 def toy_grammar():

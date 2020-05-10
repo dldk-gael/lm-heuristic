@@ -3,6 +3,7 @@ import nltk
 
 from lm_heuristic.tree import CFGrammarNode
 
+# pylint: disable=redefined-outer-name, missing-function-docstring
 
 @pytest.fixture
 def toy_nltk_grammar():
@@ -36,6 +37,6 @@ def test_shrink_option(root):
 def test_terminal(root):
     assert root.is_terminal() is False
     node = root
-    for i in range(3):
+    for _ in range(3):
         node = node.random_children()
     assert node.is_terminal()

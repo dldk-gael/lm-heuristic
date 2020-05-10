@@ -1,19 +1,19 @@
+"""
+This script :
+1/ generates all possible sentences from a CFG,
+2/ rank all sentences using a gpt2 scorer and save the results in the RESULT_FOLDER
+3/ print the X best results
+
+Should only be used with CFG that can generate only small amount of sentences
+"""
+
 from typing import List
 import os
 import pickle
 import nltk
 from nltk.parse.generate import generate
-
 from lm_heuristic.sentence_score import GPT2Score
 
-"""
-This script :
-1/ generates all possible sentences from a CFG, 
-2/ rank all sentences using a gpt2 scorer and save the results in the RESULT_FOLDER 
-3/ print the X best results
-
-Should only be used with CFG that can generate only small amount of sentences 
-"""
 
 GRAMMAR_FOLDER = "data/cfg/"
 RESULT_FOLDER = "results/"
@@ -42,4 +42,4 @@ if __name__ == "__main__":
         pickle.dump(ranked_sentences, open(RESULT_FOLDER + GRAMMAR_NAME + ".pkl", "wb"))
 
     ranked_sentences = pickle.load(open(RESULT_FOLDER + GRAMMAR_NAME + ".pkl", "rb"))
-    GPT2Score.print_ranked_sentences(ranked_sentences, n=X_BEST_RESULTS)
+    GPT2Score.print_ranked_sentences(ranked_sentences, nb_to_print=X_BEST_RESULTS)

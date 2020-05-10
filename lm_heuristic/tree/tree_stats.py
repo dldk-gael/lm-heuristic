@@ -1,8 +1,7 @@
 from typing import *
 import numpy as np
-
-from .node import Node
 from lm_heuristic.utils.timer import timeit, Timer
+from .node import Node
 
 
 class TreeStats(Timer):
@@ -17,8 +16,8 @@ class TreeStats(Timer):
         """
         Timer.__init__(self)
         self.root = root
-        self._depths = []
-        self._branching_factors = dict()
+        self._depths: List[int] = []
+        self._branching_factors: Dict[int, List[int]] = dict()
 
     @timeit
     def accumulate_stats(self, nb_samples: int = 1):
@@ -55,14 +54,10 @@ class TreeStats(Timer):
         }
 
     def depths_info(self) -> Dict:
-        assert (
-            self._depths != []
-        ), "Try to access statistic informations before browsing the tree"
+        assert self._depths != [], "Try to access statistic informations before browsing the tree"
         return self.dict_info(self._depths)
 
     def branching_factors_info(self) -> Dict:
-        assert (
-            self._depths != []
-        ), "Try to access statistic informations before browsing the tree"
+        assert self._depths != [], "Try to access statistic informations before browsing the tree"
         mean_by_depth_b_factors = list(map(np.mean, self._branching_factors.values()))
         return self.dict_info(mean_by_depth_b_factors)

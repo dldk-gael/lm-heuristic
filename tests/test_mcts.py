@@ -5,6 +5,7 @@ from lm_heuristic.tree import CFGrammarNode
 from lm_heuristic.tree_search.mcts import MonteCarloTreeSearch
 from lm_heuristic.heuristic import Heuristic
 
+# pylint: disable=redefined-outer-name, missing-function-docstring
 
 @pytest.fixture
 def root():
@@ -35,7 +36,7 @@ def basic_mcts():
 
 
 def test_mcts_search_find_a_leaf(basic_mcts, root):
-    best_leaf, value = basic_mcts(root, nb_of_tree_walks=1)
+    best_leaf, _ = basic_mcts(root, nb_of_tree_walks=1)
     assert best_leaf.is_terminal()
 
 

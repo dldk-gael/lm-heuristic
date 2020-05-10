@@ -53,7 +53,7 @@ class EvalStrategy:
         experiments_list = []
 
         strategies = [strategies] if isinstance(strategies, TreeSearch) else strategies
-        dataset = dataset if isinstance(dataset, List) else [dataset]
+        dataset = dataset if isinstance(dataset, list) else [dataset]
         nb_tree_walks = (
             [nb_tree_walks] if isinstance(nb_tree_walks, int) else nb_tree_walks
         )
