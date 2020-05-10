@@ -29,7 +29,7 @@ class EvalStrategy:
                 "strategy",
                 "dataset",
                 "nb_tree_walks",
-                "random_seed",
+                "restart",
                 "time_needed",
                 "best_value",
             ]
@@ -67,8 +67,8 @@ class EvalStrategy:
                     for j in range(nb_random_restarts):
                         if self.verbose:
                             print("\rCurrent evaluation : example %s "
-                                  "with %d tree walks and random_seed(%d)" % (sample_name, k, j), end="")
-                        random.seed(j)
+                                  "- %d tree walks "
+                                  "- random restart n°%d" % (sample_name, k, j), end="")
                         best_leaf, best_leaf_value = strategy(root_sample, nb_of_tree_walks=k)
                         time_needed = strategy.time_spent()
 
@@ -76,7 +76,7 @@ class EvalStrategy:
                             "strategy": strategy_name,
                             "dataset": sample_name,
                             "nb_tree_walks": k,
-                            "random_seed": j,
+                            "restart": j,
                             "time_needed": time_needed,
                             "best_value": best_leaf_value,
                             "best_leaf": str(best_leaf)

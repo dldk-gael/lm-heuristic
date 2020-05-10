@@ -49,7 +49,6 @@ class RandomRestartsMCTS(MonteCarloTreeSearch):
             if i == self.nb_random_restarts - 1:
                 tree_walks_per_search += nb_of_tree_walks % self.nb_random_restarts
 
-            random.seed()  # this is probably useless
             leaf, value = self._single_search(root, tree_walks_per_search, stats)
 
             if value > best_value:
