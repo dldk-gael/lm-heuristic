@@ -43,12 +43,10 @@ class BertScore(SentenceScore):
 
         self.length_normalization = length_normalization
 
-    def compute_score(self, text: Union[str, List[str]]) -> Union[float, List[float]]:
-        sentences = [text] if type(text) == str else text
-        scores = [self.compute_score_single_sentence(sentence) for sentence in tqdm(sentences)]
-        return scores[0] if type(text) == str else scores
+    def _compute_sentences_scores(self, sentences: List[str]) -> List[float]:
+        return [self.compute_single_sentence_score(sentence) for sentence in tqdm(sentences)]
 
-    def compute_score_single_sentence(self, sentence: str) -> float:
+    def compute_single_sentence_score(self, sentence: str) -> float:
         """
         Compute BERT score of a sentence
         :param sentence
@@ -65,7 +63,10 @@ class BertScore(SentenceScore):
 
         input_sentences = [["[CLS]"] + mask_sentence + ["[SEP]"] for mask_sentence in mask_sentences]
         input_ids = torch.stack(
-            [torch.tensor(self.tokenizer.convert_tokens_to_ids(input_sentence)) for input_sentence in input_sentences],
+            [
+                torch.tensor(self.tokenizer.convert_tokens_to_ids(input_sentence))  # pylint: disable=not-callable
+                for input_sentence in input_sentences
+            ],
             dim=0,
         )
         input_ids = input_ids.to(self.device)

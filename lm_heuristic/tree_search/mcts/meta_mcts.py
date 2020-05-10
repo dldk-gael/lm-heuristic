@@ -37,9 +37,9 @@ class RandomRestartsMCTS(MonteCarloTreeSearch):
             )
 
         tree_walks_per_search = nb_of_tree_walks // self.nb_random_restarts
-        
-        best_leaf : Node
-        best_value  = 0.
+
+        best_leaf: Node
+        best_value = 0.0
         best_path = []
 
         for i in range(self.nb_random_restarts):

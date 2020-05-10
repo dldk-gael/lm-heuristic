@@ -1,5 +1,5 @@
-from lm_heuristic.sentence_score import GPT2Score, BertScore
 import logging
+from lm_heuristic.sentence_score import GPT2Score, BertScore
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

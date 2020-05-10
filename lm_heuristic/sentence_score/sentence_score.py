@@ -7,7 +7,7 @@ class SentenceScore(ABC):
     A Score object compute a "naturalness" score for a sentence or a list of sentences
     """
 
-    def __init__(self, **kwargs):
+    def __init__(self):
         ...
 
     @overload
@@ -18,14 +18,15 @@ class SentenceScore(ABC):
     def compute_score(self, text: List[str]) -> List[float]:
         ...
 
-    @abstractmethod
     def compute_score(self, text: Union[str, List[str]]) -> Union[float, List[float]]:
         """
         Compute the naturalness score of sentences
         :param text: single sentence or list of sentences
         :return: sentence's score or  list of sentence's scores
         """
-        ...
+        sentences = [text] if isinstance(text, str) else text
+        scores = self._compute_sentences_scores(sentences)
+        return scores[0] if isinstance(text, str) else scores
 
     def rank_sentences(self, sentences: List[str]) -> List[Tuple[str, float]]:
         """
@@ -43,12 +44,19 @@ class SentenceScore(ABC):
         self.print_ranked_sentences(self.rank_sentences(sentences))
 
     @staticmethod
-    def print_ranked_sentences(ranked_sentences, n=-1):
+    def print_ranked_sentences(ranked_sentences, nb_to_print=-1):
+        """
+        Print the nb_to_print best scored sentences
+        """
         for i, (sentence, score_result) in enumerate(ranked_sentences):
             print("\tn°%d (score : %f) - %s" % (i + 1, score_result, sentence))
-            if i == n:
+            if i == nb_to_print:
                 break
         print("")
 
     def __call__(self, sentences):
         return self.compute_score(sentences)
+
+    @abstractmethod
+    def _compute_sentences_scores(self, sentences: List[str]) -> List[float]:
+        ...

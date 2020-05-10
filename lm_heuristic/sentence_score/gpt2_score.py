@@ -1,7 +1,8 @@
-from typing import *
+from typing import *  # pylint: disable=unused-wildcard-import
+import logging
+
 import torch
 from tqdm.autonotebook import tqdm
-import logging
 from transformers import GPT2Tokenizer, GPT2LMHeadModel
 
 from .sentence_score import SentenceScore
@@ -33,7 +34,7 @@ class GPT2Score(SentenceScore):
         SentenceScore.__init__(self)
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
-        logger.info("Loading %s on %s" % (model_name, self.device))
+        logger.info("Loading %s on %s", model_name, self.device)
         self.model = GPT2LMHeadModel.from_pretrained(model_name)
         self.model.eval()
         self.model.to(self.device)
@@ -43,13 +44,11 @@ class GPT2Score(SentenceScore):
         self.batch_size = batch_size
         self.verbose = verbose
 
-    def compute_score(self, text: Union[str, List[str]]) -> Union[float, List[float]]:
+    def _compute_sentences_scores(self, sentences: List[str]) -> List[float]:
         """
         :param text: str | List[str] sentences to evaluate
         :return list of sentence's score
         """
-        sentences = [text] if type(text) == str else text
-
         scores = []
         for i in tqdm(range(0, len(sentences), self.batch_size), disable=not self.verbose):
             batch = sentences[i : i + self.batch_size]
@@ -59,16 +58,18 @@ class GPT2Score(SentenceScore):
             last_batch = sentences[-(len(sentences) % self.batch_size) :]
             scores += self._compute_single_batch(last_batch)
 
-        return scores[0] if type(text) == str else scores
+        return scores
 
-    def _pad(self, sequences: List[torch.Tensor]) -> (torch.Tensor, torch.Tensor):
+    def _pad(self, sequences: List[torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor]:
         """
         :param sequences: list of Tensor
         :return: padding input + mask,
                   both are rensors of shape (len(sequences), max sequence length)
         """
         max_seq_len = max([s.size(0) for s in sequences])
-        out_tensor = sequences[0].data.new(len(sequences), max_seq_len).fill_(self.tokenizer.eos_token_id)
+        out_tensor = (
+            sequences[0].data.new(len(sequences), max_seq_len).fill_(self.tokenizer.eos_token_id)  # type:ignore
+        )
         mask = torch.zeros((len(sequences), max_seq_len), device=sequences[0].device)
         for i, tensor in enumerate(sequences):
             length = tensor.size(0)
@@ -89,7 +90,9 @@ class GPT2Score(SentenceScore):
         # Prepare the input ids
         tokens_ids = [self._add_bos_token_and_encode(sentence) for sentence in sentences]
         # don't count the bos token
-        sentences_len = torch.tensor([len(toks) - 1 for toks in tokens_ids], device=self.device)
+        sentences_len = torch.tensor(  # pylint: disable=not-callable
+            [len(toks) - 1 for toks in tokens_ids], device=self.device
+        )
         input_ids, mask = self._pad(list(map(torch.tensor, tokens_ids)))
 
         input_ids = input_ids.to(self.device)
@@ -117,5 +120,5 @@ class GPT2Score(SentenceScore):
         if self.length_normalization:
             sentences_score = sentences_score / sentences_len
 
-        sentences_score = torch.exp(sentences_score).tolist()
-        return sentences_score
+        sentences_score = torch.exp(sentences_score).tolist()  # type: ignore
+        return sentences_score  # type: ignore
