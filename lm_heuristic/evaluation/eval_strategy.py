@@ -1,5 +1,4 @@
 from typing import *
-import random
 import pandas as pd
 
 from lm_heuristic.tree_search import TreeSearch
@@ -28,9 +27,10 @@ class EvalStrategy:
             columns=[
                 "strategy",
                 "dataset",
-                "nb_tree_walks",
+                "input_nb_tree_walks",
+                "nb_of_unique_leaf_eval",
                 "restart",
-                "time_needed",
+                "eval_call_counter",
                 "best_value",
             ]
         )
@@ -54,32 +54,32 @@ class EvalStrategy:
 
         strategies = [strategies] if isinstance(strategies, TreeSearch) else strategies
         dataset = dataset if isinstance(dataset, list) else [dataset]
-        nb_tree_walks = (
-            [nb_tree_walks] if isinstance(nb_tree_walks, int) else nb_tree_walks
-        )
+        nb_tree_walks = [nb_tree_walks] if isinstance(nb_tree_walks, int) else nb_tree_walks
 
         for strategy in strategies:
             strategy_name = str(strategy)
-            if self.verbose:
-                print("\rEvaluating %s ..." % strategy_name)
             for root_sample, sample_name in dataset:
                 for k in nb_tree_walks:
                     for j in range(nb_random_restarts):
                         if self.verbose:
-                            print("\rCurrent evaluation : example %s "
-                                  "- %d tree walks "
-                                  "- random restart n°%d" % (sample_name, k, j), end="")
+                            print(
+                                "\rCurrent evaluation : %s - example %s "
+                                "- %d tree walks "
+                                "- random restart n°%d" % (strategy_name, sample_name, k, j),
+                                end="",
+                            )
                         best_leaf, best_leaf_value = strategy(root_sample, nb_of_tree_walks=k)
                         time_needed = strategy.time_spent()
 
                         experiment_results = {
                             "strategy": strategy_name,
                             "dataset": sample_name,
-                            "nb_tree_walks": k,
+                            "input_nb_tree_walks": k,
                             "restart": j,
+                            "eval_call_counter": strategy.heuristic.eval_counter,
                             "time_needed": time_needed,
                             "best_value": best_leaf_value,
-                            "best_leaf": str(best_leaf)
+                            "best_leaf": str(best_leaf),
                         }
                         experiments_list.append(experiment_results)
         if self.verbose:

@@ -1,4 +1,3 @@
-import random
 from typing import Tuple
 
 from lm_heuristic.tree_search.mcts import MonteCarloTreeSearch

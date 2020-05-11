@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 from typing import *
-from copy import copy
 import pandas as pd
 import seaborn as sns
 
@@ -18,8 +17,8 @@ class TreeSearch(ABC, Timer):
     def __init__(self, heuristic: Heuristic, buffer_size: int = 1):
         Timer.__init__(self)
         self._name = ""
-        self.heuristic = copy(heuristic)
         self.buffer_size = buffer_size
+        self.heuristic = heuristic
         self.best_leaf: Node
         self.best_leaf_value: float
 
@@ -57,7 +56,6 @@ class TreeSearch(ABC, Timer):
             "--- SEARCH RESULT ---\n"
             "LEAVE EVALUATION : \n"
             "%d leaves evaluation was performed\n"
-            "%0.2f%% of leaves was evaluated multiples times\n"
             "\nTIMING : \n"
             "The search tooks %.2fs\n"
             "%.2f%%  of the time was spent on leave evaluation\n"
@@ -65,8 +63,7 @@ class TreeSearch(ABC, Timer):
             "Best leaf that have been found: %s \n"
             "It has a score of %f"
             % (
-                nb_leaves_evaluated,
-                (nb_leaves_evaluated - nb_unique_leaves) / nb_leaves_evaluated * 100,
+                self.heuristic.eval_counter,
                 total_time,
                 evaluation_time / total_time * 100,
                 str(self.best_leaf),

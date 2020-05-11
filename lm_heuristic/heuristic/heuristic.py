@@ -19,6 +19,7 @@ class Heuristic(Timer):
         self.evaluation_fct = evaluation_fct
         self.history: List[Tuple[Node, float]] = []
         self.use_memory = use_memory
+        self.eval_counter = 0
 
     @timeit
     def has_already_eval(self, node: Node) -> bool:
@@ -45,8 +46,9 @@ class Heuristic(Timer):
             for node, value in zip(nodes, values):
                 self.memory[hash(node)] = value
 
-        # update history
+        # update history and counter
         self.history += list(zip(nodes, values))
+        self.eval_counter += len(nodes)
 
         return values
 
@@ -54,6 +56,7 @@ class Heuristic(Timer):
         self.reset_timer()
         self.history = []
         self.memory = dict()
+        self.eval_counter = 0
 
     def history_of_terminal_nodes(self):
         return [x[0] for x in self.history]
