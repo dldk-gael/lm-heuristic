@@ -11,3 +11,8 @@ lm-heuristic.code-workspace
 /.vscode/*
 /.mypy_cache/*
 .vscode/settings.json
+src/lm_heuristic.egg-info/dependency_links.txt
+src/lm_heuristic.egg-info/PKG-INFO
+src/lm_heuristic.egg-info/requires.txt
+src/lm_heuristic.egg-info/SOURCES.txt
+src/lm_heuristic.egg-info/top_level.txt

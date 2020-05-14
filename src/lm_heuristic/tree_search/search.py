@@ -47,8 +47,6 @@ class TreeSearch(ABC, Timer):
         """
         Print several informations about the last search performed
         """
-        nb_leaves_evaluated = len(self.heuristic.history_of_terminal_nodes())
-        nb_unique_leaves = len(set(self.heuristic.history_of_terminal_nodes()))
         total_time = self.time_spent()
         evaluation_time = self.heuristic.time_spent()
 
@@ -81,7 +79,7 @@ class TreeSearch(ABC, Timer):
 
     def plot_leaf_values_distribution(self):
         """
-        Plot the leaf value distribution 
+        Plot the leaf value distribution
         """
         values = self.heuristic.history_of_values()
         assert values != [], "Try to plot leaf values distribution, but no search was performed yet"
@@ -95,6 +93,14 @@ class TreeSearch(ABC, Timer):
 
     def __str__(self) -> str:
         return self._name
+
+    def top_n_leaves(self, top_n: int = 1) -> List[Tuple[Node, float]]:
+        """
+        return the top n best leaves encounter during the search
+        using the heuristic memory
+        """
+        unique_leaf_value = list(set(self.heuristic.history))
+        return sorted(unique_leaf_value, key=lambda x: x[1], reverse=True)[:top_n]
 
     @abstractmethod
     def _search(self, root: Node, nb_of_tree_walks: int) -> Tuple[Node, float]:
