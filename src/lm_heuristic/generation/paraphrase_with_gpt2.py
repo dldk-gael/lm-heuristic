@@ -132,7 +132,7 @@ class GPT2Paraphrases:
         2/ Remove duplicates
         3/ Remove the input sentence if present in the generated paraphrases
         """
-        clean_paraphrases = [paraphrase.split(".")[0] + "." for paraphrase in paraphrases]
+        clean_paraphrases = [paraphrase.split(".")[0].strip() + "." for paraphrase in paraphrases]
         clean_paraphrases = list(set(clean_paraphrases))
         if input_sentence in clean_paraphrases:
             clean_paraphrases.remove(input_sentence)
