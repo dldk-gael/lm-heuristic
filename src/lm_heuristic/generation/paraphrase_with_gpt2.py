@@ -96,7 +96,8 @@ class GPT2Paraphrases:
         input_ids = torch.tensor(  # pylint: disable=not-callable
             [self.paraphasing_context_ids + sentence_ids + self.paraphrase_start_token_id]
         )
-
+        input_ids = input_ids.to(self.device)
+        
         # Encode the forbidden words
         if forbidden_words:
             forbidden_words_ids = [self.gpt2_tokenizer.encode(word, add_prefix_space=True) for word in forbidden_words]
