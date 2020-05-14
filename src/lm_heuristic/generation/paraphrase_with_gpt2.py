@@ -151,4 +151,28 @@ class GPT2Paraphrases:
 
         return [x[0] for x in top_n_paraphrases]
 
+    def successive_forbidden_stratey(        
+        self,
+        sentence: str,
+        margin_size: int = 10,
+        nb_samples_per_word: int = 1,
+        top_n_to_keep_per_word: int = 1,
+    ):
+        """
+        1/ tokenize the sentences using space.
+        2/ for each sentence words, 
+               - forbid to use this particular words
+               - generate nb_samples_per_word paraphrases
+               - retains top_n_to_keep_per_word paraphrases 
+        3/ return the concatenation of all paraphrases
 
+        :param sentence: sentence that need to be paraphrase
+        :param forbidden_words: list of words that can not be use for paraphrasing
+        :param margin_size: the size of the parapraphrase will be of nb of sentence tokens +/- margin_size
+        :param nb_samples_per_word: nb of paraphrases to generate for each call 
+        :param top_n_to_keep_per_word: will only keep the top_n_to_keep for each call 
+        """
+        paraphrases = []
+        for word in sentence.split(" "):
+            paraphrases += self.__call__(sentence, [word], margin_size, nb_samples_per_word, top_n_to_keep_per_word)
+        return paraphrases
