@@ -16,7 +16,7 @@ class GPT2Paraphrases:
         paraphrase_start_token: str = " = ",
     ):
         """
-        :param gpt2_model_name: distilgpt2, gpt2, gpt2-medium (by-default), gpt2-large or gpt2-excel
+        :param gpt2_model_name: distilgpt2, gpt2, gpt2-medium (by-default), gpt2-large or gpt2-xl
         :param sentence_embed: function that embed sentences, 
                 will be use to compare meaning between input_sentence and paraphrases
                 if not provide will use Universal Sentence Encoder from google
@@ -97,7 +97,6 @@ class GPT2Paraphrases:
             [self.paraphasing_context_ids + sentence_ids + self.paraphrase_start_token_id]
         )
 
-        input_tokens = self.gpt2_tokenizer.decode(input_ids[0])  # for debug
         # Encode the forbidden words
         if forbidden_words:
             forbidden_words_ids = [self.gpt2_tokenizer.encode(word, add_prefix_space=True) for word in forbidden_words]
