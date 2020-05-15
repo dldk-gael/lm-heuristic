@@ -14,6 +14,7 @@ class GPT2Paraphrases:
         paraphasing_context: str = "",
         batch_size: int = 1,
         paraphrase_start_token: str = " = ",
+        question_paraphrasing: bool = False,
     ):
         """
         :param gpt2_model_name: distilgpt2, gpt2, gpt2-medium (by-default), gpt2-large or gpt2-xl
@@ -23,6 +24,7 @@ class GPT2Paraphrases:
         :param paraphasing_context: context to "indicate to" gpt2 the paraphrasing task
         :param paraphrase_start_token: special token used in paraphrasing context to indicate paraphrasing start
         :param batch_size: use for gpt2 input
+        :question_paraphrasing : True if you want to paraphrase question
         """
 
         # Load in memory the GPT2 model
@@ -46,6 +48,7 @@ class GPT2Paraphrases:
         self.context_size = len(self.paraphasing_context_ids)
         self.paraphrase_start_token_id = self.gpt2_tokenizer.encode(paraphrase_start_token)
         self.batch_size = batch_size
+        self.question_paraphrasing = question_paraphrasing
 
     def __call__(
         self,
@@ -94,8 +97,7 @@ class GPT2Paraphrases:
 
         # Encode the full context
         input_ids = torch.tensor(  # pylint: disable=not-callable
-            [self.paraphasing_context_ids + sentence_ids + self.paraphrase_start_token_id],
-            device=self.device
+            [self.paraphasing_context_ids + sentence_ids + self.paraphrase_start_token_id], device=self.device
         )
 
         # Encode the forbidden words
@@ -125,14 +127,14 @@ class GPT2Paraphrases:
 
         return outputs_str
 
-    @staticmethod
-    def clean_generations(input_sentence: str, paraphrases: List[str]):
+    def clean_generations(self, input_sentence: str, paraphrases: List[str]):
         """
-        1/ Only keep the first sentence of each generation (for now only work with .  not ? or !)
+        1/ Only keep the first sentence of each generation.
         2/ Remove duplicates
         3/ Remove the input sentence if present in the generated paraphrases
         """
-        clean_paraphrases = [paraphrase.split(".")[0].strip() + "." for paraphrase in paraphrases]
+        punctuation = "?" if self.question_paraphrasing else "."
+        clean_paraphrases = [paraphrase.split(punctuation)[0].strip() + punctuation for paraphrase in paraphrases]
         clean_paraphrases = list(set(clean_paraphrases))
         if input_sentence in clean_paraphrases:
             clean_paraphrases.remove(input_sentence)
@@ -151,12 +153,8 @@ class GPT2Paraphrases:
 
         return [x[0] for x in top_n_paraphrases]
 
-    def successive_forbidden_stratey(        
-        self,
-        sentence: str,
-        margin_size: int = 10,
-        nb_samples_per_word: int = 1,
-        top_n_to_keep_per_word: int = 1,
+    def successive_forbidden_stratey(
+        self, sentence: str, margin_size: int = 10, nb_samples_per_word: int = 1, top_n_to_keep_per_word: int = 1,
     ):
         """
         1/ tokenize the sentences using space.
