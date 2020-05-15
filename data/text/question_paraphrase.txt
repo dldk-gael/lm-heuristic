@@ -1,0 +1,8 @@
+How many ounces are there in a pound ? = What’s the number of ounces per pound ?
+What character did Natalie Portman play in Star Wars ? = What is the role of Natalie Port- man in Star Wars ?
+Who created microsoft ? = Who is the founder of microsoft ? 
+Why do people hate Hillary Clinton ? = What are the reasons that people dislike Hillary Clinton ?
+Should I learn Python or Java first ? = If I had to choose between learning Java and Python, what should I choose to learn first ? 
+How do you start a bakery ? = How can one start a bakery buisness ? 
+Can we stop global warming ? = Do we have any good ways to stop global warming ?
+What happened yesterday ? Can you tell me what happened yesterday ? 

@@ -1,14 +1,44 @@
 from lm_heuristic.generation import GPT2Paraphrases
 
 if __name__ == "__main__":
+    # This should took ~20s to run on a collab GPU 
+    BATCH_SIZE = 8
+    NB_SAMPLES = 100
+    TOP_TO_KEEP = 20
+
+    # EXAMPLE WITH AFFIRMATIVES SENTENCES
     PAPAPHRASE_FILE = "data/text/paraphrase.txt"
     INPUT_SENTENCE = "I like to play tennis outside when the weather is good."
-
     with open(PAPAPHRASE_FILE, "r") as file:
-        paraphrase_context = file.read()
+        affirmative_paraphrase_context = file.read()
 
-    paraphrase_generator = GPT2Paraphrases("gpt2", paraphasing_context=paraphrase_context, batch_size=2)
-    paraphrases = paraphrase_generator(INPUT_SENTENCE, margin_size=3, nb_samples=20, top_n_to_keep=5)
+    paraphrase_generator = GPT2Paraphrases(
+        "gpt2-medium", paraphasing_context=affirmative_paraphrase_context, batch_size=BATCH_SIZE
+    )
+    paraphrases = paraphrase_generator(INPUT_SENTENCE, margin_size=5, nb_samples=NB_SAMPLES, top_n_to_keep=TOP_TO_KEEP)
 
-    for paraphrase in paraphrases:
-        print(paraphrase)
+    print("INPUT SENTENCE :", INPUT_SENTENCE)
+    print("PARAPRHASES :")
+    for i, paraphrase in enumerate(paraphrases):
+        print("n°%d : %s" % (i, paraphrase))
+
+    # EXAMPLE WITH QUESTIONS
+    QUESTION_FILE = "data/text/question_paraphrase.txt"
+    INPUT_QUESTION = "What is your name?"
+
+    with open(QUESTION_FILE, "r") as file:
+        question_paraphrase_context = file.read()
+
+    paraphrase_generator = GPT2Paraphrases(
+        "gpt2-medium",
+        paraphasing_context=question_paraphrase_context,
+        question_paraphrasing=True,
+        batch_size=BATCH_SIZE,
+    )
+
+    paraphrases = paraphrase_generator(INPUT_QUESTION, margin_size=5, nb_samples=NB_SAMPLES, top_n_to_keep=TOP_TO_KEEP)
+
+    print("INPUT SENTENCE :", INPUT_QUESTION)
+    print("PARAPRHASES :")
+    for i, paraphrase in enumerate(paraphrases):
+        print("n°%d : %s" % (i, paraphrase))
