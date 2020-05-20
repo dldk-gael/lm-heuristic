@@ -35,6 +35,11 @@ class CFGrammarNode(Node):
         self.shrink = shrink
 
     @classmethod
+    def from_string(cls, str_grammar: str, **kwargs) -> "CFGrammarNode":
+        nltk_grammar = CFG.fromstring(str_grammar)
+        return cls(nltk_grammar.start(), nltk_grammar, **kwargs)
+
+    @classmethod
     def from_cfg_file(cls, path: str, **kwargs) -> "CFGrammarNode":
         """
         :param path: path to file containing a context-free grammar

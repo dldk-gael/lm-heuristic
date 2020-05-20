@@ -14,7 +14,9 @@ setup(
         "numpy",
         "transformers",
         "tensorflow",
-        "tensorflow_hub"
+        "tensorflow_hub",
+        "flask",
+        "celery"
     ],
     url="https://github.com/dldk-gael/lm-heuristic",
     author="Gaël de Léséleuc",

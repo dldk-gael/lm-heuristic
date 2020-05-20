@@ -2,9 +2,9 @@ from lm_heuristic.generation import GPT2Paraphrases
 
 if __name__ == "__main__":
     # This should took ~20s to run on a collab GPU 
-    BATCH_SIZE = 8
-    NB_SAMPLES = 100
-    TOP_TO_KEEP = 20
+    BATCH_SIZE = 1
+    NB_SAMPLES = 10
+    TOP_TO_KEEP = 2
 
     # EXAMPLE WITH AFFIRMATIVES SENTENCES
     PAPAPHRASE_FILE = "data/text/paraphrase.txt"
