@@ -1,6 +1,7 @@
 import argparse
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+from flask_login import LoginManager
 from celery import Celery
 
 from lm_heuristic.tree_search import RandomSearch, MonteCarloTreeSearch
@@ -11,6 +12,8 @@ from lm_heuristic.generation import GPT2Paraphrases, generate_from_cfg
 
 
 def run_flask_server(args):
+    # LOAD IN MEMORY LANGUAGE MODEL 
+
     with open(args.paraphrase_context, "r") as file:
         paraphrase_context = file.read()
 
@@ -25,12 +28,15 @@ def run_flask_server(args):
     random_searcher = RandomSearch(no_heuristic)
     montecarlo_searcher = MonteCarloTreeSearch(no_heuristic)
 
+    # LAUNCH FLASK SERVER 
     app = Flask(__name__)
     CORS(app)
-    app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
-    app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
-    celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
-    celery.conf.update(app.config)
+    user_id = 0
+
+    #app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
+    #app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
+    #celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
+    #celery.conf.update(app.config)
 
     @app.route("/", methods=["GET"])
     def handle_get():
@@ -38,6 +44,7 @@ def run_flask_server(args):
 
     @app.route("/", methods=["POST"])
     def handle_post():
+        print(request.url)
         data = request.get_json()
         print(data)
         if data["order"] == "grammar_sample":
@@ -54,7 +61,7 @@ def run_flask_server(args):
             return generate_from_cfg(
                 grammar_root, random_searcher, data["number_of_samples"], data["number_of_samples"]
             )
-        
+    
     def paraphrase(data):
         return paraphrase_generator(
             sentence=data["sentence_to_paraphrase"],
