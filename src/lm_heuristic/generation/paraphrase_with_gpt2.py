@@ -42,7 +42,7 @@ class GPT2Paraphrases:
         if sentence_encoder is not None:
             self.embed = sentence_encoder
         else:
-            self.embed = hub.load("https://tfhub.dev/google/universal-sentence-encoder-large/5")
+            self.embed = hub.load("https://tfhub.dev/google/universal-sentence-encoder/4")
 
         self.paraphasing_context_ids = self.gpt2_tokenizer.encode(paraphasing_context)
         self.context_size = len(self.paraphasing_context_ids)
