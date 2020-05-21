@@ -1,7 +1,8 @@
 import argparse
-from flask import Flask, request, jsonify
+from multiprocessing import Process
+
+from flask import Flask, request, jsonify, url_for
 from flask_cors import CORS
-from flask_login import LoginManager
 from celery import Celery
 
 from lm_heuristic.tree_search import RandomSearch, MonteCarloTreeSearch
@@ -12,7 +13,7 @@ from lm_heuristic.generation import GPT2Paraphrases, generate_from_cfg
 
 
 def run_flask_server(args):
-    # LOAD IN MEMORY LANGUAGE MODEL 
+    # LOAD IN MEMORY LANGUAGE MODEL
 
     with open(args.paraphrase_context, "r") as file:
         paraphrase_context = file.read()
@@ -28,47 +29,41 @@ def run_flask_server(args):
     random_searcher = RandomSearch(no_heuristic)
     montecarlo_searcher = MonteCarloTreeSearch(no_heuristic)
 
-    # LAUNCH FLASK SERVER 
+    # LAUNCH FLASK SERVER
     app = Flask(__name__)
     CORS(app)
-    user_id = 0
 
-    #app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
-    #app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
-    #celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
-    #celery.conf.update(app.config)
-
-    @app.route("/", methods=["GET"])
-    def handle_get():
+    @app.route("/ping", methods=["GET"])
+    def ping():
+        print("pong")
         return "pong"
 
-    @app.route("/", methods=["POST"])
-    def handle_post():
-        print(request.url)
+    @app.route("/paraphrase", methods=["POST"])
+    def paraphrase():
         data = request.get_json()
-        print(data)
-        if data["order"] == "grammar_sample":
-            return jsonify({"generations": generate_from_grammar(data)})
-
-        if data["order"] == "paraphrase":
-            return jsonify({"paraphrases": paraphrase(data)})
-
-    def generate_from_grammar(data):
-        grammar_root = CFGrammarNode.from_string(data["grammar"])
-        if data["strategy"] == "MCTS":
-            return generate_from_cfg(grammar_root, montecarlo_searcher, data["number_of_samples"], data["keep_top"])
-        elif data['strategy'] == "Random Sampling":
-            return generate_from_cfg(
-                grammar_root, random_searcher, data["number_of_samples"], data["number_of_samples"]
-            )
-    
-    def paraphrase(data):
-        return paraphrase_generator(
+        paraphrases = paraphrase_generator(
             sentence=data["sentence_to_paraphrase"],
             forbidden_words=data["forbidden_words"],
             nb_samples=data["number_of_samples"],
             top_n_to_keep=data["keep_top"],
         )
+
+        return jsonify({"paraphrases": paraphrases})
+
+    @app.route("/grammar_sampling", methods=["POST"])
+    def grammar_sampling():
+        print("here")
+        data = request.get_json()
+        grammar_root = CFGrammarNode.from_string(data["grammar"])
+        if data["strategy"] == "MCTS":
+            generations = generate_from_cfg(
+                grammar_root, montecarlo_searcher, data["number_of_samples"], data["keep_top"]
+            )
+        elif data["strategy"] == "Random Sampling":
+            generations = generate_from_cfg(
+                grammar_root, random_searcher, data["number_of_samples"], data["number_of_samples"]
+            )
+        return jsonify({"generations": generations})
 
     app.run()
 
