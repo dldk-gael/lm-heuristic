@@ -77,10 +77,11 @@ def initialize_random_search():
 
 @celery.task(bind=True, name="compute_paraphrase")
 def compute_paraphrase(self, data):
+    self.update_state(state="PROGRESS", meta={"detail":"Loading langage model ..."})
     if not PARAPHRASE_GENERATOR:
         initialize_paraphraser()
 
-    self.update_state(state="PROGRESS")
+    self.update_state(state="PROGRESS", meta={"detail":"Generating paraphrases ..."})
     paraphrases = PARAPHRASE_GENERATOR(
         sentence=data["sentence_to_paraphrase"],
         forbidden_words=data["forbidden_words"],
@@ -92,13 +93,12 @@ def compute_paraphrase(self, data):
 
 @celery.task(bind=True, name="grammar_random_search")
 def grammar_random_search(self, data):
+    self.update_state(state="PROGRESS", meta={"detail":"Initializing random searcher ..."})
     if not RANDOM_SEARCHER:
         initialize_random_search()
 
-    if not RANDOM_SEARCHER:
-        print("PROBLEM")
 
-    self.update_state(state="PROGRESS")
+    self.update_state(state="PROGRESS", meta={"detail":"Random sampling ..."})
     grammar_root = CFGrammarNode.from_string(data["grammar"])
     generations = generate_from_cfg(
         grammar_root, RANDOM_SEARCHER, data["number_of_samples"], data["number_of_samples"]
@@ -108,12 +108,13 @@ def grammar_random_search(self, data):
 
 @celery.task(bind=True, name="grammar_mcts")
 def grammar_mcts(self, data):
+    self.update_state(state="PROGRESS", meta={"detail":"Loading langage model ..."})
     if not MONTECARLO_SEARCHER:
         initialize_MCTS()
 
-    self.update_state(state="PROGRESS")
+    self.update_state(state="PROGRESS",  meta={"detail":"Perfoming the tree walks ..."})
     grammar_root = CFGrammarNode.from_string(data["grammar"])
     generations = generate_from_cfg(
-        grammar_root, MONTECARLO_SEARCHER, data["number_of_samples"], data["number_of_samples"]
+        grammar_root, MONTECARLO_SEARCHER, data["number_of_tree_walks"], data["keep_top"]
     )
     return generations
