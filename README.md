@@ -36,3 +36,7 @@ a tree dataset, perform different type of evaluation on it and store the results
 ## Examples
 
 Various examples on how to use all those module can be found in *examples/*
+
+## Server
+
+Contain the scripts to launch flask backend server and celery works that can provide paraphrase generation and grammar sampling. A example of a front-end using this API can be found [here](https://github.com/dldk-gael/grammar_generator). More information on server operation can be found on [server/readme](https://github.com/dldk-gael/lm-heuristic/tree/master/server)
