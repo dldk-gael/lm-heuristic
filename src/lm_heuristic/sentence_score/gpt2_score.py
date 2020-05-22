@@ -22,11 +22,12 @@ class GPT2Score(SentenceScore):
     """
 
     def __init__(
-        self, model_name: str, batch_size: int = 1, length_normalization: bool = False, verbose: bool = False,
+        self, model_name: str, model: GPT2LMHeadModel = None, batch_size: int = 1, length_normalization: bool = False, verbose: bool = False,
     ):
         """
         Initialize the pre-trained GPT2 model
         :param model_name : "gpt2", "gpt2-medium" or "gpt2-large"
+        :param model: to use an already loaded GPT2LMHeadModel
         :param length_normalization [boolean]
         :param batch_size: int
         :param verbose: bool, if true will print a tqdm progress bar during computation
@@ -35,7 +36,7 @@ class GPT2Score(SentenceScore):
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
 
         logger.info("Loading %s on %s", model_name, self.device)
-        self.model = GPT2LMHeadModel.from_pretrained(model_name)
+        self.model = model if model else GPT2LMHeadModel.from_pretrained(model_name)
         self.model.eval()
         self.model.to(self.device)
 

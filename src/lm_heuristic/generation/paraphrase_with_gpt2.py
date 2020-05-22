@@ -10,6 +10,7 @@ class GPT2Paraphrases:
     def __init__(
         self,
         gpt2_model_name: str = "gpt2-medium",
+        gpt2_model: GPT2LMHeadModel = None,
         sentence_encoder: Callable[[List[str]], List[np.ndarray]] = None,
         paraphasing_context: str = "",
         batch_size: int = 1,
@@ -18,6 +19,7 @@ class GPT2Paraphrases:
     ):
         """
         :param gpt2_model_name: distilgpt2, gpt2, gpt2-medium (by-default), gpt2-large or gpt2-xl
+        :param gpt2_model: to use an already memory-loaded model 
         :param sentence_embed: function that embed sentences, 
                 will be use to compare meaning between input_sentence and paraphrases
                 if not provide will use Universal Sentence Encoder from google
@@ -31,10 +33,8 @@ class GPT2Paraphrases:
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.gpt2_tokenizer = GPT2Tokenizer.from_pretrained(gpt2_model_name)
 
-        # Add a pad token to avoid warning during generation
-        self.gpt2_model = GPT2LMHeadModel.from_pretrained(
-            gpt2_model_name, pad_token_id=self.gpt2_tokenizer.eos_token_id
-        )
+        # TODO Add a pad token to avoid warning during generation
+        self.gpt2_model = gpt2_model if gpt2_model else GPT2LMHeadModel.from_pretrained(gpt2_model_name)
         self.gpt2_model.eval()
         self.gpt2_model.to(self.device)
 
