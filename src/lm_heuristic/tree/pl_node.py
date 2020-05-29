@@ -20,9 +20,9 @@ class PrologGrammarNode(Node):
         cls, prolog_engine: PrologGrammarEngine, str_grammar: str, feature_grammar: bool = False
     ) -> "PrologGrammarNode":
         if feature_grammar:
-            str_nltk_grammar = str(CFG.fromstring(str_grammar))
-        else:
             str_nltk_grammar = str(FeatureGrammar.fromstring(str_grammar))
+        else:
+            str_nltk_grammar = str(CFG.fromstring(str_grammar))
 
         prolog_engine.load_grammar(str_nltk_grammar)
 
@@ -49,7 +49,7 @@ class PrologGrammarNode(Node):
 
     def childrens(self) -> List["PrologGrammarNode"]:  # type: ignore
         return [
-            PrologGrammarNode(child_symbols, self.prolog_engine)
+            PrologGrammarNode(tuple(child_symbols), self.prolog_engine)
             for child_symbols in self.prolog_engine.children(list(self.symbols))
         ]
 
@@ -57,7 +57,7 @@ class PrologGrammarNode(Node):
         """
         return a random children
         """
-        raise ValueError("random_children should not be use with PrologNode")
+        #raise ValueError("random_children should not be use with PrologNode")
         return random.choice(self.childrens())
 
     def random_walk(self) -> "PrologGrammarNode":

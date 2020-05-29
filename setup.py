@@ -16,7 +16,8 @@ setup(
         "tensorflow",
         "tensorflow_hub",
         "flask",
-        "celery"
+        "celery",
+        "pyswip"
     ],
     url="https://github.com/dldk-gael/lm-heuristic",
     author="Gaël de Léséleuc",

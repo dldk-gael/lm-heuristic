@@ -43,9 +43,14 @@ class PrologGrammarEngine():
         answers = self.prolog.query("child([%s], X)" % ", ".join(symbols))
         return [self.format_answer(answer["X"]) for answer in answers]
 
-    def leaf(self, symbols: List[str]):
+    def all_leaf(self, symbols: List[str]):
         answers = self.prolog.query("leaf([%s], X)" % ", ".join(symbols))
         return [self.format_answer(answer["X"]) for answer in answers]
  
+    def leaf(self, symbols: List[str]):
+        answers = self.prolog.query("leaf([%s], X)" % ", ".join(symbols))
+        # TODO : add random here. How ?!
+        return self.format_answer(next(answers)["X"])
+
     def is_terminal(self, symbol: str):
         return symbol in self.terminals

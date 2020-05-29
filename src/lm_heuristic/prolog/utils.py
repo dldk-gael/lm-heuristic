@@ -4,7 +4,10 @@ from pyswip import Functor
 def convert_grammar_to_prolog(grammar_str):
     pl_predicates = []
 
+    # First lign on NLTK grammar is comment lign
     for lign in grammar_str.split("\n")[1:]:
+        # All need to be lower case so that prolog do not consider term as Variable
+        lign = lign.lower()
         rule = lign.split("->")
         lhs = rule[0].strip()
         rhs = rule[1].strip().split(" ")
