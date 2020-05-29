@@ -12,7 +12,7 @@ BATCH_SIZE = 1
 if __name__ == "__main__":
 
     # Initialize the prolog engine
-    prolog_engine = PrologGrammarEngine()
+    prolog_engine = PrologGrammarEngine("prolog/methods.pl")
     grammar_root = PrologGrammarNode.from_cfg_file(
         prolog_engine, path=GRAMMAR_FOLDER + GRAMMAR_NAME + ".cfg", feature_grammar=False
     )

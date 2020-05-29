@@ -7,13 +7,13 @@ from lm_heuristic.prolog.utils import convert_grammar_to_prolog
 class PrologGrammarEngine():
     all_ready_initialize = False
 
-    def __init__(self):
+    def __init__(self, path_to_methods_file):
         """
         Must be initialize only once.
         """
         assert not PrologGrammarEngine.all_ready_initialize
         self.prolog = Prolog()
-        self.prolog.consult(os.path.dirname(os.path.realpath(__file__)) + "/methods.pl")
+        self.prolog.consult(path_to_methods_file)
 
         self.current_predicates = []
         self.terminals = {}
