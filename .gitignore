@@ -18,3 +18,4 @@ src/lm_heuristic.egg-info/SOURCES.txt
 src/lm_heuristic.egg-info/top_level.txt
 server/dump.rdb
 dump.rdb
+.ipynb_checkpoints/feature_grammar_test-checkpoint.ipynb
