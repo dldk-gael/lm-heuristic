@@ -43,7 +43,7 @@ class PrologGrammarEngine:
             return []
 
     def leaf(self, symbols: List[str]) -> Union[List[str], None]:
-        answers = self.prolog.query("leaf([%s], X)" % join(symbols))
+        answers = self.prolog.query("random_leaf([%s], X)" % join(symbols))
         # TODO : add random here. How ?!
         try:
             answer = next(answers)

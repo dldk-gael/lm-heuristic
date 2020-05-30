@@ -43,7 +43,6 @@ leaf([Symb|Q], TerminalDerivation) :-
         rule(Symb, Symb_Rhs), leaf(Symb_Rhs, Y), leaf(Q, Z), append(Y, Z, TerminalDerivation)
     ).
 
-
 /**
 * all_valid_children :
 * - arg0 : a current derivation, eg: ["gael", v, np(obj)]
@@ -62,3 +61,20 @@ filter_valid_children([Child|Q], ValidChildren) :-
 all_valid_children(Derivation, ValidChildren) :-
     all_children(Derivation, Children), 
     filter_valid_children(Children, ValidChildren).
+
+
+/**  
+* random_leaf : same as leaf but create the solution in a random order
+*/
+rules(Rules) :- findall(rule(X,Y), rule(X,Y), Rules).
+random_rules(Rules) :- rules(X), random_permutation(X, Rules).
+random_rule(LHS, RHS) :- 
+    random_rules(Rules),
+    member(rule(LHS, RHS), Rules).
+
+random_leaf([], []).
+random_leaf([Symb|Q], TerminalDerivation) :- 
+    (
+        terminal(Symb) -> random_leaf(Q, Z), TerminalDerivation = [Symb|Z];
+        random_rule(Symb, Symb_Rhs), random_leaf(Symb_Rhs, Y), random_leaf(Q, Z), append(Y, Z, TerminalDerivation)
+    ).
