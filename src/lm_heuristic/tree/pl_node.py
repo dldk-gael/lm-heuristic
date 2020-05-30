@@ -14,6 +14,7 @@ class PrologGrammarNode(Node):
         Node.__init__(self)
         self.prolog_engine = prolog_engine
         self.symbols = tuple(symbols) if not isinstance(symbols, tuple) else symbols
+        self._childrens = None
 
     @classmethod
     def from_string(
@@ -49,10 +50,12 @@ class PrologGrammarNode(Node):
 
     def childrens(self) -> List["PrologGrammarNode"]:  # type: ignore
         # Note that we only return valid children !
-        return [
-            PrologGrammarNode(tuple(child_symbols), self.prolog_engine)
-            for child_symbols in self.prolog_engine.valid_children(list(self.symbols))
-        ] 
+        if self._childrens is None:        
+            self._childrens = [
+                PrologGrammarNode(tuple(child_symbols), self.prolog_engine)
+                for child_symbols in self.prolog_engine.valid_children(list(self.symbols))
+            ] 
+        return self._childrens
 
     def random_children(self) -> "PrologGrammarNode":
         """
