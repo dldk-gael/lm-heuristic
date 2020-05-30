@@ -60,7 +60,7 @@ class PrologGrammarNode(Node):
         """
         #raise ValueError("random_children should not be use with PrologNode")
         _childrens = self.childrens()
-        return random.choice(_childrens) if _childrens is not None else None
+        return random.choice(_childrens) if len(_childrens) != 0 else None
 
     def random_walk(self):
         leaf_symbols = self.prolog_engine.leaf(self.symbols)
