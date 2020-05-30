@@ -15,7 +15,7 @@ def convert_grammar_to_prolog(grammar_str):
         pl_predicates.append("rule(%s, [%s])" % (lhs, ", ".join(rhs)))
 
     for terminal in set(re.findall(r"'\w+'", grammar_str)):
-        pl_predicates.append("terminal(%s)" % terminal)
+        pl_predicates.append("terminal(%s)" % terminal.lower())
 
     return pl_predicates
 
