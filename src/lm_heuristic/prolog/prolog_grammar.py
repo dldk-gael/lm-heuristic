@@ -1,9 +1,9 @@
 from typing import List, Union
 from pyswip import Prolog
-from lm_heuristic.prolog.utils import convert_grammar_to_prolog
+from lm_heuristic.prolog.utils import convert_grammar_to_prolog, format_term, join
 
 
-class PrologGrammarEngine():
+class PrologGrammarEngine:
     all_ready_initialize = False
 
     def __init__(self, path_to_methods_file):
@@ -32,28 +32,22 @@ class PrologGrammarEngine():
         self.current_predicates = convert_grammar_to_prolog(ntlk_str_grammar)
         for rule in self.current_predicates:
             self.prolog.assertz(rule)
+            # print("%s." % rule)
         self.retrieve_terminal()
-    
-    @staticmethod
-    def format_term(term):
-        if isinstance(term, list):
-            return [PrologGrammarEngine.format_term(x) for x in term]
-        else:
-            return term.value
 
     def valid_children(self, symbols: List[str]) -> List[List[str]]:
         try:
-            answer = next(self.prolog.query("all_valid_children([%s], X)" % ", ".join(symbols)))
-            return self.format_term(answer["X"])
+            answer = next(self.prolog.query("all_valid_children([%s], X)" % join(symbols)))
+            return format_term(answer["X"])
         except StopIteration:
             return []
 
     def leaf(self, symbols: List[str]) -> Union[List[str], None]:
-        answers = self.prolog.query("leaf([%s], X)" % ", ".join(symbols))
+        answers = self.prolog.query("leaf([%s], X)" % join(symbols))
         # TODO : add random here. How ?!
         try:
             answer = next(answers)
-            return self.format_term(answer["X"])
+            return format_term(answer["X"])
         except StopIteration:
             return None
 

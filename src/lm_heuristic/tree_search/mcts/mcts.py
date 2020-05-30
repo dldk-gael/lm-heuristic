@@ -100,7 +100,6 @@ class MonteCarloTreeSearch(TreeSearch):
 
         # Wrap the root node in a counter object in order to maintain statistic on the path and rewards
         self.counter_root = CounterNode(reference_node=root, parent=None)
-        self.counter_root = CounterNode(reference_node=root, parent=None)
 
         current_root = self.counter_root
 
