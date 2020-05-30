@@ -1,6 +1,6 @@
 from nltk import CFG
 from lm_heuristic.prolog import PrologGrammarEngine
-from lm_heuristic.tree import PrologGrammarNode
+from lm_heuristic.tree import PrologGrammarNode, TreeStats
 from lm_heuristic.tree_search import MonteCarloTreeSearch, AllocationStrategy
 from lm_heuristic.heuristic import Heuristic
 from lm_heuristic.sentence_score import GPT2Score

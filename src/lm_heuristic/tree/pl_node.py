@@ -7,13 +7,13 @@ from lm_heuristic.prolog import PrologGrammarEngine
 
 
 class PrologGrammarNode(Node):
-    def __init__(self, symbols: Union[Tuple[str], str], prolog_engine: PrologGrammarEngine):
+    def __init__(self, symbols, prolog_engine: PrologGrammarEngine):
         """
         Only use if prologe_engine is loaded with a grammar
         """
         Node.__init__(self)
         self.prolog_engine = prolog_engine
-        self.symbols = (symbols,) if not isinstance(symbols, tuple) else symbols
+        self.symbols = tuple(symbols) if not isinstance(symbols, tuple) else symbols
 
     @classmethod
     def from_string(
@@ -48,20 +48,26 @@ class PrologGrammarNode(Node):
         return True
 
     def childrens(self) -> List["PrologGrammarNode"]:  # type: ignore
+        # Note that we only return valid children !
         return [
             PrologGrammarNode(tuple(child_symbols), self.prolog_engine)
-            for child_symbols in self.prolog_engine.children(list(self.symbols))
-        ]
+            for child_symbols in self.prolog_engine.valid_children(list(self.symbols))
+        ] 
 
     def random_children(self) -> "PrologGrammarNode":
         """
         return a random children
         """
         #raise ValueError("random_children should not be use with PrologNode")
-        return random.choice(self.childrens())
+        _childrens = self.childrens()
+        return random.choice(_childrens) if _childrens is not None else None
 
-    def random_walk(self) -> "PrologGrammarNode":
-        return PrologGrammarNode(self.prolog_engine.leaf(list(self.symbols)), self.prolog_engine)
+    def random_walk(self):
+        leaf_symbols = self.prolog_engine.leaf(self.symbols)
+        if leaf_symbols:
+            return PrologGrammarNode(tuple(leaf_symbols), self.prolog_engine)
+        else:
+            return None # when there is no leaf from current node (will be useful for FeatureGrammar)
 
     def __str__(self):
         return " ".join(map(str, self.symbols)) + "."

@@ -36,7 +36,9 @@ class TreeStats(Timer):
         """
         node = self.root
         depth = 1  # by choice root's depth = 1 (and not 0)
-        while not node.is_terminal():
+        # TODO change None check
+        # Has to be used for prolog grammar node (can be non terminal but having no children)
+        while node is not None and not node.is_terminal():
             branching_factor = len(node.childrens())
             self._branching_factors.setdefault(depth, []).append(branching_factor)
             node = node.random_children()

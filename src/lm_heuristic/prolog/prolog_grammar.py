@@ -1,5 +1,4 @@
-import os
-from typing import List
+from typing import List, Union
 from pyswip import Prolog
 from lm_heuristic.prolog.utils import convert_grammar_to_prolog
 
@@ -36,21 +35,27 @@ class PrologGrammarEngine():
         self.retrieve_terminal()
     
     @staticmethod
-    def format_answer(answer):
-        return [str(var) for var in answer]
+    def format_term(term):
+        if isinstance(term, list):
+            return [PrologGrammarEngine.format_term(x) for x in term]
+        else:
+            return term.value
 
-    def children(self, symbols: List[str]):
-        answers = self.prolog.query("child([%s], X)" % ", ".join(symbols))
-        return [self.format_answer(answer["X"]) for answer in answers]
+    def valid_children(self, symbols: List[str]) -> List[List[str]]:
+        try:
+            answer = next(self.prolog.query("all_valid_children([%s], X)" % ", ".join(symbols)))
+            return self.format_term(answer["X"])
+        except StopIteration:
+            return []
 
-    def all_leaf(self, symbols: List[str]):
-        answers = self.prolog.query("leaf([%s], X)" % ", ".join(symbols))
-        return [self.format_answer(answer["X"]) for answer in answers]
- 
-    def leaf(self, symbols: List[str]):
+    def leaf(self, symbols: List[str]) -> Union[List[str], None]:
         answers = self.prolog.query("leaf([%s], X)" % ", ".join(symbols))
         # TODO : add random here. How ?!
-        return self.format_answer(next(answers)["X"])
+        try:
+            answer = next(answers)
+            return self.format_term(answer["X"])
+        except StopIteration:
+            return None
 
     def is_terminal(self, symbol: str):
         return symbol in self.terminals
