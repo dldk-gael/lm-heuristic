@@ -66,11 +66,9 @@ all_valid_children(Derivation, ValidChildren) :-
 /**  
 * random_leaf : same as leaf but create the solution in a random order
 */
-rules(Rules) :- findall(rule(X,Y), rule(X,Y), Rules).
-random_rules(Rules) :- rules(X), random_permutation(X, Rules).
-random_rule(LHS, RHS) :- 
-    random_rules(Rules),
-    member(rule(LHS, RHS), Rules).
+rules(LHS, Rules) :- findall(rule(LHS,RHS), rule(LHS,RHS), Rules).
+random_rules(LHS, Rules) :- rules(LHS, X), random_permutation(X, Rules).
+random_rule(LHS, RHS) :- random_rules(LHS, Rules), member(rule(LHS, RHS), Rules).
 
 random_leaf([], []).
 random_leaf([Symb|Q], TerminalDerivation) :- 
