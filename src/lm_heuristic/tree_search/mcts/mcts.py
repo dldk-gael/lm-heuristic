@@ -1,5 +1,5 @@
 import math
-from typing import List, Tuple, Dict 
+from typing import List, Tuple, Dict
 
 from lm_heuristic.heuristic import Heuristic
 from lm_heuristic.tree import CounterNode, Node, TreeStats
@@ -25,6 +25,7 @@ class MonteCarloTreeSearch(TreeSearch):
         c: int = 1,
         d: int = 1000,
         t: int = 0,
+        stats_samples: int = 100,
         allocation_strategy: AllocationStrategy = AllocationStrategy.UNIFORM,
         verbose: bool = False,
         name: str = "MCTS",
@@ -36,16 +37,18 @@ class MonteCarloTreeSearch(TreeSearch):
         :param c: hyperparameter for upper confidence bound, control the exploration vs exploitation ratio
         :param d: hyperparameter for upper confidence bound
         :param t: threshold for expansion policy (see expansion_policy method)
+        :param stats_samples: number of tree walks used to assess tree size
         :param allocation_strategy: strategy that determine how many tree walks will be performed at each layer
         """
         TreeSearch.__init__(self, heuristic, buffer_size)
         self.c = c
         self.d = d
         self.t = t
+        self.stats_samples = stats_samples
         self._name = name
         self.allocation_strategy = allocation_strategy
         self._path: List[CounterNode] = []
-        self.counter_root : CounterNode
+        self.counter_root: CounterNode
         self.verbose = verbose
 
         if self.verbose:
@@ -58,7 +61,7 @@ class MonteCarloTreeSearch(TreeSearch):
         This had to be split in order to not recompute several times this step when using meta-search strategy
         """
         stats = TreeStats(root)
-        stats.accumulate_stats(nb_samples=10)
+        stats.accumulate_stats(nb_samples=self.stats_samples)
 
         if self.verbose:
             print("A statistic search was performed on the tree\n" "\t- time spent : %0.3fs" % stats.time_spent())
@@ -145,8 +148,8 @@ class MonteCarloTreeSearch(TreeSearch):
         # this is usefull for evaluation function that can beneficiate of //
         # by using a dict and not a list for the buffer representation,
         # we can handle the case where same leaf end up several times in the buffer
-        buffer: Dict[int, List[CounterNode]] = dict()  
-        buffer_idx : Dict[int, Node] = dict() 
+        buffer: Dict[int, List[CounterNode]] = dict()
+        buffer_idx: Dict[int, Node] = dict()
 
         def flush_buffer():
             """

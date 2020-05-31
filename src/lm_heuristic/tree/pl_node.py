@@ -1,5 +1,5 @@
 import os
-from typing import Tuple, Union, List
+from typing import List, Union
 import random
 from nltk.grammar import CFG, FeatureGrammar
 from lm_heuristic.tree import Node
@@ -7,19 +7,31 @@ from lm_heuristic.prolog import PrologGrammarEngine
 
 
 class PrologGrammarNode(Node):
-    def __init__(self, symbols, prolog_engine: PrologGrammarEngine):
+    """
+    Grammar node that use a prolog engine to compute :
+    - the children of derivation
+    - a random sentence that can be derivate from current node
+    """
+
+    def __init__(self, symbols: List[str], prolog_engine: PrologGrammarEngine):
         """
-        Only use if prologe_engine is loaded with a grammar
+        :param symbols ordered sequences of symbol representing the current derivation string
+        :param prolog_engine: interface toward Prolog
         """
         Node.__init__(self)
         self.prolog_engine = prolog_engine
-        self.symbols = tuple(symbols) if not isinstance(symbols, tuple) else symbols
-        self._childrens = None
+        self._childrens: List["PrologGrammarNode"] = []
+        self.symbols = symbols
 
     @classmethod
     def from_string(
         cls, prolog_engine: PrologGrammarEngine, str_grammar: str, feature_grammar: bool = False
     ) -> "PrologGrammarNode":
+        """
+        1/ Parse the grammar into prolog predicates.
+        2/ Load the knowledge into the prolog engine.
+        3/ Return the node corresponding to the start symbol
+        """
         if feature_grammar:
             str_nltk_grammar = str(FeatureGrammar.fromstring(str_grammar))
         else:
@@ -27,15 +39,14 @@ class PrologGrammarNode(Node):
 
         prolog_engine.load_grammar(str_nltk_grammar)
 
-        return cls("s", prolog_engine)
+        return cls(["s"], prolog_engine)
 
     @classmethod
     def from_cfg_file(
         cls, prolog_engine: PrologGrammarEngine, path: str, feature_grammar: bool = False
     ) -> "PrologGrammarNode":
         """
-        :param path: path to file containing a context-free grammar
-        :return: new Derivation tree node
+        :param path: path toward a file containing the grammar
         """
         assert os.path.exists(path)
         with open(path) as file:
@@ -50,27 +61,25 @@ class PrologGrammarNode(Node):
 
     def childrens(self) -> List["PrologGrammarNode"]:  # type: ignore
         # Note that we only return valid children !
-        if self._childrens is None:        
+        if self._childrens == []:
             self._childrens = [
-                PrologGrammarNode(tuple(child_symbols), self.prolog_engine)
+                PrologGrammarNode(child_symbols, self.prolog_engine)
                 for child_symbols in self.prolog_engine.valid_children(list(self.symbols))
-            ] 
+            ]
         return self._childrens
 
     def random_children(self) -> "PrologGrammarNode":
         """
         return a random children
         """
-        #raise ValueError("random_children should not be use with PrologNode")
-        _childrens = self.childrens()
-        return random.choice(_childrens) if len(_childrens) != 0 else None
+        return random.choice(self.childrens())
 
-    def random_walk(self):
+    def random_walk(self) -> Union["PrologGrammarNode", None]:
         leaf_symbols = self.prolog_engine.leaf(self.symbols)
         if leaf_symbols:
-            return PrologGrammarNode(tuple(leaf_symbols), self.prolog_engine)
+            return PrologGrammarNode(leaf_symbols, self.prolog_engine)
         else:
-            return None # when there is no leaf from current node (will be useful for FeatureGrammar)
+            return None
 
     def __str__(self):
         return " ".join(map(str, self.symbols)) + "."

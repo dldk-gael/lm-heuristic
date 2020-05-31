@@ -31,10 +31,12 @@ class Node(ABC):
         """
         ...
 
-    def random_walk(self) -> "Node":
+    def random_walk(self) -> Union["Node", None]:
         """
         Perform a random walk from current node to a terminal node
-        :return:
+        and return a leaf.
+        Can return None if no terminal node can be access from current node
+        (for example when using feature grammar)
         """
         node = self
         while not node.is_terminal():
