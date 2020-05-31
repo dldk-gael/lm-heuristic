@@ -25,7 +25,7 @@ class RandomRestartsMCTS(MonteCarloTreeSearch):
         best results
         """
         stats = TreeStats(root)
-        stats.accumulate_stats(nb_samples=100)
+        stats.accumulate_stats(nb_samples=self.stats_samples)
 
         if self.verbose:
             print("A statistic search was performed on the tree\n" "\t- time spent : %0.3fs" % stats.time_spent())
