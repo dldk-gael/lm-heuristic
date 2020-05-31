@@ -58,7 +58,7 @@ class MonteCarloTreeSearch(TreeSearch):
         This had to be split in order to not recompute several times this step when using meta-search strategy
         """
         stats = TreeStats(root)
-        stats.accumulate_stats(nb_samples=100)
+        stats.accumulate_stats(nb_samples=10)
 
         if self.verbose:
             print("A statistic search was performed on the tree\n" "\t- time spent : %0.3fs" % stats.time_spent())
