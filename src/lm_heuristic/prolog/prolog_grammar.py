@@ -18,6 +18,10 @@ class PrologGrammarEngine:
         self.terminals = {}
         PrologGrammarEngine.all_ready_initialize = True
 
+        self.valid_children_counter = 0
+        self.valid_children_with_rleaf_counter = 0
+        self.leaf_counter = 0
+
     def delete_grammar(self):
         for rule in self.current_predicates:
             self.prolog.retractall(rule)
@@ -36,6 +40,7 @@ class PrologGrammarEngine:
         self.retrieve_terminal()
 
     def valid_children(self, symbols: List[str]) -> List[List[str]]:
+        self.valid_children_counter += 1
         try:
             answer = next(self.prolog.query("all_valid_children([%s], X)" % join(symbols)))
             return format_term(answer["X"])
@@ -43,6 +48,7 @@ class PrologGrammarEngine:
             return []
 
     def leaf(self, symbols: List[str]) -> Union[List[str], None]:
+        self.leaf_counter += 1
         answers = self.prolog.query("random_leaf([%s], X)" % join(symbols))
         # TODO : add random here. How ?!
         try:
