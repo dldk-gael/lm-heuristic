@@ -12,15 +12,13 @@ class RandomSearch(TreeSearch):
     Perfom a random search in the tree
     """
 
-    def __init__(
-        self, heuristic: Heuristic, buffer_size: int = 1, verbose: bool = False
-    ):
+    def __init__(self, heuristic: Heuristic, buffer_size: int = 1, verbose: bool = False):
         """
         :param heuristic : heuristic to eval leaves score
         :param buffer_size: number of terminal nodes to store in a buffer before evaluating them in an single batch
         """
         TreeSearch.__init__(self, heuristic, buffer_size)
-        self._path = []
+        self._path: List[Node] = []
         self.verbose = verbose
         self._name = "Random Search"
 
@@ -28,7 +26,7 @@ class RandomSearch(TreeSearch):
             print("--- INITIALIZATION ---\n %s\n" % str(self))
 
     @staticmethod
-    def _random_expansion(root: Node) -> (Node, List[Node]):
+    def _random_expansion(root: Node) -> Tuple[Node, List[Node]]:
         """
         Perform a random expension from the root to a terminal node
         :return : the terminal node and the path taken
@@ -41,7 +39,9 @@ class RandomSearch(TreeSearch):
             node = random.choice(node.childrens())
             path.append(node)
 
-    def _best_in_buffer(self, buffer) -> (Node, List[Node], float):
+        return node, path
+
+    def _best_in_buffer(self, buffer: List[Tuple[Node, List[Node]]]) -> Tuple[Node, List[Node], float]:
         """
         :param buffer list of terminal nodes
         :return tuple(Node, float, List[Node]) the best terminal node contained in the buffer, its path and its value
@@ -49,7 +49,7 @@ class RandomSearch(TreeSearch):
         scores = self.heuristic.eval([n[0] for n in buffer])
         return buffer[np.argmax(scores)] + (max(scores),)
 
-    def _search(self, root: Node, nb_of_tree_walks: int) -> (Node, float):
+    def _search(self, root: Node, nb_of_tree_walks: int):
         """
         :param root : Node from which the search will start
         :param nb_of_tree_walks: number of random expensions that will be computed
@@ -60,19 +60,17 @@ class RandomSearch(TreeSearch):
         if self.verbose:
             print("--- SEARCHING ---")
 
-        best_leaf = None
-        best_leaf_value = -1
-        buffer = []
+        buffer: List[Tuple[Node, List[Node]]] = []
 
         def flush_buffer():
-            nonlocal buffer, best_leaf, best_leaf_value, self
+            nonlocal buffer, self
             buffer_eval_results = self._best_in_buffer(buffer)
             best_leaf_in_buffer = buffer_eval_results[0]
             best_path_in_buffer = buffer_eval_results[1]
             best_leaf_value_in_buffer = buffer_eval_results[2]
-            if best_leaf_value_in_buffer > best_leaf_value:
-                best_leaf = best_leaf_in_buffer
-                best_leaf_value = best_leaf_value_in_buffer
+            if best_leaf_value_in_buffer > self.best_leaf_value:
+                self.best_leaf = best_leaf_in_buffer
+                self.best_leaf_value = best_leaf_value_in_buffer
                 self._path = best_path_in_buffer
             buffer = []
 
@@ -89,12 +87,9 @@ class RandomSearch(TreeSearch):
         if self.verbose:
             print("\rtree walks performed: 100%\n")
 
-        return best_leaf, best_leaf_value
-
     def path(self) -> List[Node]:
         """
         :return path taken from root node to best terminal node that has been found
         """
         assert self._path != [], "Requesting best path but no search was performed yet"
         return self._path
-

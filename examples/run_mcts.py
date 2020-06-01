@@ -35,5 +35,5 @@ if __name__ == "__main__":
     )
 
     # Perform the search and print some info
-    best_node = mcts(grammar_root, nb_of_tree_walks=1)
+    best_node = mcts(grammar_root, nb_of_tree_walks=100)
     mcts.print_search_info()

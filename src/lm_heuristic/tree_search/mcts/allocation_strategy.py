@@ -5,12 +5,15 @@ import math
 class AllocationStrategy(Enum):
     UNIFORM = 1
     LINEAR = 2
+    ALL_FROM_ROOT = 3
 
     def __str__(self):
         if self == AllocationStrategy.UNIFORM:
             return "uniform"
         if self == AllocationStrategy.LINEAR:
             return "linear"
+        if self == AllocationStrategy.ALL_FROM_ROOT:
+            return "all from root"
 
 
 class RessourceAllocation:
@@ -30,14 +33,13 @@ class RessourceAllocation:
         allocation_strategy: AllocationStrategy,
         total_ressources: int,
         depth: int,
-        branching_factor: int,
-        min_ressources_per_move: int = 1,
     ):
         """
-        :param allocation_strategy: UNIFORM or LINEAR
-            if UNIFORM, the total ressources available will be equally divised among all layers
+        :param allocation_strategy: UNIFORM, LINEAR, ALL_FROM_ROOT
+            if UNIFORM, the total ressources available will be equally divised among all first 80% layers
             if LINEAR, more ressources will be avaible for first move and less for deeper move
                        with a linear repartition across layer
+            if ALL_FROM_ROOT, all the ressources will be used from root without ever going deeper in the tree
         :param total_ressources: total ressources available for the entire search
         :param depth: mean depth of the tree
         :param branching_factor: mean branching factor of the tree
@@ -46,34 +48,38 @@ class RessourceAllocation:
         self.allocation_strategy = allocation_strategy
         self.total_ressources = total_ressources
         self.depth = depth
-        self.min_ressources_per_move = min_ressources_per_move
-
-        # if uniform strategy is chosen, total_ressources // max_depth will be allowed at each layers
-        # however, once near depth_max, we won't need all the ressources
-        # more precisly at depth d = depth_max - ln(total_ressources // max_depth) / branching_factor
-        # total_ressources // max_depth will be sufficient to visit all leaves
-        # so we will re-attribute the ressources of child to parents
-        # this is not an exact calculus but it will allow to better respect the total_ressources
-        ressource_per_layer = max(total_ressources // depth, 1)
-        nb_of_layers_non_evaluated = math.log(ressource_per_layer) / branching_factor
-        self.correction = int(ressource_per_layer / (depth - nb_of_layers_non_evaluated))
 
         # if linear strategy is chosen, the parameter a and b are computed such as :
         #   f(d) = a * d + b give the number of ressources allowed at depth d
-        #   f(d_max) = min_ressources per move
-        #   sum over d (= 1 .. d_max) of f(d) = total_ressources
+        #   f(mean_depth) = 0
+        #   sum over d (= 1 .. mean_depth) of f(d) = total_ressources
         if allocation_strategy == AllocationStrategy.LINEAR:
-            self.a = 2 / (1 - depth) * (total_ressources / depth - min_ressources_per_move)
-            self.b = min_ressources_per_move - 2 / (1 - depth) * (total_ressources - depth * min_ressources_per_move)
+            self.a = 2 / (1 - depth) * (total_ressources / (depth))
+            self.b = - 2 / (1 - depth) * (total_ressources)
 
     def uniform(self) -> int:
-        return self.total_ressources // self.depth + self.correction
+        # if uniform strategy is chosen, total_ressources // max_depth will be allowed at each layers
+        # however, once near depth_max, we won't need all the ressources
+        # as a result, we arbitly divide the ressource among the first 80% first layer
+        return max(round(self.total_ressources / (0.8 * self.depth)), 1)
 
     def linear(self, current_depth: int) -> int:
-        return int(self.a * current_depth + self.b)
+        # 80% to shift the ressource allocation toward the first depth
+        # because near depth_max we do not need a lot of ressources
+        return max(int(self.a * 0.8 * current_depth + self.b), 1)
+
+    def all_from_root(self, current_depth: int) -> int:
+        if current_depth == 1:
+            return self.total_ressources
+        else:
+            raise ValueError(
+                "Request nb tree walks allowed from depth != 1 but allocation strategy selected is all from root"
+            )
 
     def __call__(self, current_depth: int) -> int:
         if self.allocation_strategy == AllocationStrategy.UNIFORM:
-            return max(self.uniform(), self.min_ressources_per_move)
+            return self.uniform()
+        elif self.allocation_strategy == AllocationStrategy.LINEAR:
+            return self.linear(current_depth)
         else:
-            return max(self.uniform(), self.linear(current_depth))
+            return self.all_from_root(current_depth)

@@ -24,10 +24,10 @@ class TreeSearch(ABC, Timer):
 
     def reset(self):
         """
-        Reset the search memory, the heuristic memory and the timer 
+        Reset the search memory, the heuristic memory and the timer
         """
         self.best_leaf = None
-        self.best_leaf_value = None
+        self.best_leaf_value = -1
         self.heuristic.reset()
         self.reset_timer()
 
@@ -40,7 +40,7 @@ class TreeSearch(ABC, Timer):
         :return: best leave that was found and its evaluation value
         """
         self.reset()
-        self.best_leaf, self.best_leaf_value = self._search(root, nb_of_tree_walks)
+        self._search(root, nb_of_tree_walks)
         return self.best_leaf, self.best_leaf_value
 
     def print_search_info(self):
@@ -103,9 +103,10 @@ class TreeSearch(ABC, Timer):
         return sorted(unique_leaf_value, key=lambda x: x[1], reverse=True)[:top_n]
 
     @abstractmethod
-    def _search(self, root: Node, nb_of_tree_walks: int) -> Tuple[Node, float]:
+    def _search(self, root: Node, nb_of_tree_walks: int):
         """
-        search and return the terminal node that maximise the evalution function and its value
+        search the terminal node that maximise the evalution function:
+        store the node and its value is best_leaf, best_leaf_value
         """
         ...
 

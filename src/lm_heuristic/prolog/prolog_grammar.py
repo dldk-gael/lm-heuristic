@@ -89,3 +89,10 @@ class PrologGrammarEngine:
         return true is the symbol is terminal
         """
         return symbol in self.terminals
+
+    def set_random_seed(self, seed: int):
+        """
+        set the random seed of prolog engine
+        """
+        # TODO This does not seem to work !
+        self.prolog.assertz("set_random(seed(%d))"%seed)
