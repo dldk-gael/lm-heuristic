@@ -174,8 +174,8 @@ class MonteCarloTreeSearch(TreeSearch):
                     self.best_leaf_value = reward
                     self.best_leaf = leaf
                 counter_node.backpropagate(reward, leaf)
-            self._buffer = dict()
-            self._buffer_idx = dict()
+        self._buffer = dict()
+        self._buffer_idx = dict()
 
     def _single_tree_walk(self, current_root: CounterNode) -> Tuple[CounterNode, Node]:
         """
