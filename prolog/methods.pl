@@ -53,7 +53,7 @@ leaf([Symb|Q], TerminalDerivation) :-
 filter_valid_children([], []).
 filter_valid_children([Child|Q], ValidChildren) :-
     filter_valid_children(Q, Vq),
-    % Have to make a copy in order to return generic Variable in the results
+    % Have to make a copy in order not to return generic Variable in the results
     copy_term(Child, ChildCopy), 
     (leaf(ChildCopy, _) -> append([Child], Vq, ValidChildren);
     ValidChildren = Vq).

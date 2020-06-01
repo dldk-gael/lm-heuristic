@@ -37,7 +37,7 @@ class PrologGrammarNode(Node):
         else:
             str_nltk_grammar = str(CFG.fromstring(str_grammar))
 
-        prolog_engine.load_grammar(str_nltk_grammar)
+        prolog_engine.load_grammar(str_nltk_grammar, feature_grammar)
 
         return cls(["s"], prolog_engine)
 
