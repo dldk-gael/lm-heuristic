@@ -1,7 +1,6 @@
 import os
 from typing import List, Union
 import random
-from nltk.grammar import CFG, FeatureGrammar
 from lm_heuristic.tree import Node
 from lm_heuristic.prolog import PrologGrammarEngine
 
@@ -25,18 +24,13 @@ class PrologGrammarNode(Node):
 
     @classmethod
     def from_string(
-        cls, prolog_engine: PrologGrammarEngine, str_grammar: str, feature_grammar: bool = False
+        cls, prolog_engine: PrologGrammarEngine, str_nltk_grammar: str, feature_grammar: bool = False
     ) -> "PrologGrammarNode":
         """
         1/ Parse the grammar into prolog predicates.
         2/ Load the knowledge into the prolog engine.
         3/ Return the node corresponding to the start symbol
         """
-        if feature_grammar:
-            str_nltk_grammar = str(FeatureGrammar.fromstring(str_grammar))
-        else:
-            str_nltk_grammar = str(CFG.fromstring(str_grammar))
-
         prolog_engine.load_grammar(str_nltk_grammar, feature_grammar)
 
         return cls(["s"], prolog_engine)
