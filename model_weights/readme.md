@@ -1,0 +1,1 @@
+Here are stored the weight of model used for paraphrasing, sentences scoring, etc

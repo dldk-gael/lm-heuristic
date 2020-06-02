@@ -50,13 +50,16 @@ def abort_task(task_id):
 def paraphrase_status(task_id):
     return task_info(compute_paraphrase.AsyncResult(task_id))
 
+
 @app.route("/status/grammar_random_search/<task_id>", methods=["GET"])
 def grammar_random_search_status(task_id):
     return task_info(grammar_random_search.AsyncResult(task_id))
 
+
 @app.route("/status/grammar_mcts/<task_id>", methods=["GET"])
 def grammar_mcts_status(task_id):
     return task_info(grammar_mcts.AsyncResult(task_id))
+
 
 def task_info(task):
     details = task.info["detail"] if task.state == "PROGRESS" else ""
