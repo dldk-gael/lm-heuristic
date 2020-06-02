@@ -14,6 +14,8 @@ class RandomRestartsMCTS(MonteCarloTreeSearch):
     in one single MCTS
     """
 
+    # TODO CLEAN / CHANGE THAT 
+    # MAKE SURE THAT EVERYTHING IS RESET BETWEEN TWO RANDOM RESTARTS
     def __init__(self, nb_random_restarts: int = 1, **mcts_parameters):
         MonteCarloTreeSearch.__init__(self, **mcts_parameters)
         self.nb_random_restarts = nb_random_restarts

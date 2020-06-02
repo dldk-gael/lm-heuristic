@@ -149,7 +149,8 @@ class MonteCarloTreeSearch(TreeSearch):
                 leaf_value = self.heuristic.value_from_memory(leaf)
                 counter_node.backpropagate(leaf_value, leaf)
             else:  # Store it in the buffer
-                self._buffer.setdefault(hash(leaf), []).append(counter_node)
+                self._buffer.setdefault(hash(leaf), [])
+                self._buffer[hash(leaf)].append(counter_node)
                 self._buffer_idx[hash(leaf)] = leaf
 
             if len(self._buffer) == self.buffer_size:
