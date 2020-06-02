@@ -5,8 +5,8 @@ from lm_heuristic.heuristic import Heuristic
 from lm_heuristic.sentence_score import GPT2Score
 
 
-GRAMMAR_FOLDER = "data/cfg/"
-GRAMMAR_NAME = "ex_1_small"
+GRAMMAR_FOLDER = "data/fcfg/"
+GRAMMAR_NAME = "feat0"
 BATCH_SIZE = 1
 
 if __name__ == "__main__":
@@ -14,7 +14,7 @@ if __name__ == "__main__":
     # Initialize the prolog engine
     prolog_engine = PrologGrammarEngine("prolog/methods.pl")
     grammar_root = PrologGrammarNode.from_cfg_file(
-        prolog_engine, path=GRAMMAR_FOLDER + GRAMMAR_NAME + ".cfg", feature_grammar=False
+        prolog_engine, path=GRAMMAR_FOLDER + GRAMMAR_NAME + ".fcfg", feature_grammar=True
     )
     prolog_engine.set_random_seed(1)
     # Load heuristic function <- GPT2 score

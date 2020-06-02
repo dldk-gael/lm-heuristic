@@ -1,14 +1,12 @@
-from lm_heuristic.prolog.utils import convert_grammar_to_prolog
-from nltk.grammar import CFG
+from nltk.grammar import FeatureGrammar
+from lm_heuristic.prolog.parser import ParseToProlog
 
+GRAMMAR_FOLDER = "data/fcfg/"
+GRAMMAR_NAME = "toy"
 
-GRAMMAR_FOLDER = "data/cfg/"
-GRAMMAR_NAME = "ex_1_small"
-
-with open(GRAMMAR_FOLDER + GRAMMAR_NAME + ".cfg") as file:
+with open(GRAMMAR_FOLDER + GRAMMAR_NAME + ".fcfg") as file:
     str_grammar = file.read()
-    str_nltk_grammar = str(CFG.fromstring(str_grammar))
-    predicates = convert_grammar_to_prolog(str_nltk_grammar)
-
-for predicate in predicates:
+    
+prolog_predicates = ParseToProlog(feature_grammar=True)(str_grammar)
+for predicate in prolog_predicates:
     print("%s."%predicate)

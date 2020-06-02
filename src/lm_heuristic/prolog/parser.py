@@ -5,6 +5,26 @@ from nltk.sem import Variable
 
 
 class ParseToProlog:
+    """
+    Use to transform NLTK grammar into prolog predicates.
+    Support both feature grammar and vanilla context free grammar.
+
+    Grammar that has the form : 
+        # Rules
+        s -> np vp
+        np -> n | det n
+        ...
+        # Lexicon
+        v -> 'want' | 'wants'
+
+    Will be transform to a list of prolog predicates
+        rule(s, [np, vp])
+        rule(np, [n])
+        rule(np, [det, n])
+        ...
+        rule(v, ['want'])
+        terminal('want)
+    """
     def __init__(self, feature_grammar: bool = False):
         self.feature_grammar = feature_grammar
         self.terminal_symbols: Set[str] = set()
@@ -75,23 +95,6 @@ class ParseToProlog:
         return pl_predicates
     
     def _parse_CFG_str_grammar(self, grammar_str: str) -> List[str]:
-        """
-        Use to parse grammar that as the form
-            # Rules
-            s -> np vp
-            np -> n | det n
-            ...
-            # Lexicon
-            v -> 'want' | 'wants'
-
-        Into a list of prolog predicates
-            rule(s, [np, vp])
-            rule(np, [n])
-            rule(np, [det, n])
-            ...
-            rule(v, ['want'])
-            terminal('want)
-        """
         nltk_grammar = CFG.fromstring(grammar_str)
         pl_predicates = []
         for production in nltk_grammar.productions():

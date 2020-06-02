@@ -5,4 +5,4 @@ NP[SEM=?s] -> N[SEM=?s] | PropN[SEM=?s] | Det[SEM=?s] N[SEM=?s]
 PropN[SEM=Pivot] -> 'gael'
 V[SEM=Desire] -> 'like' | 'likes' 
 N[SEM=Theme] -> 'football'
-Det -> 'he'
+Det -> 'the'
