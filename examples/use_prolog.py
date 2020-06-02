@@ -14,8 +14,8 @@ if __name__ == "__main__":
     # Initialize the prolog engine
     prolog_engine = PrologGrammarEngine("prolog/methods.pl")
     grammar_root = PrologGrammarNode.from_cfg_file(
-        prolog_engine, path=GRAMMAR_FOLDER + GRAMMAR_NAME + ".fcfg", feature_grammar=True
-    )
+        prolog_engine, path=GRAMMAR_FOLDER + GRAMMAR_NAME + ".fcfg")
+    
     prolog_engine.set_random_seed(1)
     # Load heuristic function <- GPT2 score
     gpt_2_scorer = GPT2Score("gpt2", batch_size=BATCH_SIZE, length_normalization=True)

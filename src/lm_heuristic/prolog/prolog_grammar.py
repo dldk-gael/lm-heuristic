@@ -1,7 +1,7 @@
 from typing import List, Union, Set
 from pyswip import Prolog
 from lm_heuristic.prolog.utils import format_term, join
-from lm_heuristic.prolog.parser import ParseToProlog
+from lm_heuristic.prolog.parser import parse_to_prolog
 
 
 class PrologGrammarEngine:
@@ -52,12 +52,12 @@ class PrologGrammarEngine:
         answers = self.prolog.query("terminal(X)")
         self.terminals = {answer["X"] for answer in answers}
 
-    def load_grammar(self, ntlk_str_grammar: str, feature_grammar: bool = False):
+    def load_grammar(self, ntlk_str_grammar: str):
         """
         Transform the grammar into prolog predicates
         and load it in the prolog engine
         """
-        self.current_predicates = ParseToProlog(feature_grammar)(ntlk_str_grammar)
+        self.current_predicates = parse_to_prolog(ntlk_str_grammar)
         for rule in self.current_predicates:
             self.prolog.assertz(rule)
         self.retrieve_terminal()

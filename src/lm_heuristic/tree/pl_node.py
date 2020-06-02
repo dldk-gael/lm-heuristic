@@ -24,20 +24,20 @@ class PrologGrammarNode(Node):
 
     @classmethod
     def from_string(
-        cls, prolog_engine: PrologGrammarEngine, str_nltk_grammar: str, feature_grammar: bool = False
+        cls, prolog_engine: PrologGrammarEngine, str_nltk_grammar: str
     ) -> "PrologGrammarNode":
         """
         1/ Parse the grammar into prolog predicates.
         2/ Load the knowledge into the prolog engine.
         3/ Return the node corresponding to the start symbol
         """
-        prolog_engine.load_grammar(str_nltk_grammar, feature_grammar)
+        prolog_engine.load_grammar(str_nltk_grammar)
 
         return cls(["s"], prolog_engine)
 
     @classmethod
     def from_cfg_file(
-        cls, prolog_engine: PrologGrammarEngine, path: str, feature_grammar: bool = False
+        cls, prolog_engine: PrologGrammarEngine, path: str
     ) -> "PrologGrammarNode":
         """
         :param path: path toward a file containing the grammar
@@ -45,7 +45,7 @@ class PrologGrammarNode(Node):
         assert os.path.exists(path)
         with open(path) as file:
             str_grammar = file.read()
-        return PrologGrammarNode.from_string(prolog_engine, str_grammar, feature_grammar)
+        return PrologGrammarNode.from_string(prolog_engine, str_grammar)
 
     def is_terminal(self) -> bool:
         for symbol in self.symbols:

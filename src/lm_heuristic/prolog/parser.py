@@ -1,15 +1,15 @@
 from typing import List, Dict, Union, Set
-from nltk.grammar import FeatStructNonterminal, Production, FeatureGrammar, CFG, Nonterminal
+from nltk.grammar import FeatStructNonterminal, Production, FeatureGrammar, Nonterminal
 from nltk.featstruct import Feature
 from nltk.sem import Variable
 
 
-class ParseToProlog:
+def parse_to_prolog(grammar_str: str) -> List[str]:
     """
     Use to transform NLTK grammar into prolog predicates.
     Support both feature grammar and vanilla context free grammar.
 
-    Grammar that has the form : 
+    Grammar that has the form :
         # Rules
         s -> np vp
         np -> n | det n
@@ -25,91 +25,64 @@ class ParseToProlog:
         rule(v, ['want'])
         terminal('want)
     """
-    def __init__(self, feature_grammar: bool = False):
-        self.feature_grammar = feature_grammar
-        self.terminal_symbols: Set[str] = set()
-        if self.feature_grammar:
-            # features_dict: symbol -> list of all feature use with these symbol in the grammar
-            self.features_dict: Dict[str, List[str]] = dict()
+    nltk_featgrammar = FeatureGrammar.fromstring(grammar_str)
+    features_dict = compute_features_dict(nltk_featgrammar.productions())
 
-    def __call__(self, grammar_str) -> List[str]:
-        self.features_dict = dict()
-        self.terminal_symbols = set()
+    pl_predicates = []
 
-        if self.feature_grammar:
-            return self._parse_feature_str_grammar(grammar_str)
+    for production in nltk_featgrammar.productions():
+        lhs = parse_term(production.lhs(), features_dict)
+        rhs = [parse_term(term, features_dict) for term in production.rhs()]
+        pl_predicates.append("rule(%s, [%s])" % (lhs, ", ".join(rhs)))
+
+    terminal_symbols = compute_terminal_symbols(nltk_featgrammar.productions())
+    for terminal in terminal_symbols:
+        pl_predicates.append("terminal(%s)" % terminal.lower())
+
+    return pl_predicates
+
+
+def compute_features_dict(productions: List[Production]) -> Dict[str, List[str]]:
+    features_dict: Dict[str, List[str]] = dict()
+    for production in productions:
+        for term in (production.lhs(),) + production.rhs():
+            if isinstance(term, Nonterminal):
+                name = str(term[Feature("type")]).lower()
+                features_dict.setdefault(name, [])
+                current_features = set(features_dict[name])
+                new_features = set(str(feature) for feature in term if str(feature) != "*type*")
+                features_dict[name] = list(current_features.union(new_features))
+
+    return features_dict
+
+
+def parse_term(term: Union[FeatStructNonterminal, str], features_dict: Dict[str, List[str]]) -> str:
+    if not isinstance(term, Nonterminal):
+        return term.lower()
+
+    name = str(term[Feature("type")]).lower()
+    param_list = []
+    for feature in features_dict[name]:
+        if feature in term:
+            param_list.append(transform_value(term[feature]))
         else:
-            return self._parse_CFG_str_grammar(grammar_str)
-
-    def _compute_features_dict(self, productions: List[Production]):
-        for production in productions:
-            for term in (production.lhs(), ) + production.rhs():
-                if isinstance(term, Nonterminal):
-                    name = str(term[Feature("type")]).lower()
-                    self.features_dict.setdefault(name, [])
-                    current_features = set(self.features_dict[name])
-                    new_features = set(str(feature) for feature in term if str(feature) != "*type*")
-                    self.features_dict[name] = list(current_features.union(new_features))
-                else:
-                    self.terminal_symbols.add(term.lower())
-
-    @staticmethod
-    def _transform_value(value):
-        if isinstance(value, Variable):
-            # Then, the variable is on the form ?x_1
-            # We transform that to X_1
-            return str(value)[1:].upper()
-        else:
-            return str(value).lower()
-
-    def _parse_term(self, term: Union[FeatStructNonterminal, str]) -> str:
-        """
-        Use to parse feature grammar that respect NLTK FeatGrammar format
-        """
-        if not isinstance(term, Nonterminal):
-            return term.lower()
-
-        name = str(term[Feature("type")]).lower()
-        param_list = []
-        for feature in self.features_dict[name]:
-            if feature in term:
-                param_list.append(self._transform_value(term[feature]))
-            else:
-                param_list.append("_")
-        return "%s(%s)"%(name, ", ".join(param_list)) if len(param_list) != 0 else name
-
-    def _parse_feature_str_grammar(self, grammar_str: str) -> List[str]:
-        nltk_featgrammar = FeatureGrammar.fromstring(grammar_str)
-        self._compute_features_dict(nltk_featgrammar.productions())
-
-        pl_predicates = []
-
-        for production in nltk_featgrammar.productions():
-            lhs = self._parse_term(production.lhs())
-            rhs = [self._parse_term(term) for term in production.rhs()]
-            pl_predicates.append("rule(%s, [%s])" % (lhs, ", ".join(rhs)))
-
-        for terminal in self.terminal_symbols:
-            pl_predicates.append("terminal(%s)" % terminal.lower())
-        
-        return pl_predicates
-    
-    def _parse_CFG_str_grammar(self, grammar_str: str) -> List[str]:
-        nltk_grammar = CFG.fromstring(grammar_str)
-        pl_predicates = []
-        for production in nltk_grammar.productions():
-            lhs = str(production.lhs()).lower()
-            rhs = []
-            for symb in production.rhs():
-                rhs.append(str(symb).lower())
-                if not isinstance(symb, Nonterminal):
-                    self.terminal_symbols.add(str(symb).lower())
-            rhs = [str(symb).lower() for symb in production.rhs()]
-            pl_predicates.append("rule(%s, [%s])" % (lhs, ", ".join(rhs)))
-    
+            param_list.append("_")
+    return "%s(%s)" % (name, ", ".join(param_list)) if len(param_list) != 0 else name
 
 
-        for terminal in self.terminal_symbols:
-            pl_predicates.append("terminal(%s)" % terminal)
+def transform_value(value):
+    if isinstance(value, Variable):
+        # Then, the variable is on the form ?x_1
+        # We transform that to X_1
+        return str(value)[1:].upper()
+    else:
+        return str(value).lower()
 
-        return pl_predicates
+
+def compute_terminal_symbols(productions: List[Production]) -> Set[str]:
+    terminal_symbols = set()
+    for production in productions:
+        for term in production.rhs():
+            if not isinstance(term, Nonterminal):
+                terminal_symbols.add(term.lower())
+    return terminal_symbols
