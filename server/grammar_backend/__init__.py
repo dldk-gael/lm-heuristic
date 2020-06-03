@@ -16,6 +16,7 @@ celery.conf.update(
             "compute_paraphrase": {"queue": "language_model"},
             "grammar_mcts": {"queue": "language_model"},
             "grammar_random_search": {"queue": "default"},
+            "parse_tree": {"queue": "default"}
         },
     }
 )

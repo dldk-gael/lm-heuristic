@@ -1,6 +1,10 @@
-import os 
+import os
+from io import StringIO
+
 from transformers import GPT2LMHeadModel
 import tensorflow_hub as hub
+from nltk.parse import CoreNLPParser
+from nltk.tree import Tree
 
 from lm_heuristic.generation import GPT2Paraphrases, generate_from_cfg
 from lm_heuristic.prolog import PrologGrammarEngine
@@ -23,6 +27,7 @@ PARAPHRASE_GENERATOR = None
 MONTECARLO_SEARCHER = None
 RANDOM_SEARCHER = None
 PROLOG_ENGINE = None
+PARSER = None
 
 
 def load_gpt2():
@@ -86,20 +91,25 @@ def initialize_prolog_engine():
     global PROLOG_ENGINE
     PROLOG_ENGINE = PrologGrammarEngine("../prolog/methods.pl")
 
+def initialize_parser():
+    global PARSER
+    PARSER = CoreNLPParser(url='http://localhost:9000')
+
 
 # TASK DEFINITION
 @celery.task(bind=True, name="compute_paraphrase")
 def compute_paraphrase(self, data):
+    print("%s" % data["sentences_to_paraphrase"])
     if not PARAPHRASE_GENERATOR:
         self.update_state(state="PROGRESS", meta={"detail": "Loading langage model ..."})
         initialize_paraphraser()
 
     self.update_state(state="PROGRESS", meta={"detail": "Generating paraphrases ..."})
-    paraphrases = PARAPHRASE_GENERATOR(
-        sentence=data["sentence_to_paraphrase"],
+    paraphrases = PARAPHRASE_GENERATOR.paraphrase_multiple_sentences(
+        sentences=data["sentences_to_paraphrase"],
         forbidden_words=data["forbidden_words"],
-        nb_samples=data["number_of_samples"],
-        top_n_to_keep=data["keep_top"],
+        nb_samples_per_sentence=data["number_of_samples"],
+        top_n_to_keep_per_sentence=data["keep_top"],
     )
     return paraphrases
 
@@ -138,3 +148,15 @@ def grammar_mcts(self, data):
     grammar_root = PrologGrammarNode.from_string(PROLOG_ENGINE, data["grammar"])
     generations = generate_from_cfg(grammar_root, MONTECARLO_SEARCHER, data["number_of_tree_walks"], data["keep_top"])
     return generations
+
+@celery.task(name="parse_tree")
+def parse_tree(sentence):
+    if not PARSER:
+        initialize_parser()
+
+    tree = next(PARSER.raw_parse(sentence))
+    output = StringIO()
+    Tree.fromstring(str(tree)).pretty_print(stream=output)
+    tree_str = output.getvalue()
+
+    return tree_str

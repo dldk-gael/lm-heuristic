@@ -19,8 +19,8 @@ class GPT2Paraphrases:
     ):
         """
         :param gpt2_model_name: distilgpt2, gpt2, gpt2-medium (by-default), gpt2-large or gpt2-xl
-        :param gpt2_model: to use an already memory-loaded model 
-        :param sentence_embed: function that embed sentences, 
+        :param gpt2_model: to use an already memory-loaded model
+        :param sentence_embed: function that embed sentences,
                 will be use to compare meaning between input_sentence and paraphrases
                 if not provide will use Universal Sentence Encoder from google
         :param paraphasing_context: context to "indicate to" gpt2 the paraphrasing task
@@ -33,7 +33,6 @@ class GPT2Paraphrases:
         self.device = "cuda:0" if torch.cuda.is_available() else "cpu"
         self.gpt2_tokenizer = GPT2Tokenizer.from_pretrained(gpt2_model_name)
 
-        # TODO Add a pad token to avoid warning during generation
         self.gpt2_model = gpt2_model if gpt2_model else GPT2LMHeadModel.from_pretrained(gpt2_model_name)
         self.gpt2_model.eval()
         self.gpt2_model.to(self.device)
@@ -70,6 +69,21 @@ class GPT2Paraphrases:
         paraphrases = self.most_close_in_meaning(sentence, paraphrases, top_n_to_keep)
 
         return paraphrases
+
+    def paraphrase_multiple_sentences(
+        self,
+        sentences: List[str],
+        forbidden_words: List[str] = None,
+        margin_size: int = 10,
+        nb_samples_per_sentence: int = 1,
+        top_n_to_keep_per_sentence: int = 1,
+    ):
+        outputs = []
+        for sentence in sentences:
+            outputs += self(
+                sentence, forbidden_words, margin_size, nb_samples_per_sentence, top_n_to_keep_per_sentence
+            )
+        return outputs
 
     def generate(self, sentence: str, forbidden_words: List[str] = None, margin_size: int = 10, nb_samples: int = 1):
         """
@@ -115,6 +129,7 @@ class GPT2Paraphrases:
                 top_p=0.9,
                 min_length=min_length,
                 max_length=max_length,
+                pad_token_id=self.gpt2_tokenizer.eos_token_id,
                 bad_words_ids=forbidden_words_ids,
             )
 
@@ -158,17 +173,17 @@ class GPT2Paraphrases:
     ):
         """
         1/ tokenize the sentences using space.
-        2/ for each sentence words, 
+        2/ for each sentence words,
                - forbid to use this particular words
                - generate nb_samples_per_word paraphrases
-               - retains top_n_to_keep_per_word paraphrases 
+               - retains top_n_to_keep_per_word paraphrases
         3/ return the concatenation of all paraphrases
 
         :param sentence: sentence that need to be paraphrase
         :param forbidden_words: list of words that can not be use for paraphrasing
         :param margin_size: the size of the parapraphrase will be of nb of sentence tokens +/- margin_size
-        :param nb_samples_per_word: nb of paraphrases to generate for each call 
-        :param top_n_to_keep_per_word: will only keep the top_n_to_keep for each call 
+        :param nb_samples_per_word: nb of paraphrases to generate for each call
+        :param top_n_to_keep_per_word: will only keep the top_n_to_keep for each call
         """
         paraphrases = []
         for word in sentence.split(" "):

@@ -1,9 +1,9 @@
 from lm_heuristic.prolog.parser import parse_to_prolog
 
-GRAMMAR_FOLDER = "data/cfg/"
-GRAMMAR_NAME = "ex_1_large"
+GRAMMAR_FOLDER = "data/fcfg/"
+GRAMMAR_NAME = "toy"
 
-with open(GRAMMAR_FOLDER + GRAMMAR_NAME + ".cfg") as file:
+with open(GRAMMAR_FOLDER + GRAMMAR_NAME + ".fcfg") as file:
     str_grammar = file.read()
 
 prolog_predicates = parse_to_prolog(str_grammar)

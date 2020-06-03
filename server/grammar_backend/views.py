@@ -1,6 +1,6 @@
-from flask import request, jsonify, Blueprint, url_for
+from flask import request, jsonify, Blueprint, url_for, send_from_directory, send_file
 from grammar_backend import app, celery
-from .tasks import compute_paraphrase, grammar_random_search, grammar_mcts
+from .tasks import compute_paraphrase, grammar_random_search, grammar_mcts, parse_tree
 
 views = Blueprint("views", __name__)
 
@@ -39,12 +39,19 @@ def mcts():
         "abort_location": url_for("abort_task", task_id=task.id),
     }
 
+@app.route("/parse_sentence", methods=["POST"])
+def parse():
+    data = request.get_json()
+    result = parse_tree.delay(data["sentence"])
+    tree = result.get()
+    print(tree)
+    return {"results" : tree}
+
 
 @app.route("/abort/<task_id>", methods=["GET"])
 def abort_task(task_id):
     celery.control.revoke(task_id, terminate=True)
     return "TASK KILLED"
-
 
 @app.route("/status/paraphrase/<task_id>", methods=["GET"])
 def paraphrase_status(task_id):
@@ -59,7 +66,6 @@ def grammar_random_search_status(task_id):
 @app.route("/status/grammar_mcts/<task_id>", methods=["GET"])
 def grammar_mcts_status(task_id):
     return task_info(grammar_mcts.AsyncResult(task_id))
-
 
 def task_info(task):
     details = task.info["detail"] if task.state == "PROGRESS" else ""
