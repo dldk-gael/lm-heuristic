@@ -26,21 +26,35 @@ Concretely, when the user will ask for paraphrase generation:
 
 # Launch server 
 
-1. [Install redis](https://redis.io/topics/quickstart)
+1. Install [redis](https://redis.io/topics/quickstart) and [SWI-Prolog](https://www.swi-prolog.org)
 2. if not done yet : 
 ```
 git clone https://github.com/dldk-gael/lm-heuristic.git
 cd lm-heuristic
 pip install .
 ```
-3. go the server folder 
+3. Download the weight of [Universal Sentence Encoder](https://tfhub.dev/google/universal-sentence-encoder/4) model and place them in *model_weights* folder under the name *universal_sentence_encoder*. 
+4. go the server folder 
 ```
 cd server
 ```
-4. launch flask and celery workers 
+5. Configure batch size and gpt2 model you want to use for sentence ranking and paraphrasing in [tasks.py](https://github.com/dldk-gael/lm-heuristic/blob/master/server/grammar_backend/tasks.py). 
+6. launch flask and celery workers 
 ```
 ./grammar_backend.sh 
 ```
 By default, it will launch 2 celery workers:
 - one that will only be used to run task that need LM. This one will not be allowed to launch several process to avoid the use of too much memory 
 - one that will handle all the other tasks (for now just the random sampling)
+
+## (Optionnal) Use Standford CoreNLP parser 
+
+This API also allows the use of CoreNLP parser (via NLTK) in order to get a constituent parse tree of the paraphrase that have been generated.
+
+In order to use this feature : 
+1. [Install java](https://www.java.com/fr/download/help/download_options.xml)
+2. [Download CoreNLP](https://stanfordnlp.github.io/CoreNLP/download.html)
+3. From CoreNLP directory, launch the CoreNLP server :
+```
+java -mx4g -cp "*" edu.stanford.nlp.pipeline.StanfordCoreNLPServer -port 9000 -timeout 15000
+```

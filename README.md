@@ -13,6 +13,8 @@ cd lm-heuristic
 pip install .
 ```
 
+In order to use PrologGrammarNode, you also have to [install SWI-Prolog](https://www.swi-prolog.org/download/stable).
+
 ## Package architecture 
 
 - **sentence_score** : interface towards transformers-based model (GPT2 and BERT) 
@@ -21,6 +23,7 @@ that are used to associate a sentence with a *naturalness* score. This module wi
 - **tree** : define 
     - an abstract class **Node** from which all tree structure must inheritate 
     - **CFGrammarNode** which is constructed from a NLTK CFG
+    - **PrologGrammarNode** which, by using [Pyswip](https://pypi.org/project/pyswip/) query Swi-Prolog to compute the node and leaf of a tree grammar 
     - **CounterNode** which is a wrapper use to keep statistics on other nodes a 
     - **TreeStats** which can be used to accumulate statistics on a given tree. 
 
@@ -35,8 +38,8 @@ a tree dataset, perform different type of evaluation on it and store the results
  
 ## Examples
 
-Various examples on how to use all those module can be found in *examples/*
+Various examples on how to use all those module can be found in [*examples*](https://github.com/dldk-gael/lm-heuristic/tree/master/examples).
 
 ## Server
 
-Contain the scripts to launch flask backend server and celery works that can provide paraphrase generation and grammar sampling. A example of a front-end using this API can be found [here](https://github.com/dldk-gael/grammar_generator). More information on server operation can be found on [server/readme](https://github.com/dldk-gael/lm-heuristic/tree/master/server)
+Contain the scripts to launch flask backend server and celery works that can provide paraphrase generation and grammar sampling. A example of a front-end using this API can be found [here](https://github.com/dldk-gael/grammar_generator). More information on server operation can be found on [server/readme](https://github.com/dldk-gael/lm-heuristic/tree/master/server).
