@@ -18,7 +18,7 @@ from grammar_backend import celery
 # INITIALIZATION
 
 PATH_TO_PARAPHRASE_CONTEXT = "../data/text/paraphrase.txt"
-PATH_TO_UNIVERSAL_SENTENCE_ENCODER = "../model_weights/use_4/"
+PATH_TO_UNIVERSAL_SENTENCE_ENCODER = "../model_weights/universal_sentence_encoder/"
 GPT2_NAME = "gpt2"
 BATCH_SIZE = 1
 GPT2_MODEL = None
