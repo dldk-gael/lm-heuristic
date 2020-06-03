@@ -19,6 +19,7 @@ src/lm_heuristic.egg-info/top_level.txt
 server/dump.rdb
 dump.rdb
 .ipynb_checkpoints/feature_grammar_test-checkpoint.ipynb
-model_weights/use_4/saved_model.pb
-model_weights/use_4/variables/variables.data-00000-of-00001
-model_weights/use_4/variables/variables.index
+model_weights/universal_sentence_encoder
+model_weights/universal-sentence-encoder/saved_model.pb
+model_weights/universal-sentence-encoder/variables/variables.data-00000-of-00001
+model_weights/universal-sentence-encoder/variables/variables.index
