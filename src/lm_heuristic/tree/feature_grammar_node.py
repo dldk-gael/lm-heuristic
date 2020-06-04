@@ -1,6 +1,7 @@
 import os
 from typing import *
 import random
+
 from nltk.grammar import FeatureGrammar, Nonterminal
 from nltk.featstruct import find_variables, unify, rename_variables, substitute_bindings
 from nltk.sem import Variable
@@ -41,7 +42,12 @@ class FeatureGrammarNode(Node):
         self.only_keep_valid_node = only_keep_valid_node
 
     @classmethod
-    def from_cfg_file(cls, path: str) -> "FeatureGrammarNode":
+    def from_string(cls, str_grammar: str, **kwargs) -> "FeatureGrammarNode":
+        feature_grammar = FeatureGrammar.fromstring(str_grammar)
+        return cls(feature_grammar.start(), feature_grammar, **kwargs)
+
+    @classmethod
+    def from_fcfg_file(cls, path: str, **kwargs) -> "FeatureGrammarNode":
         """
         :param path: path to file containing a context-free grammar
         :return: new Derivation tree node
@@ -49,8 +55,7 @@ class FeatureGrammarNode(Node):
         assert os.path.exists(path)
         with open(path) as file:
             str_grammar = file.read()
-        feature_grammar = FeatureGrammar.fromstring(str_grammar)
-        return cls(feature_grammar.start(), feature_grammar)
+        return cls.from_string(str_grammar, **kwargs)
 
     def childrens(self) -> List["FeatureGrammarNode"]:  # type: ignore
         if not self._childrens_have_been_computed:
@@ -109,15 +114,18 @@ class FeatureGrammarNode(Node):
         return child_list if len(child_list) != 0 else [FeatureGrammarNode("DEAD_END", self.feature_grammar)]
 
     def find_random_valid_leaf(self) -> Union["FeatureGrammarNode", None]:
-        if self.is_terminal() and str(self) != "DEAD_END":
+        if self.is_terminal():
             return self
+        
+        if str(self) == "DEAD_END.":
+            return None
 
         shuffle_childrens = self.childrens().copy()
         random.shuffle(shuffle_childrens)
 
         for child in shuffle_childrens:
             leaf = child.find_random_valid_leaf()
-            if leaf:
+            if leaf and str(leaf) != "DEAD_END.":
                 return leaf
 
         return None

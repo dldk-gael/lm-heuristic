@@ -1,4 +1,9 @@
-s -> n[SEM=?x] v n[SEM=?x]
-n -> 'pauline'
-v -> 'play' 
-n[SEM=obj] -> 'football'
+S -> NP[AGR=?n] VP[AGR=?n]
+S -> NP[AGR=?n] VP[AGR=?n] X
+NP[AGR=?n] -> PropN[AGR=?n]
+VP[TENSE=?t,AGR=?n] -> Cop[TENSE=?t,AGR=?n] Adj
+Cop[TENSE=pres,AGR=[NUM=sg,PER=3]] -> 'is' 
+PropN[AGR=[NUM=sg,PER=3]] -> 'Kim' 
+PropN[AGR=[NUM=sg,PER=1]] -> 'I'
+Adj -> 'happy'
+        

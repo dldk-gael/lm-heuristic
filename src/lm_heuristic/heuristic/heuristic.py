@@ -26,6 +26,7 @@ class Heuristic(Timer):
         """
         return True if a leaf has already been evaluated
         """
+        # TODO THIS SEEMS TO BE WRONG !
         return (str(node) in self.memory) if self.use_memory else False
 
     @timeit

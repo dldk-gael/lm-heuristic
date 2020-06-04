@@ -1,12 +1,12 @@
 from lm_heuristic.tree import FeatureGrammarNode
 from nltk.featstruct import FeatStruct, rename_variables
 from nltk.sem import Variable
-from lm_heuristic.tree_search import MonteCarloTreeSearch, AllocationStrategy
+from lm_heuristic.tree_search import RandomSearch
 from lm_heuristic.heuristic import Heuristic
 
 
 GRAMMAR_FOLDER = "data/fcfg/"
-GRAMMAR_NAME = "feat0"
+GRAMMAR_NAME = "toy"
 
 
 def evaluation_fn_one_node(node):
@@ -20,22 +20,22 @@ def evaluation_fn(nodes):
 
 
 if __name__ == "__main__":
-    grammar_root = FeatureGrammarNode.from_cfg_file(GRAMMAR_FOLDER + GRAMMAR_NAME + ".fcfg")
-  
-    heuristic = Heuristic(evaluation_fn)
+    grammar_root = FeatureGrammarNode.from_fcfg_file(GRAMMAR_FOLDER + GRAMMAR_NAME + ".fcfg")
+    for i in range(5):
+        print(grammar_root.find_random_valid_leaf())
 
-    # Initialize the search parameters
-    mcts = MonteCarloTreeSearch(
-        heuristic=heuristic,
-        buffer_size=1,
-        c=1,
-        d=1000,
-        t=0,
-        stats_samples=100,
-        allocation_strategy=AllocationStrategy.UNIFORM,
-        verbose=True,
-    )
+    if False:
+        print(grammar_root.find_random_valid_leaf())
 
-    # Perform the search and print some info
-    best_node = mcts(grammar_root, nb_of_tree_walks=15)
-    mcts.print_search_info()
+        heuristic = Heuristic(evaluation_fn)
+
+        # Initialize the search parameters
+        searcher = RandomSearch(
+            heuristic=heuristic,
+            buffer_size=1,
+
+        )
+
+        # Perform the search and print some info
+        searcher(grammar_root, nb_of_tree_walks=50)
+        searcher.print_search_info()

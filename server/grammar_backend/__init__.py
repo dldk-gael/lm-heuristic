@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_cors import CORS
 from celery import Celery
+from .models import Models
 
 # FLASK SERVER
 app = Flask(__name__)
