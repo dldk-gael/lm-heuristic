@@ -1,20 +1,47 @@
-from typing import List, Tuple, Dict, Any
 import os
+from typing import *
+import random
 from nltk.grammar import FeatureGrammar, Nonterminal
+from nltk.featstruct import find_variables, unify, rename_variables, substitute_bindings
 from nltk.sem import Variable
+
 from .node import Node
 
 
-class FeatureGrammarNode(Node):
-    variable_counter = 0
+# The rename_variables and substitute_bindings from NLTK can not be applyed to raw string
+# We modify them in order that in return raw string without modifying it to facilitate the use of those functions
+def skip_terminal_symbole(function):
+    def function_skipping_terminal_symbol(symbol, **kwargs):
+        if isinstance(symbol, str):
+            return symbol
+        else:
+            return function(symbol, **kwargs)
 
-    def __init__(self, symbols: tuple, feature_grammar: FeatureGrammar):
+    return function_skipping_terminal_symbol
+
+
+substitute_bindings = skip_terminal_symbole(substitute_bindings)
+rename_variables = skip_terminal_symbole(rename_variables)
+
+
+class FeatureGrammarNode(Node):
+    def __init__(
+        self, symbols: Union[Tuple[str], str], feature_grammar: FeatureGrammar, only_keep_valid_node: bool = False
+    ):
+        """
+        :param symbols ordered sequences of symbol representing the current derivation string
+        :param feature_grammar : reference to ntlk feature grammar containing the production rules
+        :param only_keep_valid_node: bool, if true when asking for the childrens, will filter the one from which no valid leaf can be reached
+        """
         Node.__init__(self)
         self.feature_grammar = feature_grammar
         self.symbols = (symbols,) if not isinstance(symbols, tuple) else symbols
+        self._childrens: List["FeatureGrammarNode"]
+        self._childrens_have_been_computed = False
+        self.only_keep_valid_node = only_keep_valid_node
 
     @classmethod
-    def from_cfg_file(cls, path: str, **kwargs) -> "FeatureGrammarNode":
+    def from_cfg_file(cls, path: str) -> "FeatureGrammarNode":
         """
         :param path: path to file containing a context-free grammar
         :return: new Derivation tree node
@@ -25,76 +52,78 @@ class FeatureGrammarNode(Node):
         feature_grammar = FeatureGrammar.fromstring(str_grammar)
         return cls(feature_grammar.start(), feature_grammar)
 
-    def _new_variable(self):
-        FeatureGrammarNode.variable_counter += 1
-        return Variable("?x_" + str(FeatureGrammarNode.variable_counter))
-
-    def _new_binding_to_propagate(self, key, parent, child):
-        """
-        Return true if the new chosen child symbol implies a binding for key wrt to the parent
-        """
-        return (key in child) and (not isinstance(child[key], Variable)) and (isinstance(parent[key], Variable))
-
-    def _compute_news_bindings(self, parent, child):
-        var_bindings = {
-            parent[key]: child[key] for key in parent if self._new_binding_to_propagate(key, parent, child)
-        }
-        return var_bindings
-
-    def _update_bindings(self, symbols, var_bindings):
-        new_symbols = []
-        for symbol in symbols:
-            if isinstance(symbol, Nonterminal):
-                new_symbol = symbol.copy(deep=True).substitute_bindings(var_bindings)
+    def childrens(self) -> List["FeatureGrammarNode"]:  # type: ignore
+        if not self._childrens_have_been_computed:
+            non_filter_childrens = self.compute_childrens()
+            if self.only_keep_valid_node:
+                self._childrens = [child for child in non_filter_childrens if child.find_random_valid_leaf()]
             else:
-                new_symbol = symbol
-            new_symbols.append(new_symbol)
-        return tuple(new_symbols)
+                self._childrens = non_filter_childrens
+            self._childrens_have_been_computed = True
 
-    def _update_lhs(self, lhs_symbol, parent_symbol):
-        symbol = lhs_symbol.copy(deep=True)
-        for key in symbol:
-            if key in parent_symbol and not self._new_binding_to_propagate(key, parent_symbol, symbol):
-                symbol[key] = parent_symbol[key]
-            elif isinstance(symbol[key], Variable):
-                symbol[key] = self._new_variable()
-        return symbol
+        return self._childrens
 
-    def _update_rhs(self, lhs_symbol, rhs_symbols):
-        new_variables: Dict[Variable, Variable] = {}
-        rhs = []
-        for rhs_symbol in rhs_symbols:
-            if isinstance(rhs_symbol, Nonterminal):
-                new_rhs_symbol = rhs_symbol.copy(deep=True)
-                for key in new_rhs_symbol:
-                    if key in lhs_symbol and str(key) != "*type*":
-                        new_rhs_symbol[key] = lhs_symbol[key]
-                    elif isinstance(new_rhs_symbol[key], Variable):
-                        variable = new_rhs_symbol[key]
-                        if not variable in new_variables:
-                            new_variables[variable] = self._new_variable()
-                        new_rhs_symbol[key] = new_variables[variable]
-                rhs.append(new_rhs_symbol)
-            else:
-                rhs.append(rhs_symbol)
-        return tuple(rhs)
+    def compute_childrens(self) -> List["FeatureGrammarNode"]:
+        child_list: List["FeatureGrammarNode"] = []
 
-    def childrens(self):
-        child_list = []
+        # First we retrieve all variables using in current derivation
+        used_vars: Set[Variable] = set()
+        for symbol in self.symbols:
+            if not isinstance(symbol, str):
+                used_vars |= find_variables(symbol)
+
         for idx, symbol in enumerate(self.symbols):
-            if isinstance(symbol, Nonterminal):
-                for prod in self.feature_grammar.productions(lhs=symbol):
-                    new_lhs = prod.lhs().unify(symbol)
-                    if new_lhs is not None:
-                        new_var_bindings = self._compute_news_bindings(symbol, new_lhs)
-                        siblings = self._update_bindings(self.symbols, new_var_bindings)
-                        new_lhs = self._update_lhs(new_lhs, symbol)
-                        new_rhs = self._update_rhs(new_lhs, prod.rhs())
+            if isinstance(symbol, str):
+                continue
 
-                        child_list.append(
-                            FeatureGrammarNode(siblings[:idx] + new_rhs + siblings[idx + 1 :], self.feature_grammar)
-                        )
-        return child_list
+            # For each non terminal symbol in current derivation , we select a production rule
+            # that has a left hand side matching this symbol
+            for production in self.feature_grammar.productions(lhs=symbol):
+
+                # We rename all the variable in the production rules to avoid name conflicts
+                # TODO put this after a check to avoid to do it if not neccessary
+                new_vars = dict()
+                lhs = rename_variables(production.lhs(), used_vars=used_vars, new_vars=new_vars)
+                rhs = [
+                    rename_variables(rhs_symb, used_vars=used_vars, new_vars=new_vars) for rhs_symb in production.rhs()
+                ]
+
+                # Compute the new binding
+                new_bindings = dict()
+                lhs = unify(lhs, symbol, bindings=new_bindings)
+                if lhs is None:  # Unification failed
+                    continue
+
+                # Propagate the bindings to the siblings
+                new_siblings = [substitute_bindings(sibling, bindings=new_bindings) for sibling in self.symbols]
+
+                # Propagate the bindings to the rhs symbols
+                new_rhs = [substitute_bindings(rhs_symb, bindings=new_bindings) for rhs_symb in rhs]
+
+                # Create the new child
+                new_child = FeatureGrammarNode(
+                    tuple(new_siblings[:idx] + new_rhs + new_siblings[idx + 1 :]), self.feature_grammar,
+                )
+                child_list.append(new_child)
+
+        return child_list if len(child_list) != 0 else [FeatureGrammarNode("DEAD_END", self.feature_grammar)]
+
+    def find_random_valid_leaf(self) -> Union["FeatureGrammarNode", None]:
+        if self.is_terminal() and str(self) != "DEAD_END":
+            return self
+
+        shuffle_childrens = self.childrens().copy()
+        random.shuffle(shuffle_childrens)
+
+        for child in shuffle_childrens:
+            leaf = child.find_random_valid_leaf()
+            if leaf:
+                return leaf
+
+        return None
+
+    def random_children(self):
+        return random.choice(self.childrens())
 
     def __hash__(self):
         return hash(self.symbols)
@@ -102,7 +131,7 @@ class FeatureGrammarNode(Node):
     def __str__(self):
         if self.is_terminal():
             return " ".join(self.symbols) + "."
-        else: # for debug mode mainly
+        else:  # for debug mode mainly
             return "\n".join(map(str, self.symbols))
 
     def is_terminal(self):
@@ -110,6 +139,3 @@ class FeatureGrammarNode(Node):
             if isinstance(symbol, Nonterminal):
                 return False
         return True
-
-    def random_children(self):
-        pass
