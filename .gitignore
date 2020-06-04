@@ -23,3 +23,5 @@ model_weights/universal_sentence_encoder
 model_weights/universal-sentence-encoder/saved_model.pb
 model_weights/universal-sentence-encoder/variables/variables.data-00000-of-00001
 model_weights/universal-sentence-encoder/variables/variables.index
+.ipynb_checkpoints/feature_grammar-checkpoint.ipynb
+feature_grammar.ipynb
