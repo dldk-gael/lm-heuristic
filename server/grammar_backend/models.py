@@ -8,11 +8,16 @@ from lm_heuristic.generation import GPT2Paraphrases
 from lm_heuristic.sentence_score import GPT2Score
 from lm_heuristic.heuristic import Heuristic
 from lm_heuristic.tree_search import MonteCarloTreeSearch, RandomSearch, AllocationStrategy
+from lm_heuristic.tree import FeatureGrammarNode
 
 from .config import config
 
 
 class Models:
+    """
+    This class is used to load in memory the different language model only when
+    it is necessary.
+    """
     def __init__(self):
         self._gpt2_model = None
         self._universal_sentence_encoder = None
@@ -52,6 +57,7 @@ class Models:
 
         evaluation_fn = lambda terminal_nodes: gpt_2_scorer(list(map(str, terminal_nodes)))
         heuristic = Heuristic(evaluation_fn, use_memory=True)
+        heuristic.set_default_value(FeatureGrammarNode("DEAD_END", feature_grammar=None), 0)
 
         self.montecarlo_searcher = MonteCarloTreeSearch(
             heuristic=heuristic,

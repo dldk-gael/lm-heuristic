@@ -16,18 +16,22 @@ class Heuristic(Timer):
     ):
         Timer.__init__(self)
         self.memory: Dict[int, float] = dict()
+        self.default_value: Dict[int, float] = dict()
         self.evaluation_fct = evaluation_fct
         self.history: List[Tuple[Node, float]] = []
         self.use_memory = use_memory
         self.eval_counter = 0
+
+    def set_default_value(self, node, value):
+        self.default_value[hash(node)] = value
+        self.memory.update(self.default_value)
 
     @timeit
     def has_already_eval(self, node: Node) -> bool:
         """
         return True if a leaf has already been evaluated
         """
-        # TODO THIS SEEMS TO BE WRONG !
-        return (str(node) in self.memory) if self.use_memory else False
+        return (hash(node) in self.memory)
 
     @timeit
     def value_from_memory(self, node: Node) -> float:
@@ -56,7 +60,7 @@ class Heuristic(Timer):
     def reset(self):
         self.reset_timer()
         self.history = []
-        self.memory = dict()
+        self.memory = self.default_value.copy()
         self.eval_counter = 0
 
     def history_of_terminal_nodes(self):

@@ -2,7 +2,7 @@ from io import StringIO
 
 from nltk.tree import Tree
 
-from lm_heuristic.generation import generate_from_cfg
+from lm_heuristic.generation import generate_from_grammar
 from lm_heuristic.tree import FeatureGrammarNode
 
 from grammar_backend import celery
@@ -18,13 +18,12 @@ def compute_paraphrase(self, data):
         models.load_paraphrase_generator()
 
     self.update_state(state="PROGRESS", meta={"detail": "Generating paraphrases ..."})
-    paraphrases = models.paraphrase_generator.paraphrase_multiple_sentences(
+    return models.paraphrase_generator.paraphrase_multiple_sentences(
         sentences=data["sentences_to_paraphrase"],
         forbidden_words=data["forbidden_words"],
         nb_samples_per_sentence=data["number_of_samples"],
         top_n_to_keep_per_sentence=data["keep_top"],
     )
-    return paraphrases
 
 
 @celery.task(bind=True, name="grammar_random_search")
@@ -32,11 +31,11 @@ def grammar_random_search(self, data):
     self.update_state(state="PROGRESS", meta={"detail": "Random sampling ..."})
     grammar_root = FeatureGrammarNode.from_string(data["grammar"])
     random_valid_leaves = []
-    for i in range(data["number_of_samples"]):
+    for _ in range(data["number_of_samples"]):
         new_valid_leaf = grammar_root.find_random_valid_leaf()
         if not new_valid_leaf:
             return ["NO SOLUTION FOUND"]
-        else :
+        else:
             random_valid_leaves.append(str(new_valid_leaf))
 
     return random_valid_leaves
@@ -49,9 +48,12 @@ def grammar_mcts(self, data):
         models.load_montecarlo_searcher()
 
     self.update_state(state="PROGRESS", meta={"detail": "Perfoming the tree walks ..."})
-    grammar_root = FeatureGrammarNode.from_string(data["grammar"])
-    models.montecarlo_searcher(grammar_root, data["number_of_tree_walks"])
-    return [str(leaf) for (leaf, _) in models.montecarlo_searcher.top_n_leaves(data["keep_top"])]
+    return generate_from_grammar(
+        grammar_root=FeatureGrammarNode.from_string(data["grammar"]),
+        searcher=models.montecarlo_searcher,
+        nb_tree_walks=data["number_of_tree_walks"],
+        keep_top_n=data["keep_top"],
+    )
 
 
 @celery.task(name="parse_tree")

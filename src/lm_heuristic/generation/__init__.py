@@ -1,3 +1,3 @@
 from .generate_with_gpt2 import GenerateWithGPT2
-from .generate_from_cfg import GenerateFromCFG, generate_from_cfg
+from .generate_from_grammar import generate_from_grammar
 from .paraphrase_with_gpt2 import GPT2Paraphrases
