@@ -26,7 +26,7 @@ Concretely, when the user will ask for paraphrase generation:
 
 # Launch server 
 
-1. Install [redis](https://redis.io/topics/quickstart) and [SWI-Prolog](https://www.swi-prolog.org)
+1. Install [redis](https://redis.io/topics/quickstart) 
 2. if not done yet : 
 ```
 git clone https://github.com/dldk-gael/lm-heuristic.git
@@ -38,7 +38,7 @@ pip install .
 ```
 cd server
 ```
-5. Configure batch size and gpt2 model you want to use for sentence ranking and paraphrasing in [tasks.py](https://github.com/dldk-gael/lm-heuristic/blob/master/server/grammar_backend/tasks.py). 
+5. Configure batch size and gpt2 model you want to use for sentence ranking and paraphrasing in [config.py](https://github.com/dldk-gael/lm-heuristic/blob/master/server/grammar_backend/config.py). 
 6. launch flask and celery workers 
 ```
 ./grammar_backend.sh 
