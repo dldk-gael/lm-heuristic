@@ -16,11 +16,13 @@ def format_list(obj_list):
 
 
 # INPUT DATA
-Gael = FeatStruct(proper="Gael", is_proper=True, is_noun=False, gender="male", form="singular", was_used=Variable("?x"))
+Gael = FeatStruct(proper="Gael", is_proper=True, is_noun=False, gender="male", form="singular")
 Bas = FeatStruct(proper="Bas", is_proper=True, is_noun=False, gender="male", form="singular")
 club = FeatStruct(proper="na", is_proper=False, is_noun=True, noun="club", gender="neuter", form="singular")
 know = FeatStruct(sem="know", sym=True)
 member = FeatStruct(sem="member", sym=False)
+singular = FeatStruct(form='singular')
+plural = FeatStruct(form='plural')
 
 # Dynamic rules to output proper name
 dynamic_productions = [
@@ -30,10 +32,10 @@ dynamic_productions = [
 ]
 
 # know(Gael, Bas)
-know_gael_bas = FeatStruct(arg0=format_list(Gael), pred=know, arg1=format_list(Bas))
+know_gael_bas = FeatStruct(arg0=format_list(Gael), pred=know.unify(singular), arg1=format_list(Bas))
 
 # member([Gael, Bas], club)
-member_gael_club = FeatStruct(arg0=format_list([Gael, Bas]), pred=member, arg1=format_list(club))
+member_gael_club = FeatStruct(arg0=format_list(Gael), pred=member.unify(singular), arg1=format_list(club))
 
 list_of_facts = format_list([know_gael_bas, member_gael_club]).unify(FeatStructNonterminal("Facts"))
 list_of_facts.freeze()
@@ -47,7 +49,8 @@ with open("data/fcfg/foaf_grammar.fcfg", "r") as grammar_file:
 all_productions = static_grammar.productions() + [start_production] + dynamic_productions
 dynamic_grammar = FeatureGrammar(start=root, productions=all_productions)
 
+print(dynamic_grammar)
 feature_root = FeatureGrammarNode(symbols=root, feature_grammar=dynamic_grammar)
 random.seed(1)
-for _ in range(10):
-    print(feature_root.find_random_valid_leaf())
+for _ in range(15):
+    print(feature_root.find_random_valid_leaf_previous())

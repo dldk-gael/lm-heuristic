@@ -1,24 +1,32 @@
 
 # Domaine specific verb 
-Verb[sem=know] -> 'know' | 'knows'
-Verb[sem=member] -> 'is' 'a' 'member' 'of' | 'are' 'member' 'of' 
+Verb[sem=know, form=plural] -> 'know' 
+Verb[sem=know, form=singular] -> 'knows'
+Verb[sem=member, form=singular] -> 'is' 'a' 'member' 'of' 
+Verb[sem=member, form=plural] -> 'are' 'member' 'of' 
 
 # To handle multiple facts 
-Facts[head=?fact, tail=[head=?fact2, tail=?tail]] -> Fact[sem=?fact] conj Facts[head=?fact2, tail=?tail]
-Facts[head=?fact, tail=na] -> Fact[sem=?fact]
+Facts[head=?fact, tail=[head=?fact2, tail=?tail]] -> Fact[-optional_arg0, sem=?fact] conj Facts[-optional_arg0, head=?fact2, tail=?tail]
+Facts[head=?fact, tail=na] -> Fact[-optional_arg0, sem=?fact]
+
+# To handle optionnal subject if same arg0 in two pred 
+# For instance, Gael know Bas and is member of a club
+# Only work with two pred for now 
+Facts[head=[arg0=?arg0, pred=?pred1, arg1=?arg1], \
+      tail=[head=[arg0=?arg0, pred=?pred2, arg1=?arg2], tail=na]] -> \
+      Fact[-optional_arg0, sem=[arg0=?arg0, pred=?pred1, arg1=?arg1]] conj Fact[+optional_arg0, sem=[arg0=?arg0, pred=?pred2, arg1=?arg2]]
 
 # To handle symetric facts 
-Fact[sem=[arg0=?arg0, pred=[sem=?sem], arg1=?arg1]] -> Verb[sem=?sem] M_Args[data=?arg1]
-Fact[sem=[arg0=?arg0, pred=[sem=?sem], arg1=?arg1]] -> M_Args[data=?arg0] Verb[sem=?sem] M_Args[data=?arg1]
-Fact[sem=[arg0=?arg0, pred=[sem=?sem, +sym], arg1=?arg1]] -> M_Args[data=?arg1] Verb[sem=?sem] M_Args[data=?arg0]
-Fact[sem=[arg0=?arg0, pred=[sem=?sem, +sym], arg1=?arg1]] -> M_Args[data=?arg0] conj M_Args[data=?arg1] Verb[sem=?sem] ProN[form=symmetrical]
-Fact[sem=[arg0=?arg0, pred=[sem=?sem, +sym], arg1=?arg1]] -> M_Args[data=?arg1] conj M_Args[data=?arg0] Verb[sem=?sem] ProN[form=symmetrical]
+Fact[+optional_arg0, sem=[arg0=?arg0, pred=[sem=?sem, form=?form], arg1=?arg1]] -> Verb[sem=?sem, form=?form] M_Args[data=?arg1]
+Fact[-optional_arg0, sem=[arg0=?arg0, pred=[sem=?sem, form=?form], arg1=?arg1]] -> M_Args[data=?arg0] Verb[sem=?sem, form=?form] M_Args[data=?arg1]
+Fact[-optional_arg0, sem=[arg0=?arg0, pred=[sem=?sem, form=?form, +sym], arg1=?arg1]] -> M_Args[data=?arg1] Verb[sem=?sem, form=?form] M_Args[data=?arg0]
+Fact[-optional_arg0, sem=[arg0=?arg0, pred=[sem=?sem, form=?form, +sym], arg1=?arg1]] -> M_Args[data=?arg0] conj M_Args[data=?arg1] Verb[sem=?sem, form=plural] ProN[form=symmetrical]
+Fact[-optional_arg0, sem=[arg0=?arg0, pred=[sem=?sem, form=?form, +sym], arg1=?arg1]] -> M_Args[data=?arg1] conj M_Args[data=?arg0] Verb[sem=?sem, form=plural] ProN[form=symmetrical]
 
 # To handle multiple arguments
 M_Args[data=[head=?arg, tail=na]] -> NP[data=?arg]
 M_Args[data=[head=?arg0, tail=[head=?arg1, tail=?tail]]] -> NP[data=?arg0] conj M_Args[data=[head=?arg1, tail=?tail]]
 M_Args[data=[head=?arg0, tail=[head=?arg1, tail=?tail]]] -> ProN[form=plural]
-
 
 # Generic rules 
 NP[data=[gender=?gender, form=?form]] -> ProN[gender=?gender, form=?form] 
@@ -35,4 +43,4 @@ Noun[noun=man, form=singular] -> 'man'
 Noun[noun=man, form=plural] -> 'men'
 Det[form=singular] -> 'a' | 'an' 
 Det -> 'the'
-conj -> 'and' | ', '
+conj -> 'and'

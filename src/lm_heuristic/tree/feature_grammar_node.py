@@ -116,8 +116,30 @@ class FeatureGrammarNode(Node):
 
         return child_list if len(child_list) != 0 else [FeatureGrammarNode("DEAD_END", self.feature_grammar)]
 
-    def find_random_valid_leaf(self) -> Union["FeatureGrammarNode", None]:
-        # TODO OPTIMIZE IT TO GO DIRECTLY TO LEAF 
+
+    def find_random_valid_leaf(self):
+        # TODO: can probably optimize that by not create so many object 
+        leaves = []
+        for symbol in self.symbols:
+            if not isinstance(symbol, Nonterminal):
+                leaves.append(symbol)
+                continue
+
+            children_symbol = FeatureGrammarNode(symbol, self.feature_grammar).childrens()
+            random.shuffle(children_symbol)
+            leaf = None
+            for child in children_symbol:
+                leaf = child.find_random_valid_leaf()
+                if leaf: 
+                    break
+            if not leaf:
+                return None 
+            else:
+                leaves.append(leaf)
+        return " ".join(leaves)
+
+    def find_random_valid_leaf_previous(self) -> Union["FeatureGrammarNode", None]:
+        # PREVIOUS VERSION, WILL BE REMOVE LATER 
         if self.is_terminal():
             return self
 
@@ -129,7 +151,7 @@ class FeatureGrammarNode(Node):
         random.shuffle(shuffle_index)
 
         for i in shuffle_index:
-            leaf = node_childrens[i].find_random_valid_leaf()
+            leaf = node_childrens[i].find_random_valid_leaf_previous()
             if leaf and str(leaf) != "DEAD_END.":
                 return leaf
 
