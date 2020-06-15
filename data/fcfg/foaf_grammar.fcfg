@@ -15,9 +15,9 @@ Facts[head=?fact, tail=na] -> Fact[-optional_arg0, sem=?fact]
 Facts[head=[arg0=?arg0, pred=?pred1, arg1=?arg1], \
       tail=[head=[arg0=?arg0, pred=?pred2, arg1=?arg2], tail=na]] -> \
       Fact[-optional_arg0, sem=[arg0=?arg0, pred=?pred1, arg1=?arg1]] conj Fact[+optional_arg0, sem=[arg0=?arg0, pred=?pred2, arg1=?arg2]]
-
-# To handle symetric facts 
 Fact[+optional_arg0, sem=[arg0=?arg0, pred=[sem=?sem, form=?form], arg1=?arg1]] -> Verb[sem=?sem, form=?form] M_Args[data=?arg1]
+
+# To handle symetric fact 
 Fact[-optional_arg0, sem=[arg0=?arg0, pred=[sem=?sem, form=?form], arg1=?arg1]] -> M_Args[data=?arg0] Verb[sem=?sem, form=?form] M_Args[data=?arg1]
 Fact[-optional_arg0, sem=[arg0=?arg0, pred=[sem=?sem, form=?form, +sym], arg1=?arg1]] -> M_Args[data=?arg1] Verb[sem=?sem, form=?form] M_Args[data=?arg0]
 Fact[-optional_arg0, sem=[arg0=?arg0, pred=[sem=?sem, form=?form, +sym], arg1=?arg1]] -> M_Args[data=?arg0] conj M_Args[data=?arg1] Verb[sem=?sem, form=plural] ProN[form=symmetrical]
