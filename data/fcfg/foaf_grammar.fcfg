@@ -1,0 +1,38 @@
+
+# Domaine specific verb 
+Verb[sem=know] -> 'know' | 'knows'
+Verb[sem=member] -> 'is' 'a' 'member' 'of' | 'are' 'member' 'of' 
+
+# To handle multiple facts 
+Facts[head=?fact, tail=[head=?fact2, tail=?tail]] -> Fact[sem=?fact] conj Facts[head=?fact2, tail=?tail]
+Facts[head=?fact, tail=na] -> Fact[sem=?fact]
+
+# To handle symetric facts 
+Fact[sem=[arg0=?arg0, pred=[sem=?sem], arg1=?arg1]] -> Verb[sem=?sem] M_Args[data=?arg1]
+Fact[sem=[arg0=?arg0, pred=[sem=?sem], arg1=?arg1]] -> M_Args[data=?arg0] Verb[sem=?sem] M_Args[data=?arg1]
+Fact[sem=[arg0=?arg0, pred=[sem=?sem, +sym], arg1=?arg1]] -> M_Args[data=?arg1] Verb[sem=?sem] M_Args[data=?arg0]
+Fact[sem=[arg0=?arg0, pred=[sem=?sem, +sym], arg1=?arg1]] -> M_Args[data=?arg0] conj M_Args[data=?arg1] Verb[sem=?sem] ProN[form=symmetrical]
+Fact[sem=[arg0=?arg0, pred=[sem=?sem, +sym], arg1=?arg1]] -> M_Args[data=?arg1] conj M_Args[data=?arg0] Verb[sem=?sem] ProN[form=symmetrical]
+
+# To handle multiple arguments
+M_Args[data=[head=?arg, tail=na]] -> NP[data=?arg]
+M_Args[data=[head=?arg0, tail=[head=?arg1, tail=?tail]]] -> NP[data=?arg0] conj M_Args[data=[head=?arg1, tail=?tail]]
+M_Args[data=[head=?arg0, tail=[head=?arg1, tail=?tail]]] -> ProN[form=plural]
+
+
+# Generic rules 
+NP[data=[gender=?gender, form=?form]] -> ProN[gender=?gender, form=?form] 
+NP[data=[proper=?proper, +is_proper]] -> ProperName[proper=?proper]
+NP[data=[+is_noun, noun=?noun, gender=?gender, form=?form]] -> Noun[noun=?noun, form=?form] | Det[form=?form] Noun[noun=?noun, form=?form]
+
+# Lexicon 
+ProN[gender=neuter,form=singular] -> 'it'
+ProN[form=plural] -> 'they' | 'them'
+ProN[gender=male,form=singular] -> 'he' | 'him'
+ProN[gender=female,form=singular] -> 'she' | 'her'
+ProN[form=symmetrical] -> 'each' 'other'
+Noun[noun=man, form=singular] -> 'man'
+Noun[noun=man, form=plural] -> 'men'
+Det[form=singular] -> 'a' | 'an' 
+Det -> 'the'
+conj -> 'and' | ', '

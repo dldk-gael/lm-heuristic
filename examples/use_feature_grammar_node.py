@@ -1,41 +1,53 @@
-from lm_heuristic.tree import FeatureGrammarNode
-from nltk.featstruct import FeatStruct, rename_variables
+import random
+from nltk.grammar import FeatureGrammar, FeatStructNonterminal, Production
+from nltk.featstruct import FeatStruct
 from nltk.sem import Variable
-from lm_heuristic.tree_search import RandomSearch
-from lm_heuristic.heuristic import Heuristic
+
+from lm_heuristic.tree import FeatureGrammarNode
+
+def format_list(obj_list):
+    obj_list = obj_list if isinstance(obj_list, list) else [obj_list]
+        
+    if len(obj_list) == 0:
+        return "na"
+    else:
+        tail = format_list(obj_list[1:])
+        return FeatStructNonterminal(head=obj_list[0], tail=tail)
 
 
-GRAMMAR_FOLDER = "data/fcfg/"
-GRAMMAR_NAME = "toy"
+# INPUT DATA
+Gael = FeatStruct(proper="Gael", is_proper=True, is_noun=False, gender="male", form="singular", was_used=Variable("?x"))
+Bas = FeatStruct(proper="Bas", is_proper=True, is_noun=False, gender="male", form="singular")
+club = FeatStruct(proper="na", is_proper=False, is_noun=True, noun="club", gender="neuter", form="singular")
+know = FeatStruct(sem="know", sym=True)
+member = FeatStruct(sem="member", sym=False)
 
+# Dynamic rules to output proper name
+dynamic_productions = [
+    Production(FeatStructNonterminal("ProperName[proper=Bas]"), ["Bas"]),
+    Production(FeatStructNonterminal("ProperName[proper=Gael]"), ["Gael"]),
+    Production(FeatStructNonterminal("Noun[noun=club, form=singular]"), ["club"]),
+]
 
-def evaluation_fn_one_node(node):
-    if str(node) == "DEAD_END":
-        return 0
-    return 1
+# know(Gael, Bas)
+know_gael_bas = FeatStruct(arg0=format_list(Gael), pred=know, arg1=format_list(Bas))
 
+# member([Gael, Bas], club)
+member_gael_club = FeatStruct(arg0=format_list([Gael, Bas]), pred=member, arg1=format_list(club))
 
-def evaluation_fn(nodes):
-    return [evaluation_fn_one_node(node) for node in nodes]
+list_of_facts = format_list([know_gael_bas, member_gael_club]).unify(FeatStructNonterminal("Facts"))
+list_of_facts.freeze()
 
+root = FeatStructNonterminal("Root")
+start_production = Production(lhs=root, rhs=[list_of_facts])
+with open("data/fcfg/foaf_grammar.fcfg", "r") as grammar_file:
+    grammar_str = grammar_file.read()
+    static_grammar = FeatureGrammar.fromstring(grammar_str)
 
-if __name__ == "__main__":
-    grammar_root = FeatureGrammarNode.from_fcfg_file(GRAMMAR_FOLDER + GRAMMAR_NAME + ".fcfg")
-    for i in range(5):
-        print(grammar_root.find_random_valid_leaf())
+all_productions = static_grammar.productions() + [start_production] + dynamic_productions
+dynamic_grammar = FeatureGrammar(start=root, productions=all_productions)
 
-    if False:
-        print(grammar_root.find_random_valid_leaf())
-
-        heuristic = Heuristic(evaluation_fn)
-
-        # Initialize the search parameters
-        searcher = RandomSearch(
-            heuristic=heuristic,
-            buffer_size=1,
-
-        )
-
-        # Perform the search and print some info
-        searcher(grammar_root, nb_of_tree_walks=50)
-        searcher.print_search_info()
+feature_root = FeatureGrammarNode(symbols=root, feature_grammar=dynamic_grammar)
+random.seed(1)
+for _ in range(10):
+    print(feature_root.find_random_valid_leaf())

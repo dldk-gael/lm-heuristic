@@ -2,7 +2,7 @@ import os
 from typing import *
 import random
 
-from nltk.grammar import FeatureGrammar, Nonterminal
+from nltk.grammar import FeatureGrammar, Nonterminal, FeatStructNonterminal
 from nltk.featstruct import find_variables, unify, rename_variables, substitute_bindings
 from nltk.sem import Variable
 
@@ -27,7 +27,10 @@ rename_variables = skip_terminal_symbole(rename_variables)
 
 class FeatureGrammarNode(Node):
     def __init__(
-        self, symbols: Union[Tuple[str], str], feature_grammar: FeatureGrammar, only_keep_valid_node: bool = False
+        self,
+        symbols: Union[Tuple[FeatStructNonterminal], FeatStructNonterminal],
+        feature_grammar: FeatureGrammar,
+        only_keep_valid_node: bool = False,
     ):
         """
         :param symbols ordered sequences of symbol representing the current derivation string
@@ -114,17 +117,19 @@ class FeatureGrammarNode(Node):
         return child_list if len(child_list) != 0 else [FeatureGrammarNode("DEAD_END", self.feature_grammar)]
 
     def find_random_valid_leaf(self) -> Union["FeatureGrammarNode", None]:
+        # TODO OPTIMIZE IT TO GO DIRECTLY TO LEAF 
         if self.is_terminal():
             return self
-        
+
         if str(self) == "DEAD_END.":
             return None
 
-        shuffle_childrens = self.childrens().copy()
-        random.shuffle(shuffle_childrens)
+        node_childrens = self.childrens()
+        shuffle_index = list(range(len(node_childrens)))
+        random.shuffle(shuffle_index)
 
-        for child in shuffle_childrens:
-            leaf = child.find_random_valid_leaf()
+        for i in shuffle_index:
+            leaf = node_childrens[i].find_random_valid_leaf()
             if leaf and str(leaf) != "DEAD_END.":
                 return leaf
 
