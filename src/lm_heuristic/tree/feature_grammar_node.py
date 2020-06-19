@@ -118,8 +118,10 @@ class FeatureGrammarNode(Node):
 
 
     def find_random_valid_leaf(self):
-        # TODO: can probably optimize that by not create so many object 
         leaves = []
+        if str(self) == "DEAD_END.":
+            return None
+
         for symbol in self.symbols:
             if not isinstance(symbol, Nonterminal):
                 leaves.append(symbol)
@@ -138,8 +140,8 @@ class FeatureGrammarNode(Node):
                 leaves.append(leaf)
         return " ".join(leaves)
 
-    def find_random_valid_leaf_previous(self) -> Union["FeatureGrammarNode", None]:
-        # PREVIOUS VERSION, WILL BE REMOVE LATER 
+    def find_random_valid_leaf_debug(self) -> Union["FeatureGrammarNode", None]:
+        # This version is much more slower but make it easy to debug grammar
         if self.is_terminal():
             return self
 
@@ -151,7 +153,7 @@ class FeatureGrammarNode(Node):
         random.shuffle(shuffle_index)
 
         for i in shuffle_index:
-            leaf = node_childrens[i].find_random_valid_leaf_previous()
+            leaf = node_childrens[i].find_random_valid_leaf_debug()
             if leaf and str(leaf) != "DEAD_END.":
                 return leaf
 

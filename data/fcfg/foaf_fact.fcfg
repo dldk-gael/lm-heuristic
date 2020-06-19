@@ -1,0 +1,48 @@
+Sentences[Fact1, Fact2] -> Sentence[fact=fact1, -hide_subj, other_fact= na] and Sentence[fact2, -hide_subj, other_fact=na]
+
+
+Sentence[fact=[pred, arg0, arg1], -hide_subj, subj=arg0, other_fact = ?f] -> M_args[list=arg0, other_fact=?f] VP[pred=?pred, subj=arg0, other_fact=na] M_args[list=arg1, other_fact=na]
+Sentence[fact=[pred, arg0, arg1], -hide_subj, subj=arg0, other_fact = ?f] -> M_args[list=arg0, other_fact=na] VP[pred=?pred, subj=arg0, other_fact=?f] M_args[list=arg1, other_fact=na]
+Sentence[fact=[pred, arg0, arg1], -hide_subj, subj=arg0, other_fact = ?f] -> M_args[list=arg0, other_fact=na] VP[pred=?pred, subj=arg0, other_fact=na] M_args[list=arg1, other_fact=?f]
+
+Sentence[fact=[pred, arg0, arg1], -hide_subj, subj=arg1, other_fact = ?f] -> M_args[list=arg1, other_fact=?f] VP[pred=?pred, subj=arg1, other_fact=na] M_args[list=arg0, other_fact=na]
+Sentence[fact=[pred, arg0, arg1], -hide_subj, subj=arg1, other_fact = ?f] -> M_args[list=arg1, other_fact=na] VP[pred=?pred, subj=arg1, other_fact=?f] M_args[list=arg0, other_fact=na]
+Sentence[fact=[pred, arg0, arg1], -hide_subj, subj=arg1, other_fact = ?f] -> M_args[list=arg1, other_fact=na] VP[pred=?pred, subj=arg1, other_fact=na] M_args[list=arg0, other_fact=?f]
+
+Sentence[fact=[pred, arg0, arg1], +hide_subj, subj=arg0, other_fact = ?f] -> VP[pred=?pred, subj=arg0, other_fact=?f] M_args[list=arg1, other_fact=na]
+Sentence[fact=[pred, arg0, arg1], +hide_subj, subj=arg0, other_fact = ?f] -> VP[pred=?pred, subj=arg0, other_fact=na] M_args[list=arg1, other_fact=?f]
+
+Sentence[fact=[pred, arg0, arg1], +hide_subj, subj=arg1, other_fact = ?f] -> VP[pred=?pred, subj=arg1, other_fact=?f] M_args[list=arg0, other_fact=na]
+Sentence[fact=[pred, arg0, arg1], +hide_subj, subj=arg1, other_fact = ?f] -> VP[pred=?pred, subj=arg1, other_fact=na] M_args[list=arg0, other_fact=?f]
+
+
+M_Args[list=[head=?arg, tail=na], other_fact = ?f] -> NP[arg=?arg, other_fact=?f]
+M_Args[list=[head=?arg0, tail=[head=?arg1, tail=?tail]], other_fact=?f] -> NP[arg=?arg0, other_fact=?f] conj M_Args[list=[head=?arg1, tail=?tail], other_fact=na]
+M_Args[list=[head=?arg0, tail=[head=?arg1, tail=?tail]], other_fact=?f] -> NP[arg=?arg0, other_fact=na] conj M_Args[list=[head=?arg1, tail=?tail], other_fact=?f]
+
+
+NP[arg=?arg, other_fact=[pred=?pred, arg0=?arg, arg1=?arg1]] -> NPBar[arg=?arg] Rel Sentence[fact=[pred=?pred, arg0=?arg, arg1=?arg1], +hide_subj, subj=arg0, other_fact=na] ","
+NP[arg=?arg, other_fact=[pred=?pred, arg0=?arg0, arg1=?arg]] -> NPBar[arg=?arg] Rel Sentence[fact=[pred=?pred, arg0=?arg, arg1=?arg1], +hide_subj, subj=arg1, other_fact=na] ","
+NP[arg=?arg, other_fact=na] -> NPBar[arg=?arg] 
+
+
+# Domaine specific for FOAF 
+VPBar[pred=know_r, subj=arg0] -> Verb[sem=know, form=plural] ProN[form=symmetrical] 
+VPBar[pred=know, subj=arg0] -> Verb[sem=know, form=?form]
+VPBar[pred=know, subj=arg1] -> Verb[sem=be, form=?form] Verb[sem=know, form=pp] "by"
+VPBar[pred=member, subj=arg1] -> Verb[sem=include, form=?form]
+VPBar[pred=member, subj=arg0] -> Verb[sem=be, form=?form] NP[data=[-is_proper, +is_noun, noun=member], grammar=[+explicit]] "of" 
+VPBar[pred=webblog, subj=arg0] -> Verb[sem=have, form=?form] | Verb[sem=own, form=?form]
+VPBar[pred=homepage, subj=arg0] -> Verb[sem=have, form=?form] | Verb[sem=own, form=?form]
+
+NPBar[arg=[gender=?gender, form=?form]] -> ProN[gender=?gender, form=?form] 
+NPBar[arg=[proper=?proper, +is_proper]] -> ProperName[proper=?proper]
+NPBar[arg=[+is_noun, noun=?noun, gender=?gender, form=?form]] -> Noun[sem=?noun, form=?form] | Det[form=?form] Noun[sem=?noun, form=?form]
+
+
+NP[data=[gender=?gender, form=?form], -is_other_fact] -> ProN[gender=?gender, form=?form] 
+NP[data=[gender=?gender, form=?form], +is_other_fact] -> ProN[gender=?gender, form=?form] 
+
+NP[data=[proper=?proper, +is_proper], grammar=[+explicit]] -> ProperName[proper=?proper]
+NP[data=[+is_noun, noun=?noun, gender=?gender, form=?form], grammar=[+explicit]] -> Noun[sem=?noun, form=?form] | Det[form=?form] Noun[sem=?noun, form=?form]
+
