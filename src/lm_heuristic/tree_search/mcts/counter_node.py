@@ -1,30 +1,22 @@
 import random
 from typing import *
 
-from .node import Node
-
+from lm_heuristic.tree import Node
 
 class CounterNode(Node):
     """
-    Class to wrap a node object inside a counter object.
-
-    In addition to usual node method, a counter will keep in memory the following information :
+    Class to wrap a node (which is denote as the reference node) and maintain several statistics during the MCTS:
     - the nomber of times the node has been visited by a search strategy
     - the expected reward from this node
     - the top reward that has been obtained from this node
+    - a reference to the leaf corresponding to the top rewards
     - the square sum reward obtained so far from this node
 
-    Moreover, in order to be able to back-propagate the information, the counter node keep in memory a reference
-    to his parent node
+    Contrary to a vanilla node, the counter node keeps in memory a reference to his parent node in order
+    to be able to backpropagate the information
     """
-    # pylint: disable=too-many-instance-attributes
 
     def __init__(self, reference_node, parent=None):
-        """
-        Create a new counter node
-        :param reference_node: reference toward the node object that is encapsulate
-        :param parent: reference toward the parent counter node
-        """
         Node.__init__(self)
         self.reference_node = reference_node
         self._childrens = None
@@ -38,19 +30,14 @@ class CounterNode(Node):
         # Useful to analyse and debug MCTS
         self.top_leaf_node = None
 
-        # Use to stop backprogation if choice has already been made
+        # If true will prevent any backpropagation to the node's parent
         self.freeze = False
 
-        # Idea taken from 'Attacking SameGame using Monte-Carlo Tree Search', Klein
         # A node is completely solved either if its reference node is a terminal node
         # or if all its children are completely solved.
         self.solved = False
 
     def expand(self):
-        """
-        Expand a counter node :
-        - generate and save in memory all childrens
-        """
         assert not self.reference_node.is_terminal(), "Try to expand from a terminal node"
         self._childrens = [
             CounterNode(children_node, parent=self) for children_node in self.reference_node.childrens()
@@ -79,12 +66,15 @@ class CounterNode(Node):
             if self.parent is not None:
                 self.parent.backpropagate(new_reward, leaf)
 
-    def top_children(self) -> "CounterNode":
+    def top_child(self) -> "CounterNode":
         """
         Return the children that have the best top_reward value
         """
         assert not self.is_terminal(), "Try to access childrens of a terminal node :%s" % str(self.reference_node)
         return max(self._childrens, key=lambda child: child.top_reward)
+
+    def most_visited_child(self) -> "CounterNode":
+        return max(self._childrens, key=lambda child: child.count)
 
     def random_children(self) -> "CounterNode":
         assert not self.is_terminal(), "Try to access childrens of a terminal node :%s" % str(self.reference_node)

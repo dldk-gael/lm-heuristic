@@ -39,7 +39,7 @@ class Node(ABC):
         (for example when using feature grammar)
         """
         node = self
-        while not node.is_terminal():
+        while node is not None and not node.is_terminal():
             node = node.random_children()
         return node
 

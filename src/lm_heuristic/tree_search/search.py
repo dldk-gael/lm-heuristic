@@ -3,9 +3,9 @@ from typing import *
 import pandas as pd
 import seaborn as sns
 
-from ..tree import Node
-from ..heuristic import Heuristic
-from ..utils.timer import Timer, timeit
+from lm_heuristic.tree import Node
+from lm_heuristic.heuristic import Heuristic
+from lm_heuristic.utils.timer import Timer, timeit
 
 
 class TreeSearch(ABC, Timer):
@@ -14,22 +14,10 @@ class TreeSearch(ABC, Timer):
     The objective of a tree searcher is to find the leaf that maximise an evaluation function
     """
 
-    def __init__(self, heuristic: Heuristic, buffer_size: int = 1):
+    def __init__(self, heuristic: Heuristic, name: str = ""):
         Timer.__init__(self)
-        self._name = ""
-        self.buffer_size = buffer_size
-        self.heuristic = heuristic
-        self.best_leaf: Node
-        self.best_leaf_value: float
-
-    def reset(self):
-        """
-        Reset the search memory, the heuristic memory and the timer
-        """
-        self.best_leaf = None
-        self.best_leaf_value = -1
-        self.heuristic.reset()
-        self.reset_timer()
+        self._name = name
+        self._heuristic = heuristic
 
     @timeit
     def __call__(self, root: Node, nb_of_tree_walks: int) -> Tuple[Node, float]:
@@ -39,16 +27,17 @@ class TreeSearch(ABC, Timer):
         :param nb_of_tree_walks to perform in total
         :return: best leave that was found and its evaluation value
         """
-        self.reset()
+        self._heuristic.reset()
+        self.reset_timer()
         self._search(root, nb_of_tree_walks)
-        return self.best_leaf, self.best_leaf_value
+        return self._heuristic.best_node_evaluated()
 
     def print_search_info(self):
         """
         Print several informations about the last search performed
         """
         total_time = self.time_spent()
-        evaluation_time = self.heuristic.time_spent()
+        evaluation_time = self._heuristic.time_spent()
 
         print(
             "--- SEARCH RESULT ---\n"
@@ -59,29 +48,21 @@ class TreeSearch(ABC, Timer):
             "%.2f%%  of the time was spent on leave evaluation\n"
             "\nRESULTS : \n"
             "Best leaf that have been found: %s \n"
-            "It has a score of %f"
+            "It has a score of %.2f"
             % (
-                self.heuristic.eval_counter,
+                self._heuristic.eval_counter,
                 total_time,
                 evaluation_time / total_time * 100,
-                str(self.best_leaf),
-                self.best_leaf_value,
+                str(self._heuristic.best_node_evaluated[0]),
+                self._heuristic.best_node_evaluated[1],
             )
         )
-
-    def print_path(self):
-        """
-        Print the path from root to best leaf that was found
-        """
-        print("The following path was taken :")
-        for i, node in enumerate(self.path()):
-            print("%d: %s" % (i, str(node)))
 
     def plot_leaf_values_distribution(self):
         """
         Plot the leaf value distribution
         """
-        values = self.heuristic.history_of_values()
+        values = self._heuristic.history_of_values()
         assert values != [], "Try to plot leaf values distribution, but no search was performed yet"
 
         series_values = pd.Series(values, name="Leaf values")
@@ -95,24 +76,9 @@ class TreeSearch(ABC, Timer):
         return self._name
 
     def top_n_leaves(self, top_n: int = 1) -> List[Tuple[Node, float]]:
-        """
-        return the top n best leaves encounter during the search
-        using the heuristic memory
-        """
-        unique_leaf_value = list(set(self.heuristic.history))
-        return sorted(unique_leaf_value, key=lambda x: x[1], reverse=True)[:top_n]
+        return self._heuristic.top_n_leaves(top_n)
 
     @abstractmethod
     def _search(self, root: Node, nb_of_tree_walks: int):
-        """
-        search the terminal node that maximise the evalution function:
-        store the node and its value is best_leaf, best_leaf_value
-        """
         ...
 
-    @abstractmethod
-    def path(self) -> List[Node]:
-        """
-        return path taken from root node to best terminal node that has been found
-        """
-        ...
