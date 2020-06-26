@@ -22,6 +22,7 @@ if __name__ == "__main__":
     evaluation_fn = lambda terminal_nodes: gpt_2_scorer(list(map(str, terminal_nodes)))
     heuristic = Heuristic(evaluation_fn, use_memory=False)
 
+
     # Initialize the search parameters
     mcts = MonteCarloTreeSearch(
         heuristic=heuristic,

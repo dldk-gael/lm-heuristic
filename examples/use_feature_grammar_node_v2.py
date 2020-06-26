@@ -96,7 +96,7 @@ member_bas_club = create_fact(member, Bas, club) # member(Bas, club)
 member_gael_bas_club = create_fact(member, [Gael, Bas], club) # member([Gael, Bas], club)
 
 # LIST OF FACT THAT WILL BE INPUT TO THE GRAMMAR :
-list_of_facts = format_list_of_facts([member_gael_bas_club, know_gael_justine])
+list_of_facts = format_list_of_facts([know_gael_justine, member_gael_bas_club])
 root = FeatStructNonterminal("Root")
 start_production = Production(lhs=root, rhs=[list_of_facts])
 

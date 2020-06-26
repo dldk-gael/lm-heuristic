@@ -1,0 +1,40 @@
+# Added dynamically to the grammar when formulating know(Bas, Gael)
+
+ROOT -> S[semantic=[functor=knows,subject=[case=subject,count=na,common=proper,form=singular,gender=male,name=known],object=[case=object,count=na,common=proper,form=singular,gender=male,name=known]]]
+
+Name[semantic=[case=subject, ]] -> 'Bas'
+Name[semantic=[case=object]] -> 'Gael'
+
+
+# Domain specific verbs
+V[tense=present,num=singular,synonym=know] -> 'knows'
+V[tense=present,num=plural,synonym=know] -> 'know'
+V[tense=past,synonym=know] -> 'knew'
+
+
+# Domain specific verb sentence structures (I think these patterns can be generalized and put as feature arguments in the ‘domain specific verb’ category so that these rules are not domain specific anymore)
+S[tense=?Tense,semantic=[functor=knows,subject=?Subject,object=?Object]] -> NP[grammarcase=subject,semantic=?Subject] V[tense=?Tense,num=singular,synonym=know] NP[grammarcase=object,semantic=?Object]
+S[tense=?Tense,semantic=[functor=knows,subject=?Subject,object=?Object]] -> NP[grammarcase=subject,semantic=[head=?Subject,tail=[head=?Object,tail=x],form=conjunctive]] V[tense=?Tense,num=plural,synonym=know] ProN[grammarcase=object,form=symmetrical]
+S[tense=?Tense,semantic=[functor=knows,subject=?Subject,object=?Object]] -> NP[grammarcase=subject,semantic=[head=?Object,tail=[head=?Subject,tail=x],form=conjunctive]] V[tense=?Tense,num=plural,synonym=know] ProN[grammarcase=object,form=symmetrical]
+
+
+# Generic noun phrase construction
+NP[semantic=[case=?Case,count=?Count,common=?Common,form=singular,gender=?Gender,name=known]] -> Name[semantic=[case=?Case,count=?Count,common=?Common,form=singular,gender=?Gender,name=known]]
+NP[semantic=[case=?Case,count=?Count,common=?Common,form=plural,gender=?Gender,name=known]] -> Name[semantic=[case=?Case,count=?Count,common=?Common,form=plural,gender=?Gender,name=known]]
+NP[grammarcase=?Grammar,semantic=[gender=?Gender,form=plural]] -> ProN[grammarcase=?Grammar,gender=?Gender,form=plural]
+NP[grammarcase=?Grammar,semantic=[gender=?Gender,form=singular]] -> ProN[grammarcase=?Grammar,gender=?Gender,form=singular]
+NP[grammarcase=?Grammar,semantic=[tail=[head=?x],form=conjunctive]] -> ProN[grammarcase=?Grammar,form=conjunctive]
+NP[grammarcase=?Case,semantic=[head=?Head,tail=x,form=conjunctive]] -> NP[grammarcase=?Case,semantic=?Head]
+NP[grammarcase=?Case,semantic=[head=?Head,tail=[head=?TailHead,tail=?TailTail],form=conjunctive]] -> NP[grammarcase=?Case,semantic=?Head] 'and' NP[grammarcase=?Case,semantic=[head=?TailHead,tail=?TailTail,form=conjunctive]]
+ProN[gender=neuter,form=singular] -> 'it'
+ProN[grammarcase=subject,form=conjunctive] -> 'they'
+ProN[grammarcase=subject,form=plural] -> 'they'
+ProN[grammarcase=subject,gender=male,form=singular] -> 'he'
+ProN[grammarcase=subject,gender=female,form=singular] -> 'she'
+ProN[grammarcase=subject,gender=genderedunknown,form=singular] -> 'he' 'or' 'she'
+ProN[grammarcase=object,form=conjunctive] -> 'them'
+ProN[grammarcase=object,form=plural] -> 'them'
+ProN[grammarcase=object,gender=male,form=singular] -> 'him'
+ProN[grammarcase=object,gender=female,form=singular] -> 'her'
+ProN[grammarcase=object,gender=genderedunknown,form=singular] -> 'him' 'or' 'her'
+ProN[grammarcase=object,form=symmetrical] -> 'each' 'other'

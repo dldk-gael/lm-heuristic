@@ -1,9 +1,4 @@
 
-# Domaine specific verb 
-Verb[sem=know, form=plural] -> 'know' 
-Verb[sem=know, form=singular] -> 'knows'
-Verb[sem=member, form=singular] -> 'is' 'a' 'member' 'of' 
-Verb[sem=member, form=plural] -> 'are' 'member' 'of' 
 
 # To handle multiple facts 
 Facts[head=?fact, tail=[head=?fact2, tail=?tail]] -> Fact[-no_arg0, sem=?fact] conj Facts[head=?fact2, tail=?tail]
@@ -17,7 +12,7 @@ Facts[head=[arg0=?arg0, pred=?pred1, arg1=?arg1], \
       Fact[+simple_form, sem=[arg0=?arg0, pred=?pred1, arg1=?arg1]] conj Fact[+no_arg0, sem=[arg0=?arg0, pred=?pred2, arg1=?arg2]]
 
 Fact[-simple_form, +no_arg0, sem=[arg0=?arg0, pred=[sem=?sem, form=?form], arg1=?arg1]] -> Verb[sem=?sem, form=?form] M_Args[data=?arg1]
-
+Fact[has]
 
 # To handle symetric fact 
 Fact[+simple_form, -no_arg0, sem=[arg0=?arg0, pred=[sem=?sem, form=?form], arg1=?arg1]] -> M_Args[data=?arg0] Verb[sem=?sem, form=?form] M_Args[data=?arg1]
@@ -30,12 +25,34 @@ M_Args[data=[head=?arg, tail=na]] -> NP[data=?arg]
 M_Args[data=[head=?arg0, tail=[head=?arg1, tail=?tail]]] -> NP[data=?arg0] conj M_Args[data=[head=?arg1, tail=?tail]]
 M_Args[data=[head=?arg0, tail=[head=?arg1, tail=?tail]]] -> ProN[form=plural]
 
+Fact[arg0=?arg0, pred=[sem=?sem, form=?form], arg1=?arg1] -> NP[data=?arg0] VP[sem=?sem, form=?form, +left_right] NP[data=?arg1]
+Fact[arg0=?arg0, pred=[sem=?sem, form=?form], arg1=?arg1] -> NP[data=?arg1] VP[sem=?sem, form=?form, -left_right] NP[data=?arg0]
+
+VP[sem=?sem, form=?form, +left_right] -> Verb[sem=?sem, form=?form]
+VP[sem=?sem, form=?form, -left_right] -> Verb[sem=be, form=?form] Verb[sem=?sem, form=pp]
+
 # Generic rules 
 NP[data=[gender=?gender, form=?form]] -> ProN[gender=?gender, form=?form] 
 NP[data=[proper=?proper, +is_proper]] -> ProperName[proper=?proper]
 NP[data=[+is_noun, noun=?noun, gender=?gender, form=?form]] -> Noun[noun=?noun, form=?form] | Det[form=?form] Noun[noun=?noun, form=?form]
 
+# Domaine specific for FOAF 
+Verb[sem=know, form=pp] -> 'known'
+Verb[sem=know, form=plural] -> 'know' 
+Verb[sem=know, form=singular] -> 'knows'
+Verb[sem=member, form=singular] -> 'is' 'a' 'member' 'of' 
+Verb[sem=member, form=plural] -> 'are' 'member' 'of' 
+
+Noun[sem=nickname] -> 'nick' | 'nickname'
+Noun[sem=homepage] -> 'homepage' | 'personnal website'
+Noun[sem=blog] -> 'blog' 
+Noun[sem=know] -> 'acquaintance'
+
 # Lexicon 
+Verb[sem=have, form=singular] -> 'has'
+Verb[sem=have, form=plural] -> 'have'
+Verb[sem=be, form=singular] -> 'is'
+Verb[sem=be, form=plural] -> 'are' 
 ProN[gender=neuter,form=singular] -> 'it'
 ProN[form=plural] -> 'they' | 'them'
 ProN[gender=male,form=singular] -> 'he' | 'him'

@@ -1,0 +1,59 @@
+# Single fact
+Facts[head=?fact, tail=na] -> Fact[data=?fact]
+
+# Two facts
+Facts[head=?fact, tail=[head=?fact2, tail=na]] -> Fact[data=?fact, grammar=[+passive]] conj Fact[data=?fact2, grammar=[+explicit_subj]]
+Facts[head=?fact, tail=[head=?fact2, tail=na]] -> Fact[data=?fact, grammar=[-passive]] conj Fact[data=?fact2]
+
+# Two facts with same arg0 
+Facts[head=[arg0=?arg0, pred=?pred1, arg1=?arg1], \
+      tail=[head=[arg0=?arg0, pred=?pred2, arg1=?arg2], tail=na]] -> \
+      Fact[data=[arg0=?arg0, pred=?pred1, arg1=?arg1], grammar=[-passive, -no_subj]] conj Fact[data=[arg0=?arg0, pred=?pred2, arg1=?arg2], grammar=[+no_subj]]
+
+Fact[data=[arg0=?arg0, pred=?pred, arg1=?arg1], grammar=[+no_subj]] -> VP[data=?pred, -passive] M_Args[data=?arg1, pos=obj]
+Fact[data=[arg0=?arg0, pred=?pred, arg1=?arg1], grammar=[-passive, explicit_subj=?exp]]-> M_Args[data=?arg0, grammar=[explicit=?exp]] VP[data=?pred, -passive] M_Args[data=?arg1]
+Fact[data=[arg0=?arg0, pred=?pred, arg1=?arg1], grammar=[+passive, explicit_subj=?exp]] -> M_Args[data=?arg1, grammar=[explicit=?exp]] VP[data=?pred, +passive] M_Args[data=?arg0]
+
+# Multiple arguments 
+M_Args[data=[head=?arg, tail=na], grammar=?grammar] -> NP[data=?arg, grammar=?grammar]
+M_Args[data=[head=?arg0, tail=[head=?arg1, tail=?tail]], grammar=?grammar] -> NP[data=?arg0, grammar=?grammar] conj M_Args[data=[head=?arg1, tail=?tail], grammar=?grammar]
+M_Args[data=[head=?arg0, tail=[head=?arg1, tail=?tail]], grammar=[-explicit]] -> ProN[form=plural]
+
+
+# Generic rules 
+VP[data=[sem=?sem, form=?form], -passive] -> VPBar[sem=?sem, form=?form]
+VP[data=[sem=?sem, form=?form], +passive] -> VPBar[sem=be, form=?form] Verb[sem=?sem, form=pp] "by"
+
+NP[data=[gender=?gender, form=?form], grammar=[-explicit]] -> ProN[gender=?gender, form=?form] 
+NP[data=[proper=?proper, +is_proper], grammar=[+explicit]] -> ProperName[proper=?proper]
+NP[data=[+is_noun, noun=?noun, gender=?gender, form=?form], grammar=[+explicit]] -> Noun[sem=?noun, form=?form] | Det[form=?form] Noun[sem=?noun, form=?form]
+
+# Domaine specific for FOAF 
+VPBar[sem=know_r] -> Verb[sem=know, form=plural] ProN[form=symmetrical] 
+VPBar[sem=know, form=?form] -> Verb[sem=know, form=?form]
+VPBar[sem=member, form=?form] -> Verb[sem=be, form=?form] 'member' 'of'
+
+Verb[sem=know, form=pp] -> 'known'
+Verb[sem=know, form=plural] -> 'know' 
+Verb[sem=know, form=singular] -> 'knows'
+
+Noun[sem=nickname] -> 'nick' | 'nickname'
+Noun[sem=homepage] -> 'homepage' | 'personnal website'
+Noun[sem=blog] -> 'blog' 
+Noun[sem=know] -> 'acquaintance'
+
+# Lexicon 
+Verb[sem=have, form=singular] -> 'has'
+Verb[sem=have, form=plural] -> 'have'
+Verb[sem=be, form=singular] -> 'is'
+Verb[sem=be, form=plural] -> 'are' 
+ProN[gender=neuter,form=singular] -> 'it'
+ProN[form=plural] -> 'they' | 'them'
+ProN[gender=male,form=singular] -> 'he' | 'him'
+ProN[gender=female,form=singular] -> 'she' | 'her'
+ProN[form=symmetrical] -> 'each' 'other'
+Noun[sem=man, form=singular] -> 'man'
+Noun[sem=man, form=plural] -> 'men'
+Det[form=singular] -> 'a' | 'an' 
+Det -> 'the'
+conj -> 'and'

@@ -1,0 +1,32 @@
+ROOT[] -> None[]
+Root[] -> Facts[head=[arg0=[form='singular', gender='male', -isnoun, proper='Gael'], arg1=[form='singular', gender='male', -isnoun, proper='Bas'], pred='know'], tail='na']
+ProperName[proper='Bas'] -> 'Bas'
+ProperName[proper='Gael'] -> 'Gael'
+Noun[form='singular', noun='man'] -> 'man'
+Noun[form='plural', noun='man'] -> 'men'
+Verb[pred='know'] -> 'know'
+Verb[pred='know'] -> 'knows'
+Verb[pred='member'] -> 'is' 'a' 'member' 'of'
+Verb[pred='member'] -> 'are' 'member' 'of'
+Facts[head=?fact, tail=[head=?fact2, tail=?tail]] -> Fact[sem=?fact] conj[] Facts[head=?fact2, tail=?tail]
+Facts[head=?fact, tail='na'] -> Fact[sem=?fact]
+Fact[sem=[arg0=?arg0, arg1=?arg1, pred='know']] -> NP[data=?arg0] Verb[pred='know'] NP[data=?arg1]
+Fact[sem=[arg0=?arg0, arg1=?arg1, pred='know']] -> NP[data=?arg0] conj[] NP[data=?arg1] Verb[pred='know'] ProN[form='symmetrical']
+Fact[sem=[arg0=?arg0, arg1=?arg1, pred='know']] -> NP[data=?arg1] conj[] NP[data=?arg0] Verb[pred='know'] ProN[form='symmetrical']
+NP[data=[form=?form, gender=?gender, noun=?noun, proper=?proper]] -> ProN[form=?form, gender=?gender]
+NP[data=[form=?form, gender=?gender, noun=?noun, proper=?proper]] -> ProperName[proper=?proper]
+NP[data=[form=?form, gender=?gender, +is_noun, noun=?noun, proper=?proper]] -> Noun[form=?form, noun=?noun]
+NP[data=[form=?form, gender=?gender, +is_noun, noun=?noun, proper=?proper]] -> Det[form=?form] Noun[form=?form, noun=?noun]
+ProN[form='singular', gender='neuter'] -> 'it'
+ProN[form='plural'] -> 'they'
+ProN[form='plural'] -> 'them'
+ProN[form='singular', gender='male'] -> 'he'
+ProN[form='singular', gender='male'] -> 'him'
+ProN[form='singular', gender='female'] -> 'she'
+ProN[form='singular', gender='female'] -> 'her'
+ProN[form='symmetrical'] -> 'each' 'other'
+Det[form='singular'] -> 'a'
+Det[form='singular'] -> 'an'
+Det[] -> 'the'
+conj[] -> 'and'
+conj[] -> ', '

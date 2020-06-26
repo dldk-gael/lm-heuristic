@@ -1,0 +1,37 @@
+ROOT -> Facts[head=[arg0=[proper=Bas, -is_noun, gender=male, form=singular], pred=know, arg1=[proper=Gael, -is_noun, gender=male, form=singular]], tail=na]
+
+# POSSIBLE INPUT    
+
+# Add dynamically to the grammar 
+ProperName[proper=Bas] -> 'Bas'
+ProperName[proper=Gael] -> 'Gael'
+Noun[noun=man, form=singular] -> 'man'
+Noun[noun=man, form=plural] -> 'men'
+
+# Domaine specific verb 
+Verb[pred=know] -> 'know' | 'knows'
+Verb[pred=member] -> 'is' 'a' 'member' 'of' | 'are' 'member' 'of' 
+
+Facts[head=?fact, tail=[head=?fact2, tail=?tail]] -> Fact[sem=?fact] conj Facts[head=?fact2, tail=?tail]
+Facts[head=?fact, tail=na] -> Fact[sem=?fact]
+
+Fact[sem=[arg0=?arg0, pred=know, arg1=?arg1]] -> NP[data=?arg0] Verb[pred=know] NP[data=?arg1]
+Fact[sem=[arg0=?arg0, pred=know, arg1=?arg1]] -> NP[data=?arg0] conj NP[data=?arg1] Verb[pred=know] ProN[form=symmetrical]
+Fact[sem=[arg0=?arg0, pred=know, arg1=?arg1]] -> NP[data=?arg1] conj NP[data=?arg0] Verb[pred=know] ProN[form=symmetrical]
+
+# Generic rules 
+NP[data=[proper=?proper, noun=?noun, gender=?gender, form=?form]] -> ProN[gender=?gender, form=?form] 
+NP[data=[proper=?proper, noun=?noun, gender=?gender, form=?form]] -> ProperName[proper=?proper]
+NP[data=[proper=?proper, +is_noun, noun=?noun, gender=?gender, form=?form]] -> Noun[noun=?noun, form=?form] | Det[form=?form] Noun[noun=?noun, form=?form]
+
+
+ProN[gender=neuter,form=singular] -> 'it'
+ProN[form=plural] -> 'they' | 'them'
+ProN[gender=male,form=singular] -> 'he' | 'him'
+ProN[gender=female,form=singular] -> 'she' | 'her'
+ProN[form=symmetrical] -> 'each' 'other'
+
+Det[form=singular] -> 'a' | 'an' 
+Det -> 'the'
+
+conj -> 'and' | ', '

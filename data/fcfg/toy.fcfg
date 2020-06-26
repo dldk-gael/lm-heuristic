@@ -1,9 +1,5 @@
-S -> NP[AGR=?n] VP[AGR=?n]
-S -> NP[AGR=?n] VP[AGR=?n] X
-NP[AGR=?n] -> PropN[AGR=?n]
-VP[TENSE=?t,AGR=?n] -> Cop[TENSE=?t,AGR=?n] Adj
-Cop[TENSE=pres,AGR=[NUM=sg,PER=3]] -> 'is' 
-PropN[AGR=[NUM=sg,PER=3]] -> 'Kim' 
-PropN[AGR=[NUM=sg,PER=1]] -> 'I'
-Adj -> 'happy'
-        
+# TARGET SENTENCE : "The boy wants to ride the red bicycle."
+S -> NP[SEM=pivot] V NP[SEM=theme]
+NP -> ADJ NP
+V -> "wants"
+NP -> "gael"

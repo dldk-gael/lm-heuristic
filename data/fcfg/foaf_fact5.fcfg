@@ -1,0 +1,158 @@
+# Main ideas 
+# To handle list, we use nested feature head, tail 
+# ex: [head=fact1, tail=[head=fact2, tail=[head=fact3, tail=na]]]
+#
+# The grammar is initialized dynamically by adding a ROOT rule that contain the list of fact to use 
+# ex: ROOT -> Facts[LIST OF FACTS]
+# 
+# For now, the grammar can only handle two facts 
+
+
+
+# ---- PART 1 ----
+# GENERIC RULES  
+
+# -- FACTS --
+# If we have one fact, just call sentence with the fact
+Facts[head=?fact1, tail=na] -> Sentence[fact=?fact1, -rel_prep, other_fact=na]
+
+# If we have two fact, several possibilities : 
+#  1/ generate two different sentences with conjunction in between 
+#  1/ generate one "head" sentence describing fact 1, with the constraint that the sentence will have to use fact 2 during the generation process
+# ex: *input* member(Gael, tennis club), know(Gael, Justine)
+#   if "head" fact is know(Gael, Justine), we could generate 
+#     -> Gael, who is a member of the tennis club, know Justine 
+# Both the main fact and second fact will be passed accross the entire grammar tree  
+
+Facts[head=?fact1, tail=[head=?fact2, tail=na]] -> Sentence[fact=?fact1, -rel_prep, other_fact=na] conj Sentence[fact=?fact2, -rel_prep, other_fact=na] 
+Facts[head=?fact1, tail=[head=?fact2, tail=na]] -> Sentence[fact=?fact1, -rel_prep, other_fact=?fact2]
+
+
+Facts[head=?fact1, tail=[head=?fact2, tail=na]] -> Sentence[fact=?fact2, -rel_prep, other_fact=?fact1]
+
+
+# -- SENTENCE -- 
+# Use to decompose the fact (pred, arg0, arg1) to describe in 
+# ARG0 VERB(PRED, SUBJ=ARG0) ARG1 or ARG1 VERB(PRED, SUBJ=ARG1) ARG0
+# Moreover, it generates every possibilities for the second fact's assignement 
+# For instance, in previous example :  Gael, who is a member of the tennis club, know Justine 
+# ARG0 (= Gael) has the tasks to generate the second fact assignement 
+# There is also the possibility to skip the subject generation if we are in a RelativeProposition 
+
+Sentence[fact=?fact1, -rel_prep, subj=arg0, other_fact = ?fact2]  -> \
+    M_Args[arg=arg0, fact=?fact1, other_fact=?fact2] VP[fact=?fact1, subj=arg0, other_fact=na] M_Args[arg=arg1, fact=?fact1, other_fact=na] | \
+    M_Args[arg=arg0, fact=?fact1, other_fact=na] VP[fact=?fact1, subj=arg0, other_fact=?fact2] M_Args[arg=arg1, fact=?fact1, other_fact=na] | \
+    M_Args[arg=arg0, fact=?fact1, other_fact=na] VP[fact=?fact1, subj=arg0, other_fact=na] M_Args[arg=arg1, fact=?fact1, other_fact=?fact2] 
+
+Sentence[fact=?fact1, -rel_prep, subj=arg1, other_fact = ?fact2]  -> \
+    M_Args[arg=arg1, fact=?fact1, other_fact=?fact2] VP[fact=?fact1, subj=arg1, other_fact=na] M_Args[arg=arg0, fact=?fact1, other_fact=na] | \
+    M_Args[arg=arg1, fact=?fact1, other_fact=na] VP[fact=?fact1, subj=arg1, other_fact=?fact2] M_Args[arg=arg0, fact=?fact1, other_fact=na] | \
+    M_Args[arg=arg1, fact=?fact1, other_fact=na] VP[fact=?fact1, subj=arg1, other_fact=na] M_Args[arg=arg0, fact=?fact1, other_fact=?fact2] 
+
+Sentence[fact=?fact1, +rel_prep, subj=arg0, other_fact = ?fact2]  -> \
+    VP[fact=?fact1, subj=arg0, other_fact=?fact2] M_Args[arg=arg1, fact=?fact1, other_fact=na] | \
+    VP[fact=?fact1, subj=arg0, other_fact=na] M_Args[arg=arg1, fact=?fact1, other_fact=?fact2] 
+
+Sentence[fact=?fact1, +rel_prep, subj=arg1, other_fact = ?fact2]  -> \
+    VP[fact=?fact1, subj=arg1, other_fact=?fact2] M_Args[arg=arg0, fact=?fact1, other_fact=na] | \
+    VP[fact=?fact1, subj=arg1, other_fact=na] M_Args[arg=arg0, fact=?fact1, other_fact=?fact2] 
+
+# -- RelativeSentence -- 
+RelativeSentence[fact=?fact1, subj=?arg] -> \
+    RelativePronoun Sentence[fact=?fact1, subj=?arg, other_fact=na, +rel_prep] "," | \
+    RelativePronoun Sentence[fact=?fact1, subj=?arg, other_fact=na, +rel_prep] | \
+    Sentence[fact=?fact1, subj=?arg, other_fact=na, +rel_prep] "," | \
+    Sentence[fact=?fact1, subj=?arg, other_fact=na, +rel_prep]
+
+
+# -- Multiple arguments -- 
+# If one of the arguments in the list of arguments match with one argument of the other fact
+# -> spawn the the other fact with RelativeSentence call 
+
+# M_Args -> Simply to extract the argument list given the fact and which arg (arg0 or arg1) is concerned 
+M_Args[arg=arg0, fact=[pred=?pred, arg0=?arg0, arg1=?arg1], other_fact=?f] -> M_ArgsBar[list=?arg0, fact=[pred=?pred, arg0=?arg0, arg1=?arg1], other_fact=?f]
+M_Args[arg=arg1, fact=[pred=?pred, arg0=?arg0, arg1=?arg1], other_fact=?f] -> M_ArgsBar[list=?arg1, fact=[pred=?pred, arg0=?arg0, arg1=?arg1], other_fact=?f]
+
+# M_ArgsBar -> to generate other fact if possible 
+# Maybe just at an other level ? 
+M_ArgsBar[list=?list_arg, fact=?fact1, other_fact=[pred=?pred, arg0=?list_arg, arg1=?arg1]] -> \
+    M_ArgsBar[list=?list_arg, fact=?fact1, other_fact=na] "," RelativeSentence[fact=[pred=?pred, arg0=?list_arg, arg1=?arg1], subj=arg0] 
+M_ArgsBar[list=?list_arg, fact=?fact1, other_fact=[pred=?pred, arg0=?arg0, arg1=?list_arg]]  -> \ 
+    M_ArgsBar[list=?list_arg, fact=?fact1, other_fact=na] "," RelativeSentence[fact=[pred=?pred, arg0=?arg0, arg1=?list_arg], subj=arg1] 
+
+M_ArgsBar[list=[head=?arg, tail=na], fact=?f1, other_fact = ?f2] -> NP[singleton=[head=?arg, tail=na], fact=?f1, other_fact=?f2]
+M_ArgsBar[list=[head=?arg0, tail=[head=?arg1, tail=?tail]], fact=?f1, other_fact = ?f2] -> \
+    NP[singleton=[head=?arg0, tail=na], fact=?f1, other_fact=?f2] conj M_ArgsBar[list=[head=?arg1, tail=?tail], fact=?f1, other_fact=na] | \
+    NP[singleton=[head=?arg0, tail=na], fact=?f1, other_fact=na] conj M_ArgsBar[list=[head=?arg1, tail=?tail], fact=?f1, other_fact=?f2]
+
+# NP TODO --> this probably can be optimized and removed 
+NP[singleton=?arg, fact=?f1, other_fact=[pred=?pred, arg0=?arg, arg1=?arg1]] -> NPBar[singleton=?arg, fact=?f1] "," RelativeSentence[fact=[pred=?pred, arg0=?arg, arg1=?arg1], subj=arg0]
+NP[singleton=?arg, fact=?f1, other_fact=[pred=?pred, arg0=?arg0, arg1=?arg]] -> NPBar[singleton=?arg, fact=?f1] "," RelativeSentence[fact=[pred=?pred, arg0=?arg, arg1=?arg1], subj=list_arg1]
+NP[singleton=?arg, fact=?f1, other_fact=na] -> NPBar[singleton=?arg, fact=?f1]
+
+# -- VP -- 
+# For know, the verb part can not be used to generate the other fact. 
+VP[fact=[pred=[sem=?pred], arg0=?arg0, arg1=?arg1], subj=?arg, other_fact=na] -> VPBar[pred=?pred, subj=?arg]
+
+# ---- PART 2 ----
+# SPECIFIC TO FOAF ONTOLOGY
+
+# -- VERB -- 
+# The goal is to ensure the meaning by using the semantic and subject position 
+VPBar[pred=know_r, subj=arg0] -> Verb[sem=know] ProN[form=symmetrical] 
+VPBar[pred=know, subj=arg0] -> Verb[sem=know]
+VPBar[pred=know, subj=arg1] -> Verb[sem=know, form=pp] "by" | Verb[sem=be] Verb[sem=know, form=pp] "by"
+VPBar[pred=member, subj=arg1] -> Verb[sem=include]
+VPBar[pred=member, subj=arg0] -> \
+    Verb[sem=be] NPBarBar[arg=[-is_proper, +is_noun, noun=member, +explicit]] "of" | \
+    NPBarBar[arg=[-is_proper, +is_noun, noun=member, +explicit]] "of"
+
+VPBar[pred=webblog, subj=arg0] -> Verb[sem=have, form=?form] | Verb[sem=own, form=?form]
+VPBar[pred=homepage, subj=arg0] -> Verb[sem=have, form=?form] | Verb[sem=own, form=?form]
+
+# -- NOUN PHRASE -- 
+NPBar[singleton=[head=?arg, tail=na]] -> NPBarBar[arg=?arg]
+NPBar[singleton=[head=?arg, tail=na], fact=[pred=homepage]] -> \
+    NPBarBar[arg=[+is_noun, -is_proper, +explicit, noun=homepage]] "of" NPBarBar[arg=?arg] | \
+    NPBarBar[arg=?arg] "'s" NPBarBar[arg=[+is_noun, -is_proper, +explicit, noun=homepage]]
+
+NPBarBar[arg=[gender=?gender, form=?form, -explicit]] -> ProN[gender=?gender, form=?form] 
+NPBarBar[arg=[proper=?proper, +is_proper]] -> ProperName[proper=?proper]
+NPBarBar[arg=[+is_noun, noun=?noun, gender=?gender, form=?form]] -> Noun[sem=?noun, form=?form] | Det[form=?form] Noun[sem=?noun, form=?form]
+
+ProperName[proper=?proper] -> ?proper
+
+# ---- PART 3 ----
+# LEXICON 
+Verb[sem=know, form=pp] -> 'known'
+Verb[sem=know, form=plural] -> 'know' 
+Verb[sem=know, form=singular] -> 'knows'
+Verb[sem=include] -> 'include'
+Verb[sem=have, form=singular] -> 'has'
+Verb[sem=have, form=plural] -> 'have'
+Verb[sem=be, form=singular] -> 'is'
+Verb[sem=be, form=plural] -> 'are' 
+Verb[sem=own, form=singular] -> 'owns'
+Verb[sem=own, form=plural] -> 'own'
+
+ProN[gender=neuter,form=singular] -> 'it'
+ProN[form=plural] -> 'they' | 'them' | 'both'
+ProN[gender=male,form=singular] -> 'he' | 'him'
+ProN[gender=female,form=singular] -> 'she' | 'her'
+ProN[form=symmetrical] -> 'each' 'other'
+
+Noun[sem=nickname] -> 'nick' | 'nickname'
+Noun[sem=homepage] -> 'homepage' | 'personnal website'
+Noun[sem=blog] -> 'blog' 
+Noun[sem=know] -> 'acquaintance'
+Noun[sem=member] -> 'member' 
+Noun[sem=empty] -> ' '
+Noun[sem=man, form=singular] -> 'man'
+Noun[sem=man, form=plural] -> 'men'
+
+Det[form=singular] -> 'a' | 'an' 
+Det -> 'the'
+
+conj -> 'and'
+
+RelativePronoun -> 'who' | 'which' | 'that'
