@@ -40,7 +40,7 @@ class Heuristic(Timer):
         value = self._memory[node]
         output = value if not self._binarize_results else float(value > self._average)
 
-        self._average += value / len(self._history)
+        self._average += value / (len(self._history) + 1)
         self._history.append((node, value))
 
         return output
@@ -53,7 +53,7 @@ class Heuristic(Timer):
         """
         values = self._evaluation_fct(nodes)
 
-        outputs = []    
+        outputs = []
         # update memory and average
         for node, value in zip(nodes, values):
             outputs.append(value if not self._binarize_results else float(value > self._average))
@@ -61,7 +61,7 @@ class Heuristic(Timer):
                 self._best_node = node
                 self._best_value = value
 
-            self._average += value / len(self._history)
+            self._average += value / (len(self._history) + 1)
             self._memory[node] = value  
 
         # update history and counter

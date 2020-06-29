@@ -38,23 +38,26 @@ class TreeSearch(ABC, Timer):
         """
         total_time = self.time_spent()
         evaluation_time = self._heuristic.time_spent()
+        best_node, best_value = self._heuristic.best_node_evaluated()
 
         print(
             "--- SEARCH RESULT ---\n"
             "LEAVE EVALUATION : \n"
-            "%d leaves evaluation was performed\n"
+            "%d tree walks were performed\n"
+            "The evaluation function was called on %d leaves \n"
             "\nTIMING : \n"
             "The search tooks %.2fs\n"
             "%.2f%%  of the time was spent on leave evaluation\n"
             "\nRESULTS : \n"
             "Best leaf that have been found: %s \n"
-            "It has a score of %.2f"
+            "It has a score of %.5f"
             % (
-                self._heuristic.eval_counter,
+                len(self._heuristic._history),
+                self._heuristic._eval_counter,
                 total_time,
                 evaluation_time / total_time * 100,
-                str(self._heuristic.best_node_evaluated[0]),
-                self._heuristic.best_node_evaluated[1],
+                str(best_node),
+                best_value
             )
         )
 

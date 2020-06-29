@@ -1,14 +1,16 @@
 from typing import *
+import logging 
 
 from lm_heuristic.heuristic import Heuristic
 from lm_heuristic.tree import Node
 from lm_heuristic.tree_search import TreeSearch
-from .ressource_distributor import RessourceDistributor, AllocationStrategy
 
 from .eval_buffer import EvalBuffer
 from .selection_rules import single_player_ucb
 from .counter_node import CounterNode
+from .ressource_distributor import RessourceDistributor, AllocationStrategy
 
+logger = logging.getLogger(__name__)
 
 class MonteCarloTreeSearch(TreeSearch):
     """
@@ -62,8 +64,9 @@ class MonteCarloTreeSearch(TreeSearch):
     def _search(self, root: Node, nb_of_tree_walks: int):
         nb_tree_walks_per_search = nb_of_tree_walks // self.nb_random_restarts
 
-        self.ressource_distributor.initialization(ressources=nb_of_tree_walks, tree=root)
-        for _ in range(self.nb_random_restarts):
+        self.ressource_distributor.initialization(ressources=nb_tree_walks_per_search, tree=root)
+        for i in range(self.nb_random_restarts):
+            logger.info("Performing random restarts n°%d/%d", i+1, self.nb_random_restarts)
             self.ressource_distributor.reset_remaining_ressources(nb_tree_walks_per_search)
             self._single_search(root)
 
@@ -100,6 +103,8 @@ class MonteCarloTreeSearch(TreeSearch):
                     counter_root = counter_root.top_child()
                 else:
                     counter_root = counter_root.most_visited_child()
+                
+                logger.info("Current MCTS root : <%s>", str(counter_root.reference_node))
 
                 current_depth += 1
                 self.ressource_distributor.set_new_position(current_depth, counter_root)

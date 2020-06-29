@@ -1,8 +1,12 @@
 from typing import *
+import logging 
+
 import numpy as np
+
 from lm_heuristic.utils.timer import timeit, Timer
 from .node import Node
 
+logger = logging.getLogger(__name__)
 
 class TreeStats(Timer):
     """

@@ -45,7 +45,8 @@ class EvalBuffer:
                 self._compute()
 
     def force_eval(self):
-        self._compute()
+        if len(self._buffer_table) > 0:
+            self._compute()
 
     def _compute(self):
         leaves = list(self._buffer_table.keys())

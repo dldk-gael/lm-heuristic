@@ -1,6 +1,11 @@
 from enum import Enum
+import logging
+
 from lm_heuristic.tree import Node, TreeStats
 from .counter_node import CounterNode
+
+
+logger = logging.getLogger(__name__)
 
 
 class AllocationStrategy(Enum):
@@ -8,6 +13,16 @@ class AllocationStrategy(Enum):
     LINEAR = 2
     ALL_FROM_ROOT = 3
     DYNAMIC = 4
+
+    def __str__(self):
+        if self == AllocationStrategy.UNIFORM:
+            return "uniform"
+        if self == AllocationStrategy.LINEAR:
+            return "linear"
+        if self == AllocationStrategy.ALL_FROM_ROOT:
+            return "all from root"
+        if self == AllocationStrategy.DYNAMIC:
+            return "dynamic"
 
 
 class RessourceDistributor:
@@ -31,10 +46,12 @@ class RessourceDistributor:
     computationnal ressources. Hence, when using such strategy, a random sampling statistic of the tree is performed
     during initialization step.
     """
+
     def __init__(self, strategy: AllocationStrategy, stats_samples=None, dynamic_ratio=None):
         self.strategy = strategy
-        self.a: int
-        self.b: int
+        self.a: float
+        self.b: float
+        self.depth_max: int
         self._ressources_to_consume: int
 
         self._ressources_already_consumed: int
@@ -47,21 +64,29 @@ class RessourceDistributor:
             assert dynamic_ratio is not None, "you must provide dynamic_ratio when using dynamic strategy"
             self.dynamic_ratio = dynamic_ratio
 
-        if self.strategy in [AllocationStrategy.UNIFORM, AllocationStrategy.LINEAR, AllocationStrategy.ALL_FROM_ROOT]:
+        if self.strategy == AllocationStrategy.UNIFORM or self.strategy == AllocationStrategy.LINEAR:
             assert stats_samples is not None
             self.stats_samples = stats_samples
 
     def initialization(self, tree: Node, ressources: int):
         self._ressources_to_consume = ressources
+        self._ressources_already_consumed = 0
 
-        if self.strategy in [AllocationStrategy.UNIFORM, AllocationStrategy.LINEAR, AllocationStrategy.ALL_FROM_ROOT]:
+        logger.info("Initialize the ressource distributor for %s statregy", str(self.strategy))
+        if self.strategy == AllocationStrategy.UNIFORM or self.strategy == AllocationStrategy.LINEAR:
+            logger.info("Computing statistic values on the tree.")
             stats = TreeStats(tree)
             stats.accumulate_stats(nb_samples=self.stats_samples)
-            depth = int(stats.depths_info()["mean"])
+            self.depth_max = int(stats.depths_info()["mean"])
+            logger.info(
+                "Stats results :\n- depth = %s,\n- branching_factor = %s",
+                str(stats.depths_info()),
+                str(stats.branching_factors_info()),
+            )
 
         if self.strategy == AllocationStrategy.LINEAR:
-            self.a = int(2 / (1 - depth) * (ressources / (depth)))
-            self.b = int(-2 / (1 - depth) * (ressources))
+            self.a = 2 / (1 - self.depth_max) * (ressources / (self.depth_max))
+            self.b = -2 / (1 - self.depth_max) * (ressources)
 
     def still_has_ressources(self) -> bool:
         return self._ressources_already_consumed < self._ressources_to_consume
@@ -78,6 +103,7 @@ class RessourceDistributor:
 
     def reset_remaining_ressources(self, new_ressources):
         self._ressources_to_consume = new_ressources
+        self._ressources_already_consumed = 0
 
     def set_new_position(self, new_depth, new_node):
         self._current_depth = new_depth
@@ -89,7 +115,7 @@ class RessourceDistributor:
             # however, once near depth_max, we won't need all the ressources
             # as a result, we arbitly divide the ressource among the first 80% first layer
             self._ressources_to_consume_at_current_depth = max(
-                round(self._ressources_to_consume / (0.8 * self._current_depth)), 1
+                round(self._ressources_to_consume / (0.8 * self.depth_max)), 1
             )
 
         if self.strategy == AllocationStrategy.LINEAR:
@@ -98,3 +124,8 @@ class RessourceDistributor:
         if self.strategy == AllocationStrategy.ALL_FROM_ROOT:
             self._ressources_to_consume_at_current_depth = self._ressources_to_consume
 
+        logger.info(
+            "Current depth = %d. %d tree walks will be performed",
+            self._current_depth,
+            self._ressources_to_consume_at_current_depth,
+        )

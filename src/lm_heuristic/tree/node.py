@@ -31,7 +31,7 @@ class Node(ABC):
         """
         ...
 
-    def random_walk(self) -> Union["Node", None]:
+    def random_walk(self) -> "Node":
         """
         Perform a random walk from current node to a terminal node
         and return a leaf.
