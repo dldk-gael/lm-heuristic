@@ -1,14 +1,20 @@
 from abc import ABC, abstractmethod
 from typing import *
 
+import torch
 
 class SentenceScore(ABC):
     """
     A Score object compute a "naturalness" score for a sentence or a list of sentences
     """
 
-    def __init__(self):
-        ...
+    def __init__(
+        self, batch_size: int = 1, length_normalization: bool = False, device: str = None, verbose: bool = False,
+    ):
+        self.batch_size = batch_size
+        self.length_normalization = length_normalization
+        self.device = device if device else ("cuda:0" if torch.cuda.is_available() else "cpu")
+        self.verbose = verbose
 
     @overload
     def compute_score(self, text: str) -> float:

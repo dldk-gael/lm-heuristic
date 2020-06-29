@@ -1,5 +1,5 @@
 from typing import *
-import logging 
+import logging
 
 from lm_heuristic.heuristic import Heuristic
 from lm_heuristic.tree import Node
