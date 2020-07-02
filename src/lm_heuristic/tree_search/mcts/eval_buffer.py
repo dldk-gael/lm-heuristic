@@ -85,9 +85,11 @@ class ParallelEvalBuffer(EvalBuffer):
 
     @staticmethod
     def evaluation_job(input_queue: Queue, ouput_queue: Queue, sentence_scorer: SentenceScore):
+        print("Worker : init")
         sentence_scorer.build()  # Load the language model in memory
         while True:
             sentences = input_queue.get(block=True)
+            print("Worker : recieve a batch of sentences")
             scores = sentence_scorer.compute_score(sentences)
             ouput_queue.put(scores)
 
