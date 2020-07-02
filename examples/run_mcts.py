@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     # Initialize the search parameters
     mcts = MonteCarloTreeSearch(
-        sentence_scorer=test_scorer,
+        sentence_scorer=sentence_scorer,
         buffer_size=BATCH_SIZE,
         ressource_distributor=ressource_distributor,
         nb_random_restarts=1,
@@ -46,6 +46,6 @@ if __name__ == "__main__":
     )
 
     # Perform the search and print some info
-    best_node, best_value = mcts(grammar_root, nb_of_tree_walks=100000)
-
+    best_node, best_value = mcts(grammar_root, nb_of_tree_walks=4)
+    print(str(best_node))
     mcts.shut_down()
