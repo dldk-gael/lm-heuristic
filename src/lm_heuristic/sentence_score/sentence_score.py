@@ -3,14 +3,22 @@ from typing import *
 
 import torch
 
+
 class SentenceScore(ABC):
     """
     A Score object compute a "naturalness" score for a sentence or a list of sentences
     """
 
     def __init__(
-        self, batch_size: int = 1, length_normalization: bool = False, device: str = None, verbose: bool = False,
+        self,
+        model_name: str,
+        batch_size: int = 1,
+        length_normalization: bool = False,
+        device: str = None,
+        verbose: bool = False,
     ):
+        self.model_name = model_name
+        self.model = None
         self.batch_size = batch_size
         self.length_normalization = length_normalization
         self.device = device if device else ("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -30,6 +38,9 @@ class SentenceScore(ABC):
         :param text: single sentence or list of sentences
         :return: sentence's score or  list of sentence's scores
         """
+        if not self.model:
+            self.build()
+
         sentences = [text] if isinstance(text, str) else text
         scores = self._compute_sentences_scores(sentences)
         return scores[0] if isinstance(text, str) else scores
@@ -66,3 +77,8 @@ class SentenceScore(ABC):
     @abstractmethod
     def _compute_sentences_scores(self, sentences: List[str]) -> List[float]:
         ...
+
+    @abstractmethod
+    def build(self):
+        ...
+

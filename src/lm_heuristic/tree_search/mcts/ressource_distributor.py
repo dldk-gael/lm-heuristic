@@ -96,6 +96,9 @@ class RessourceDistributor:
         self._ressources_already_consumed_at_current_depth += 1
 
     def go_to_children(self):
+        if not self.still_has_ressources():
+            return False
+            
         if self.strategy == AllocationStrategy.DYNAMIC:
             childrens = self._current_node.childrens()
 

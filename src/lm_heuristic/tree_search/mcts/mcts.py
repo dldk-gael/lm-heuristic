@@ -1,16 +1,20 @@
 from typing import *
 import logging
 
-from lm_heuristic.heuristic import Heuristic
+from tqdm import tqdm
+
+from lm_heuristic.sentence_score import SentenceScore
 from lm_heuristic.tree import Node
 from lm_heuristic.tree_search import TreeSearch
+from lm_heuristic.utils.timer import time_function
 
-from .eval_buffer import EvalBuffer
+from .eval_buffer import EvalBuffer, ParallelEvalBuffer
 from .selection_rules import single_player_ucb
 from .counter_node import CounterNode
 from .ressource_distributor import RessourceDistributor, AllocationStrategy
 
 logger = logging.getLogger(__name__)
+
 
 class MonteCarloTreeSearch(TreeSearch):
     """
@@ -42,23 +46,31 @@ class MonteCarloTreeSearch(TreeSearch):
 
     def __init__(
         self,
-        heuristic: Heuristic,
+        sentence_scorer: SentenceScore,
         buffer_size: int = 1,
         ressource_distributor: RessourceDistributor = None,
         expansion_threshold: int = 0,
         ucb_function: Callable[[CounterNode, CounterNode], float] = None,
         child_root_selection: str = "top_child",
         nb_random_restarts=1,
+        parallel: bool = False,
         name: str = "MCTS",
+        progress_bar: bool = False,
     ):
-        TreeSearch.__init__(self, heuristic, name)
+        TreeSearch.__init__(self, name, progress_bar)
         self.expansion_threshold = expansion_threshold
         self.ressource_distributor = (
             ressource_distributor if ressource_distributor else RessourceDistributor(AllocationStrategy.ALL_FROM_ROOT)
         )
         self.nb_random_restarts = nb_random_restarts
         self.ucb_function = ucb_function if ucb_function else single_player_ucb
-        self.eval_buffer = EvalBuffer(buffer_size, heuristic)
+        self.parallel = parallel
+
+        if self.parallel:
+            self.eval_buffer = ParallelEvalBuffer(buffer_size, self._memory, sentence_scorer)
+        else:
+            self.eval_buffer = EvalBuffer(buffer_size, self._memory, sentence_scorer)
+
         self.child_root_selection = child_root_selection
 
     def _search(self, root: Node, nb_of_tree_walks: int):
@@ -66,7 +78,7 @@ class MonteCarloTreeSearch(TreeSearch):
 
         self.ressource_distributor.initialization(ressources=nb_tree_walks_per_search, tree=root)
         for i in range(self.nb_random_restarts):
-            logger.info("Performing random restarts n°%d/%d", i+1, self.nb_random_restarts)
+            logger.info("Performing random restarts n°%d/%d", i + 1, self.nb_random_restarts)
             self.ressource_distributor.reset_remaining_ressources(nb_tree_walks_per_search)
             self._single_search(root)
 
@@ -76,39 +88,46 @@ class MonteCarloTreeSearch(TreeSearch):
         current_depth = 1
         self.ressource_distributor.set_new_position(current_depth, counter_root)
 
-        while (
-            not counter_root.reference_node.is_terminal()
-            and not counter_root.solved
-            and self.ressource_distributor.still_has_ressources()
-        ):
-            self.ressource_distributor.consume_one_unit()
-            frontier_counter_node = self.selection_phase(counter_root)
-            new_counter_node = self.expansion_phase(frontier_counter_node)
-            random_leaf = new_counter_node.reference_node.random_walk()
+        with tqdm(total=self.ressource_distributor._ressources_to_consume, disable=not self._progress_bar) as p_bar:
+            while (
+                not counter_root.reference_node.is_terminal()
+                and not counter_root.solved
+                and self.ressource_distributor.still_has_ressources()
+            ):
 
-            # Evaluation and backpropagation step are handle inside the MCTS eval buffer
-            self.eval_buffer.add(new_counter_node, random_leaf)
+                self.ressource_distributor.consume_one_unit()
+                frontier_counter_node = self.selection_phase(counter_root)
+                new_counter_node = self.expansion_phase(frontier_counter_node)
+                random_leaf = self.simulation_phase(new_counter_node)
+                self.evaluation_phase(new_counter_node, random_leaf)
+                self.backpropagation_phase()
 
-            # After each iterations, we query the ressource distributor to know if we should continue
-            # to perform the tree walks from current roout or if we should go down to the best children
-            if self.ressource_distributor.go_to_children() and self.ressource_distributor.still_has_ressources():
-                # For the evaluation of the leaves that still remain in the buffer
-                self.eval_buffer.force_eval()
+                # After each iteration, we query the ressource distributor to know if we should continue
+                # to perform the tree walks from current roout or if we should go down to the best children
+                if self.ressource_distributor.go_to_children():
+                    # For the evaluation of the leaves that still remain in the buffer
+                    self.eval_buffer.force_eval()
+                    self.backpropagation_phase()
 
-                # Freeze current_root to avoid modifying the counter in futur backprops
-                # Choose the best node among the childrens and continue the search from here
-                counter_root.freeze = True
+                    # Freeze current_root to avoid modifying the counter in futur backprops
+                    # Choose the best node among the childrens and continue the search from here
+                    counter_root.freeze = True
 
-                if self.child_root_selection == "top_child":
-                    counter_root = counter_root.top_child()
-                else:
-                    counter_root = counter_root.most_visited_child()
-                
-                logger.info("Current MCTS root : <%s>", str(counter_root.reference_node))
+                    if self.child_root_selection == "top_child":
+                        counter_root = counter_root.top_child()
+                    else:
+                        counter_root = counter_root.most_visited_child()
 
-                current_depth += 1
-                self.ressource_distributor.set_new_position(current_depth, counter_root)
+                    logger.info("Current MCTS root : <%s>", str(counter_root.reference_node))
 
+                    current_depth += 1
+                    self.ressource_distributor.set_new_position(current_depth, counter_root)
+
+                p_bar.update(1)
+
+        self.eval_buffer.force_eval()
+
+    @time_function
     def selection_phase(self, root: CounterNode) -> CounterNode:
         node = root
         node.count += 1
@@ -128,6 +147,7 @@ class MonteCarloTreeSearch(TreeSearch):
         unsolved_childrens = [children for children in counter_node.childrens() if not children.solved]
         return max(unsolved_childrens, key=lambda node: self.ucb_function(node, counter_node))
 
+    @time_function
     def expansion_phase(self, counter_node: CounterNode) -> CounterNode:
         if counter_node.count < self.expansion_threshold:
             return counter_node
@@ -140,3 +160,21 @@ class MonteCarloTreeSearch(TreeSearch):
 
         counter_node.expand()  # This compute all the children of current counter_node
         return counter_node.random_children()
+
+    @time_function
+    def simulation_phase(self, counter_node: CounterNode) -> Node:
+        return counter_node.reference_node.random_walk()
+
+    @time_function
+    def evaluation_phase(self, counter_node: CounterNode, leaf: Node):
+        self.eval_buffer.add(counter_node, leaf)
+
+    @time_function
+    def backpropagation_phase(self):
+        results = self.eval_buffer.pop_results()
+        for counter_node, leaf, reward in results:
+            counter_node.backpropagate(reward, leaf)
+
+    def shut_down(self):
+        if self.parallel:
+            self.eval_buffer.kill_sub_process()

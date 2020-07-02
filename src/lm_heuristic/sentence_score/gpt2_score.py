@@ -31,15 +31,25 @@ class GPT2Score(SentenceScore):
         verbose: bool = False,
     ):
         SentenceScore.__init__(
-            self, batch_size=batch_size, device=device, length_normalization=length_normalization, verbose=verbose
+            self,
+            model_name=model_name,
+            batch_size=batch_size,
+            device=device,
+            length_normalization=length_normalization,
+            verbose=verbose,
         )
 
-        logger.info("Loading %s on %s", model_name, self.device)
-        self.model = model if model else GPT2LMHeadModel.from_pretrained(model_name)
-        self.model.eval()
-        self.model.to(self.device)
+        if model is not None:
+            logger.info("Loading %s on %s", model_name, self.device)
+            self.model = model
+            self.model.eval()
+            self.model.to(self.device)
 
         self.tokenizer = GPT2Tokenizer.from_pretrained(model_name)
+
+    def build(self):
+        logger.info("Loading %s on %s", self.model_name, self.device)
+        self.model = GPT2LMHeadModel.from_pretrained(self.model_name).to(self.device)
 
     def _compute_sentences_scores(self, sentences: List[str]) -> List[float]:
         """

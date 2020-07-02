@@ -1,4 +1,5 @@
 import time
+from functools import wraps
 
 
 def timeit(func):
@@ -33,6 +34,8 @@ class Timer:
         return self._time_spent
 
 
+## CONTEXT MANAGER THAT COMPUTE TIME SPENT INSIDE 
+
 class TimeComputation:
     """
     Context manager that compute time spent inside 
@@ -47,3 +50,20 @@ class TimeComputation:
         end_time = time.process_time()
         elapsed_time_ms = (end_time - self.begin_time) * 1000
         print("%s : %f ms" % (self.step_name, elapsed_time_ms))
+
+
+## DECORATOR THAT KEEP TRACK OF TIME SPENT INSIDE
+
+def time_function(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        begin_time = time.perf_counter() 
+        res = func(*args, **kwargs)
+        end_time = time.perf_counter()
+        wrapper.time_spent += end_time - begin_time
+        return res
+    wrapper.time_spent = 0.0
+    return wrapper
+
+def print_timer(func):
+    print("Time spent in %s : %0.2f ms" % (func.__name__, func.time_spent * 1000))
