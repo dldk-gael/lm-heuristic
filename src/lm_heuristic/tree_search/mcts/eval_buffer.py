@@ -1,5 +1,5 @@
 from typing import *
-from multiprocessing import Queue, Process
+from multiprocessing import Queue, Process, set_start_method
 
 from lm_heuristic.tree import Node
 from lm_heuristic.utils.memory import Memory
@@ -76,6 +76,8 @@ class ParallelEvalBuffer(EvalBuffer):
         EvalBuffer.__init__(self, buffer_size, memory, sentence_scorer, load_LM_in_memory=False)
         self._tasks_queue: Queue = Queue()
         self._results_queue: Queue = Queue()
+        set_start_method('spawn')
+
         self._worker = Process(
             target=self.evaluation_job, args=(self._tasks_queue, self._results_queue, sentence_scorer)
         )
