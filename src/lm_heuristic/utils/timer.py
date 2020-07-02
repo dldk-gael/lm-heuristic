@@ -31,3 +31,19 @@ class Timer:
 
     def time_spent(self):
         return self._time_spent
+
+
+class TimeComputation:
+    """
+    Context manager that compute time spent inside 
+    """
+    def __init__(self, step_name):
+        self.step_name = step_name 
+
+    def __enter__(self):
+        self.begin_time = time.process_time()
+
+    def __exit__(self, type, value, traceback):
+        end_time = time.process_time()
+        elapsed_time_ms = (end_time - self.begin_time) * 1000
+        print("%s : %f ms" % (self.step_name, elapsed_time_ms))

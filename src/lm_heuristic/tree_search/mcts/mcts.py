@@ -91,7 +91,7 @@ class MonteCarloTreeSearch(TreeSearch):
 
             # After each iterations, we query the ressource distributor to know if we should continue
             # to perform the tree walks from current roout or if we should go down to the best children
-            if self.ressource_distributor.go_to_children():
+            if self.ressource_distributor.go_to_children() and self.ressource_distributor.still_has_ressources():
                 # For the evaluation of the leaves that still remain in the buffer
                 self.eval_buffer.force_eval()
 

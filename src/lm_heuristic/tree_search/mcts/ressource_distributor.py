@@ -97,7 +97,15 @@ class RessourceDistributor:
 
     def go_to_children(self):
         if self.strategy == AllocationStrategy.DYNAMIC:
-            return False
+            childrens = self._current_node.childrens()
+
+            # Special case
+            if len(childrens) == 1:
+                return True
+
+            nb_of_wins = [child.sum_rewards for child in childrens]
+            sorted_nb_of_wins = sorted(nb_of_wins, reverse=True)
+            return sorted_nb_of_wins[0] >= self.dynamic_ratio * (sorted_nb_of_wins[1] + 1)
 
         return self._ressources_already_consumed_at_current_depth == self._ressources_to_consume_at_current_depth
 
@@ -124,8 +132,12 @@ class RessourceDistributor:
         if self.strategy == AllocationStrategy.ALL_FROM_ROOT:
             self._ressources_to_consume_at_current_depth = self._ressources_to_consume
 
-        logger.info(
-            "Current depth = %d. %d tree walks will be performed",
-            self._current_depth,
-            self._ressources_to_consume_at_current_depth,
-        )
+        if self.strategy == AllocationStrategy.DYNAMIC:
+            logger.info("Current depth = %d. The nb of tree walks will be dynamically computed.", self._current_depth)
+        else:
+            logger.info(
+                "Current depth = %d. %d tree walks will be performed",
+                self._current_depth,
+                self._ressources_to_consume_at_current_depth,
+            )
+
