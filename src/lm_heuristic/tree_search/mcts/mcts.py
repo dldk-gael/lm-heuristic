@@ -69,7 +69,7 @@ class MonteCarloTreeSearch(TreeSearch):
         progress_bar: bool = False,
         parallel_strategy: str = "none",
     ):
-        TreeSearch.__init__(self, name, progress_bar)
+        TreeSearch.__init__(self, sentence_scorer, buffer_size, name, progress_bar)
         self.expansion_threshold = expansion_threshold
         self.ressource_distributor = (
             ressource_distributor if ressource_distributor else RessourceDistributor(AllocationStrategy.ALL_FROM_ROOT)
@@ -78,9 +78,9 @@ class MonteCarloTreeSearch(TreeSearch):
         self.ucb_function = ucb_function if ucb_function else single_player_ucb
 
         if parallel_strategy == "none":
-            self.eval_buffer = EvalBuffer(buffer_size, self._memory, sentence_scorer)
+            self.eval_buffer = EvalBuffer(buffer_size, self._memory, self._sentence_scorer)
         else:
-            self.eval_buffer = ParallelEvalBuffer(buffer_size, self._memory, sentence_scorer, parallel_strategy)
+            self.eval_buffer = ParallelEvalBuffer(buffer_size, self._memory, self._sentence_scorer, parallel_strategy)
 
         self.child_root_selection = child_root_selection
 

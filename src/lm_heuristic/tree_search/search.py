@@ -1,29 +1,39 @@
+"""
+Define an abstract class from which all tree search must inherate
+"""
+
 from abc import ABC, abstractmethod
 from typing import *
+
 import pandas as pd
 import seaborn as sns
 
+from lm_heuristic.sentence_score import SentenceScore
 from lm_heuristic.tree import Node
 from lm_heuristic.utils.memory import Memory
-from lm_heuristic.utils.timer import Timer, timeit
 
 
-class TreeSearch(ABC, Timer):
+class TreeSearch(ABC):
     """
-    Abstract class that define a tree searcher
-    The objective of a tree searcher is to find the leaf that maximise an evaluation function
+    The objective of a tree searcher is to find the leaf that maximise an evaluation function. 
+    More particullary, in this project context, the evaluation function is a sentence scorer and 
+    will evaluated the string representation of a given leaf.
+
+    Given an maximum number of tree walks, a tree searcher simply browse the tree and store all 
+    leaf, value that have been found in a memory object
     """
 
-    def __init__(self, name: str = "", progress_bar: bool = False):
-        Timer.__init__(self)
+    def __init__(
+        self, sentence_scorer: SentenceScore, buffer_size: int = 1, name: str = "", progress_bar: bool = False
+    ):
+        self._sentence_scorer = sentence_scorer
+        self._buffer_size = buffer_size
         self._name = name
         self._progress_bar = progress_bar
         self._memory = Memory()
 
-    @timeit
     def __call__(self, root: Node, nb_of_tree_walks: int) -> Tuple[Node, float]:
         self._memory.reset()
-        self.reset_timer()
         self._search(root, nb_of_tree_walks)
         return self._memory.best_in_memory()
 
