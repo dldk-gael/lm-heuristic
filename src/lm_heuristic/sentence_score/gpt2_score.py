@@ -48,8 +48,9 @@ class GPT2Score(SentenceScore):
         self.tokenizer = GPT2Tokenizer.from_pretrained(model_name)
 
     def build(self):
-        logger.info("Loading %s on %s", self.model_name, self.device)
-        self.model = GPT2LMHeadModel.from_pretrained(self.model_name).to(self.device)
+        if not self.model:
+            logger.info("Loading %s on %s", self.model_name, self.device)
+            self.model = GPT2LMHeadModel.from_pretrained(self.model_name).to(self.device)
 
     def _compute_sentences_scores(self, sentences: List[str]) -> List[float]:
         """

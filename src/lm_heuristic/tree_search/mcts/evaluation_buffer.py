@@ -119,7 +119,6 @@ class ParallelEvalBuffer(EvalBuffer):
             self._compute()
 
         while len(self._in_progress_tasks) > 0:
-            print(self._in_progress_tasks[0])
             results = self._results_queue.get(block=True)
             leaves, index_table = self._in_progress_tasks.pop(0)
             self._handle_results(leaves, index_table, results)
