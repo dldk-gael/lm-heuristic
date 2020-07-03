@@ -1,3 +1,13 @@
+"""
+Define evaluation buffers that can be used between the Monte Carlo search and the evaluation of the leaves. 
+
+The advantage of using such buffer are:
+1. the evaluation function used in this project (LM basedsentence scorer) are more efficient when the input 
+are sent by batch.
+
+2. cleary separating the search and the evaluation allows parallel implementation of those tasks
+"""
+
 from typing import *
 import queue
 import multiprocessing
@@ -9,32 +19,37 @@ from lm_heuristic.sentence_score import SentenceScore
 
 from .counter_node import CounterNode
 
+######################################################################
+## Vanilla implementation of the Evaluation buffer.
+## -> No parallelization here
+######################################################################
 
 class EvalBuffer:
-    # TODO update DOCSTRING
     """
-    Define a specific evaluation buffer for the MCTS algorithm
-    that handle both heuristic evaluation of the leaves and backpropagation of the leaves' value
+    The evaluation buffer works as follows:
+    1. use add methods to add new leaf that need to be evaluate
+    2. use pop_results to retrieve the results if there are available
 
-    Each time that a new couple (counter node, leaf) is added to the buffer,
-    the buffer check if the leaf has not yet been evaluated before by the heuristic
-        if it is the case, it retrieves the value and backpropagates it directly from the counter node
-        else it is added in the buffer table.
+    Behind the scenes, it uses the following optimization:
+    - each time a new leaf is add to the buffer, it checks if the leaf has not yet. If it is the case
+    the buffer retrieves the value and put it directly in the output queue
 
-    When the length of the buffer table reaches the buffer max size, all the leaves are evaluated
-    and the values backpropagated from the counter node
+    - if at any time the buffer contains couple of (counter_node, leaf) that share the same leaf
+        ie: (counter_node_1, leaf_A), (counter_node_2, leaf_A)
+    only one instance of the leaf will be sent to the evaluation function
 
-    The buffer table has been designed to efficiently handle the specific case where several couple
-    share the same leaf (counter_node_1, leaf_A), (counter_node_2, leaf_A), ...
-    if such case occurs the leaf_A will only be evaluated once
+    - the leaf are sent to the evaluation function by batch of buffer_size
     """
 
-    def __init__(self, buffer_size: int, memory: Memory, sentence_scorer: SentenceScore, load_LM_in_memory=True):
+    def __init__(
+        self, buffer_size: int, memory: Memory, sentence_scorer: SentenceScore, load_LM_in_memory: bool = True
+    ):
         self._buffer_size = buffer_size
         self._index_table: Dict[Node, List[CounterNode]] = dict()
         self._memory = memory
 
         self._sentence_scorer = sentence_scorer
+        # load_LM_in_memory condition enable to not directly load the model in memory for class that inherate of EvalBuffer
         if load_LM_in_memory:
             self._sentence_scorer.build()
 
@@ -81,7 +96,19 @@ class EvalBuffer:
 
 
 class ParallelEvalWorker:
-    def __init__(self, sentence_scorer, tasks_queue, results_queue):
+    """
+    Until it is killed, an evaluation worker constinously :
+    1. wait for a batch of sentences coming from a tasks queue
+    2. score the sentences using a LM-based sentence scorer
+    3. put the results in a results queue
+    """
+
+    def __init__(
+        self,
+        sentence_scorer: SentenceScore,
+        tasks_queue: Union[queue.Queue, multiprocessing.Queue],
+        results_queue: Union[queue.Queue, multiprocessing.Queue],
+    ):
         self._sentence_scorer = sentence_scorer
         self._tasks_queue = tasks_queue
         self._results_queue = results_queue
@@ -95,6 +122,9 @@ class ParallelEvalWorker:
 
 
 class MultithreadEvalWorker(ParallelEvalWorker, threading.Thread):
+    """
+    Same that ParallelEvalWorker but specific to multithread parallelisation
+    """
     def __init__(self, sentence_scorer, tasks_queue, results_queue):
         threading.Thread.__init__(self)
         ParallelEvalWorker.__init__(self, sentence_scorer, tasks_queue, results_queue)
@@ -104,6 +134,11 @@ class MultithreadEvalWorker(ParallelEvalWorker, threading.Thread):
 
 
 class ParallelEvalBuffer(EvalBuffer):
+    """
+    Same as EvalBuffer except that the evaluation part is executed by an evaluation work 
+    which is runned either on another thread (if parallel_strategy = multithread) 
+    or in another process (if parallel_strategy = multiprocess)
+    """
     def __init__(
         self,
         buffer_size: int,
@@ -125,7 +160,7 @@ class ParallelEvalBuffer(EvalBuffer):
 
         self._eval_worker.daemon = True
         self._eval_worker.start()
-        self._in_progress_tasks = []
+        self._in_progress_tasks = []  # Use to keep track tasks given to the worker
         self._max_nb_of_tasks_in_advance = max_nb_of_tasks_in_advance
 
     def _compute(self):
