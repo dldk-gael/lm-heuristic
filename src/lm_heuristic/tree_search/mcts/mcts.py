@@ -8,7 +8,7 @@ from lm_heuristic.tree import Node
 from lm_heuristic.tree_search import TreeSearch
 from lm_heuristic.utils.timer import time_function
 
-from .eval_buffer import EvalBuffer, ParallelEvalBuffer
+from .evaluation_buffer import EvalBuffer, ParallelEvalBuffer
 from .selection_rules import single_player_ucb
 from .counter_node import CounterNode
 from .ressource_distributor import RessourceDistributor, AllocationStrategy
@@ -89,6 +89,7 @@ class MonteCarloTreeSearch(TreeSearch):
         self.ressource_distributor.set_new_position(current_depth, counter_root)
 
         with tqdm(total=self.ressource_distributor._ressources_to_consume, disable=not self._progress_bar) as p_bar:
+
             while (
                 not counter_root.reference_node.is_terminal()
                 and not counter_root.solved
@@ -96,6 +97,7 @@ class MonteCarloTreeSearch(TreeSearch):
             ):
 
                 self.ressource_distributor.consume_one_unit()
+
                 frontier_counter_node = self.selection_phase(counter_root)
                 new_counter_node = self.expansion_phase(frontier_counter_node)
                 random_leaf = self.simulation_phase(new_counter_node)

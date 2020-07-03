@@ -1,5 +1,6 @@
 from typing import *
-from multiprocessing import Queue, Process, set_start_method
+from queue import Queue
+from threading import Thread
 
 from lm_heuristic.tree import Node
 from lm_heuristic.utils.memory import Memory
@@ -71,27 +72,30 @@ class EvalBuffer:
             self._compute()
 
 
+class EvalWorker(Thread):
+    def __init__(self, sentence_scorer, tasks_queue, results_queue):
+        Thread.__init__(self)
+        self._sentence_scorer = sentence_scorer
+        self._tasks_queue = tasks_queue
+        self._results_queue = results_queue
+
+    def run(self):
+        self._sentence_scorer.build()  # Load the language model in memory
+        while True:
+            sentences = self._tasks_queue.get(block=True)
+            scores = self._sentence_scorer.compute_score(sentences)
+            self._results_queue.put(scores)
+
+
 class ParallelEvalBuffer(EvalBuffer):
     def __init__(self, buffer_size: int, memory: Memory, sentence_scorer: SentenceScore):
         EvalBuffer.__init__(self, buffer_size, memory, sentence_scorer, load_LM_in_memory=False)
         self._tasks_queue: Queue = Queue()
         self._results_queue: Queue = Queue()
-
-        self._worker = Process(
-            target=self.evaluation_job, args=(self._tasks_queue, self._results_queue, sentence_scorer)
-        )
-        self._worker.start()
+        self._eval_worker = EvalWorker(sentence_scorer, self._tasks_queue, self._results_queue)
+        self._eval_worker.daemon = True
+        self._eval_worker.start()
         self._in_progress_tasks = []
-
-    @staticmethod
-    def evaluation_job(input_queue: Queue, ouput_queue: Queue, sentence_scorer: SentenceScore):
-        print("Worker : init")
-        sentence_scorer.build()  # Load the language model in memory
-        while True:
-            sentences = input_queue.get(block=True)
-            print("Worker : recieve a batch of sentences")
-            scores = sentence_scorer.compute_score(sentences)
-            ouput_queue.put(scores)
 
     def _compute(self):
         leaves = list(self._index_table.keys())
@@ -119,6 +123,3 @@ class ParallelEvalBuffer(EvalBuffer):
             results = self._results_queue.get(block=True)
             leaves, index_table = self._in_progress_tasks.pop(0)
             self._handle_results(leaves, index_table, results)
-
-    def kill_sub_process(self):
-        self._worker.kill()

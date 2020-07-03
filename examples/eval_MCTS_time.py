@@ -46,7 +46,7 @@ if __name__ == "__main__":
 
     # Perform the search and print some info
     with TimeComputation("MCTS Total"):
-        best_node, best_value = mcts(grammar_root, nb_of_tree_walks=BATCH_SIZE)
+        best_node, best_value = mcts(grammar_root, nb_of_tree_walks=1000)
         print_timer(mcts.selection_phase)
         print_timer(mcts.expansion_phase)
         print_timer(mcts.simulation_phase)
