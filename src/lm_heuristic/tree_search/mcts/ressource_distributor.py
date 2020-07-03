@@ -1,5 +1,15 @@
-from enum import Enum
+"""
+In a single-player setting, there is several possibility to divide the computationnal ressource available
+during the MCTS. We can either compute all the tree walks from the tree root or we can choose that,
+after having computing a certain amount of tree walks, to select and go to the best root's child and continue
+the search from this new node. This allows to progressively narrow the search in the most promising part of tree.
+
+This module implements such different stategies.
+"""
+
+from typing import *
 import logging
+from enum import Enum
 
 from lm_heuristic.tree import Node, TreeStats
 from .counter_node import CounterNode
@@ -9,6 +19,16 @@ logger = logging.getLogger(__name__)
 
 
 class AllocationStrategy(Enum):
+    """
+    Use to select the different allocation strategy for computationnal ressources
+    ALL_FROM_ROOT: compute all the tree walks from the tree root
+    UNIFORM: the same amount of tree walks will be performed from each depth
+    LINEAR: the amount of tree walks will be lineary dependant of the depth such that
+            at depth max all ressources are consumed
+
+    DYNAMIC: we only go to a child when there is a sufficient amount of difference between children expected reward
+    """
+
     UNIFORM = 1
     LINEAR = 2
     ALL_FROM_ROOT = 3
@@ -27,24 +47,14 @@ class AllocationStrategy(Enum):
 
 class RessourceDistributor:
     """
-    In a single-player setting, there is several possibility to divide the computationnal ressource available
-    during the MCTS.
+    A ressource distributor is first initialized with a total number of tree walks that
+    we are allowed to perform. For Uniform and Linear strategy, it is needed to know the
+    average tree's depth in order  to split the ressources. To do so, a tree stats sampling
+    of the tree is performed.
 
-    We can either compute all the tree walks from the tree root (ALL_FROM_ROOT strategy) or
-    we can choose, after having computing a certain amount of tree walks, to select and go to the best root's child
-    and continue the search from this new node. This allows to progressively narrow the search in the most promising
-    part of tree.
-
-    In the latter case, this class allows to specifiy differents strategies:
-    UNIFORM: the same amount of tree walks will be performed from each depth
-    LINEAR: the amount of tree walks will be lineary dependant of the depth such that
-            at depth max all ressources are consumed
-
-    DYNAMIC: we only go to a child when there is a sufficient amount of difference between children expected reward
-
-    For UNIFORM and LINEAR strategies, it is needed to know the tree's average depth in order to correctly split the
-    computationnal ressources. Hence, when using such strategy, a random sampling statistic of the tree is performed
-    during initialization step.
+    Then, after each tree walks, the ressource distributor is called:
+    - go_to_children indicates if we must to change the current root and go to a child
+    - still_has_ressources indicates if the MCTS must be stopped or not
     """
 
     def __init__(self, strategy: AllocationStrategy, stats_samples=None, dynamic_ratio=None):
@@ -96,13 +106,16 @@ class RessourceDistributor:
         self._ressources_already_consumed_at_current_depth += 1
 
     def go_to_children(self):
+        # By default if all the ressources are consummed,
+        # it indicates that it should not change current root position
         if not self.still_has_ressources():
             return False
-            
+
         if self.strategy == AllocationStrategy.DYNAMIC:
             children = self._current_node.children()
 
-            # Special case
+            # Special case, not need to stay in a position where there is only one children
+            # TODO: spread this behaviour to other strategy
             if len(children) == 1:
                 return True
 

@@ -44,13 +44,11 @@ class CounterNode(Node):
 
     def expand(self):
         assert not self.reference_node.is_terminal(), "Try to expand from a terminal node"
-        self._children = [
-            CounterNode(children_node, parent=self) for children_node in self.reference_node.children()
-        ]
+        self._children = [CounterNode(children_node, parent=self) for children_node in self.reference_node.children()]
         self._is_terminal = False
 
-    def children(self) -> List["CounterNode"]: #type:ignore
-        assert self._children, "Try to access children "
+    def children(self) -> List["CounterNode"]:  # type:ignore
+        assert self._children, "Try to access children before expand the current counter node"
         return self._children
 
     def is_terminal(self) -> bool:
@@ -79,10 +77,10 @@ class CounterNode(Node):
         Return the children that have the best top_reward value
         """
         assert not self.is_terminal(), "Try to access children of a terminal node :%s" % str(self.reference_node)
-        return max(self._children, key=lambda child: child.top_reward)
+        return max(self.children(), key=lambda child: child.top_reward)
 
     def most_visited_child(self) -> "CounterNode":
-        return max(self._children, key=lambda child: child.count)
+        return max(self.children(), key=lambda child: child.count)
 
     def random_children(self) -> "CounterNode":
         assert not self.is_terminal(), "Try to access children of a terminal node :%s" % str(self.reference_node)
@@ -104,7 +102,7 @@ class CounterNode(Node):
 
     def detailed_node_info(self):
         """
-        Print the children of a given node 
+        Print the children of a given node
         """
         print(self)
         if not self.is_terminal():
@@ -131,4 +129,4 @@ class CounterNode(Node):
         )
 
     def __hash__(self):
-        raise Exception("Try to hash a counter node")
+        raise Exception("Try to hash a counter node - not implemented yet")

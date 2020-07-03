@@ -1,3 +1,10 @@
+"""
+Implement the Monte Carlo Tree Search (MCTS) algorithm
+it follows mainly the idea that are described in Single-Player Monte-Carlo Tree Search paper
+from Maarten P.D. Schadd, Mark H.M. Winands, H. Jaap van den Herik,
+Guillaume M.J-B. Chaslot, and Jos W.H.M. Uiterwijk
+"""
+
 from typing import *
 import logging
 
@@ -7,18 +14,18 @@ from lm_heuristic.sentence_score import SentenceScore
 from lm_heuristic.tree import Node
 from lm_heuristic.tree_search import TreeSearch
 from lm_heuristic.utils.timer import time_function
-
 from .evaluation_buffer import EvalBuffer, ParallelEvalBuffer
 from .selection_rules import single_player_ucb
 from .counter_node import CounterNode
 from .ressource_distributor import RessourceDistributor, AllocationStrategy
+
 
 logger = logging.getLogger(__name__)
 
 
 class MonteCarloTreeSearch(TreeSearch):
     """
-    MCTS will maintain a spanned tree (ST) over the nodes that have been visited by
+    This class will maintain a spanned tree (ST) over the nodes that have been visited by
     wrapping the tree to search in a counter node object
 
     At t=0, ST = {root}
@@ -29,19 +36,24 @@ class MonteCarloTreeSearch(TreeSearch):
         4. Evaluation phase: evaluate the leaf using a heuristic
         5. Backpropagation phrase: backpropagate the leaf value in the ST
 
+    The leaves' evaluation task is not performed directly but handle to an evaluation buffer.
+    -> The main motivation is to be able to input the leaves by batch to the evaluation function.
+
     In this MCTS implementation, it is possible to:
     - progressively go down the tree rather that launching every tree walks from tree root
-        -> the way of divide the computionnal ressources at each depth is specified by passing a RessourceDistributor object
+        -> the way of divide the computionnal ressources at each depth is specified by passing a RessourceDistributor
         -> there is two way to select the root's child :
             1. top_child -> select the child from which the best leaf have been found
             2. most_visited -> select the most visited child
-    
+
     - make a certain number of random restarts to diminish the results' variance
-    
+
     - choose different selection policy
         -> this policy is specified by passing a ucb function
 
     - choose to accumulate a certain amount of leaves before evaluating in one pass
+
+    - perform the evaluation in another thread/process’
     """
 
     def __init__(
@@ -55,7 +67,7 @@ class MonteCarloTreeSearch(TreeSearch):
         nb_random_restarts=1,
         name: str = "MCTS",
         progress_bar: bool = False,
-        parallel_strategy: str = "none"
+        parallel_strategy: str = "none",
     ):
         TreeSearch.__init__(self, name, progress_bar)
         self.expansion_threshold = expansion_threshold
@@ -82,7 +94,6 @@ class MonteCarloTreeSearch(TreeSearch):
             self._single_search(root)
 
     def _single_search(self, root: Node):
-        # Wrap the root node in a counter object in order to maintain statistic on the path and rewards
         counter_root = CounterNode(reference_node=root, parent=None)
         current_depth = 1
         self.ressource_distributor.set_new_position(current_depth, counter_root)
@@ -104,9 +115,9 @@ class MonteCarloTreeSearch(TreeSearch):
                 self.backpropagation_phase()
 
                 # After each iteration, we query the ressource distributor to know if we should continue
-                # to perform the tree walks from current roout or if we should go down to the best children
+                # to perform the tree walks from current root or if we should go down to the best children
                 if self.ressource_distributor.go_to_children():
-                    # For the evaluation of the leaves that still remain in the buffer
+                    # Force the evaluation of the leave that still remain in the buffer
                     self.eval_buffer.force_eval()
                     self.backpropagation_phase()
 
@@ -144,7 +155,7 @@ class MonteCarloTreeSearch(TreeSearch):
             if children.count == 0:
                 return children
 
-        # else elect node that maximise UPC (+ skip node that have been solved)
+        # else select the node that maximise the UCB among the nodes that have not been solved yet
         unsolved_children = [children for children in counter_node.children() if not children.solved]
         return max(unsolved_children, key=lambda node: self.ucb_function(node, counter_node))
 
@@ -154,8 +165,7 @@ class MonteCarloTreeSearch(TreeSearch):
             return counter_node
 
         if counter_node.reference_node.is_terminal():
-            # backpropagate the information to the parent in order to
-            # avoid selecting this node in the futur
+            # backpropagate the information to the parent in order to avoid selecting this node in the futur
             counter_node.set_as_solved()
             return counter_node
 
@@ -175,7 +185,3 @@ class MonteCarloTreeSearch(TreeSearch):
         results = self.eval_buffer.pop_results()
         for counter_node, leaf, reward in results:
             counter_node.backpropagate(reward, leaf)
-
-    def shut_down(self):
-        if self.parallel:
-            self.eval_buffer.kill_sub_process()
