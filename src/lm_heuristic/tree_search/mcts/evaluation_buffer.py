@@ -1,14 +1,17 @@
 from typing import *
-from queue import Queue
-from threading import Thread
+import queue
+import multiprocessing
+import threading
 
 from lm_heuristic.tree import Node
 from lm_heuristic.utils.memory import Memory
 from lm_heuristic.sentence_score import SentenceScore
+
 from .counter_node import CounterNode
 
 
 class EvalBuffer:
+    # TODO update DOCSTRING
     """
     Define a specific evaluation buffer for the MCTS algorithm
     that handle both heuristic evaluation of the leaves and backpropagation of the leaves' value
@@ -72,14 +75,18 @@ class EvalBuffer:
             self._compute()
 
 
-class EvalWorker(Thread):
+######################################################################
+## Concurrent implementation of the Evaluation buffer
+######################################################################
+
+
+class ParallelEvalWorker:
     def __init__(self, sentence_scorer, tasks_queue, results_queue):
-        Thread.__init__(self)
         self._sentence_scorer = sentence_scorer
         self._tasks_queue = tasks_queue
         self._results_queue = results_queue
 
-    def run(self):
+    def __call__(self):
         self._sentence_scorer.build()  # Load the language model in memory
         while True:
             sentences = self._tasks_queue.get(block=True)
@@ -87,20 +94,44 @@ class EvalWorker(Thread):
             self._results_queue.put(scores)
 
 
+class MultithreadEvalWorker(ParallelEvalWorker, threading.Thread):
+    def __init__(self, sentence_scorer, tasks_queue, results_queue):
+        threading.Thread.__init__(self)
+        ParallelEvalWorker.__init__(self, sentence_scorer, tasks_queue, results_queue)
+
+    def run(self):
+        self()
+
+
 class ParallelEvalBuffer(EvalBuffer):
-    def __init__(self, buffer_size: int, memory: Memory, sentence_scorer: SentenceScore):
+    def __init__(
+        self,
+        buffer_size: int,
+        memory: Memory,
+        sentence_scorer: SentenceScore,
+        parallel_strategy: str = "multithread",
+        max_nb_of_tasks_in_advance: int = 2,
+    ):
         EvalBuffer.__init__(self, buffer_size, memory, sentence_scorer, load_LM_in_memory=False)
-        self._tasks_queue: Queue = Queue()
-        self._results_queue: Queue = Queue()
-        self._eval_worker = EvalWorker(sentence_scorer, self._tasks_queue, self._results_queue)
+
+        if parallel_strategy == "multithread":
+            self._tasks_queue = queue.Queue()
+            self._results_queue = queue.Queue()
+            self._eval_worker = MultithreadEvalWorker(sentence_scorer, self._tasks_queue, self._results_queue)
+        elif parallel_strategy == "multiprocess":
+            self._tasks_queue = multiprocessing.Queue()
+            self._results_queue = multiprocessing.Queue()
+            self._eval_worker = ParallelEvalWorker(sentence_scorer, self._tasks_queue, self._results_queue)
+
         self._eval_worker.daemon = True
         self._eval_worker.start()
         self._in_progress_tasks = []
+        self._max_nb_of_tasks_in_advance = max_nb_of_tasks_in_advance
 
     def _compute(self):
         leaves = list(self._index_table.keys())
         sentences = list(map(str, leaves))
-        if len(self._in_progress_tasks) == 2:
+        if len(self._in_progress_tasks) == self._max_nb_of_tasks_in_advance:
             self._retrieve_from_results_queue(block=True)
 
         self._tasks_queue.put(sentences)

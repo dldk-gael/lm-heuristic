@@ -53,9 +53,9 @@ class MonteCarloTreeSearch(TreeSearch):
         ucb_function: Callable[[CounterNode, CounterNode], float] = None,
         child_root_selection: str = "top_child",
         nb_random_restarts=1,
-        parallel: bool = False,
         name: str = "MCTS",
         progress_bar: bool = False,
+        parallel_strategy: str = "none"
     ):
         TreeSearch.__init__(self, name, progress_bar)
         self.expansion_threshold = expansion_threshold
@@ -64,12 +64,11 @@ class MonteCarloTreeSearch(TreeSearch):
         )
         self.nb_random_restarts = nb_random_restarts
         self.ucb_function = ucb_function if ucb_function else single_player_ucb
-        self.parallel = parallel
 
-        if self.parallel:
+        if parallel_strategy == "none":
             self.eval_buffer = ParallelEvalBuffer(buffer_size, self._memory, sentence_scorer)
         else:
-            self.eval_buffer = EvalBuffer(buffer_size, self._memory, sentence_scorer)
+            self.eval_buffer = EvalBuffer(buffer_size, self._memory, sentence_scorer, parallel_strategy)
 
         self.child_root_selection = child_root_selection
 

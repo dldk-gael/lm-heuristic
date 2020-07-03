@@ -27,6 +27,7 @@ if __name__ == '__main__':
     worker.daemon = True
     worker.start()
     time.sleep(2)
+    print(time.thread_time())
 
     with TimeComputation("Send/Recieve 1 Msg"):
         print("Master: sending task")

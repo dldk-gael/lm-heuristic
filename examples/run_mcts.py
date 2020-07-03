@@ -42,7 +42,7 @@ if __name__ == "__main__":
         ressource_distributor=ressource_distributor,
         nb_random_restarts=1,
         ucb_function=standart_ucb,
-        parallel=True,
+        parallel_strategy="multiprocess",
         progress_bar=True,
     )
 
@@ -52,7 +52,7 @@ if __name__ == "__main__":
         ressource_distributor=ressource_distributor,
         nb_random_restarts=1,
         ucb_function=standart_ucb,
-        parallel=False,
+        parallel_strategy="none",
         progress_bar=True,
     )
     with TimeComputation("MCTS Total"):
