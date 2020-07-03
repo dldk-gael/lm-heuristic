@@ -57,9 +57,9 @@ class TimeComputation:
 def time_function(func):
     @wraps(func)
     def wrapper(*args, **kwargs):
-        begin_time = time.perf_counter() 
+        begin_time = time.process_time() 
         res = func(*args, **kwargs)
-        end_time = time.perf_counter()
+        end_time = time.process_time()
         wrapper.time_spent += end_time - begin_time
         return res
     wrapper.time_spent = 0.0
