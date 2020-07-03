@@ -1,12 +1,25 @@
+"""
+Define an abstract class from which all transformers-based sentence scorer must inherate
+"""
+
 from abc import ABC, abstractmethod
 from typing import *
+import logging
 
+from transformers import AutoTokenizer
 import torch
+
+
+logger = logging.getLogger(__name__)
 
 
 class SentenceScore(ABC):
     """
-    A Score object compute a "naturalness" score for a sentence or a list of sentences
+    A SentenceScore object compute a "naturalness" score for a sentence or a list of sentences
+    from the output of a transformer models (BERT, GPT2, ...).
+
+    Typically, given a sentence, the scorer will compute a score for each sentence's tokens and
+    then return the average as a sentence score
     """
 
     def __init__(
@@ -15,15 +28,28 @@ class SentenceScore(ABC):
         batch_size: int = 1,
         length_normalization: bool = False,
         device: str = None,
-        verbose: bool = False,
+        progress_bar: bool = False,
     ):
         self.model_name = model_name
-        self.model = None
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         self.batch_size = batch_size
         self.length_normalization = length_normalization
+        self.progress_bar = progress_bar
         self.device = device if device else ("cuda:0" if torch.cuda.is_available() else "cpu")
-        self.verbose = verbose
 
+        # The transformers models will only be load in memory when using build
+        # This allows to avoid surcharging the memory when the scorer is not aimed
+        # to be used now.
+        # An already loaded-in-memory model can be passed to the scorer
+        self.model = None
+        if self.model is not None:
+            self.model.eval()
+            self.model.to(self.device)
+
+    @abstractmethod
+    def build(self):
+        ...
+        
     @overload
     def compute_score(self, text: str) -> float:
         ...
@@ -33,17 +59,23 @@ class SentenceScore(ABC):
         ...
 
     def compute_score(self, text: Union[str, List[str]]) -> Union[float, List[float]]:
-        """
-        Compute the naturalness score of sentences
-        :param text: single sentence or list of sentences
-        :return: sentence's score or  list of sentence's scores
-        """
         if not self.model:
             self.build()
 
         sentences = [text] if isinstance(text, str) else text
         scores = self._compute_sentences_scores(sentences)
         return scores[0] if isinstance(text, str) else scores
+
+    def __call__(self, sentences):
+        return self.compute_score(sentences)
+
+    @abstractmethod
+    def _compute_sentences_scores(self, sentences: List[str]) -> List[float]:
+        ...
+
+    # /////////////////////////////////////////////////////////////////
+    # Define some methods to make it easier to test the sentence scorer
+    # /////////////////////////////////////////////////////////////////
 
     def rank_sentences(self, sentences: List[str]) -> List[Tuple[str, float]]:
         """
@@ -70,15 +102,3 @@ class SentenceScore(ABC):
             if i == nb_to_print:
                 break
         print("")
-
-    def __call__(self, sentences):
-        return self.compute_score(sentences)
-
-    @abstractmethod
-    def _compute_sentences_scores(self, sentences: List[str]) -> List[float]:
-        ...
-
-    @abstractmethod
-    def build(self):
-        ...
-

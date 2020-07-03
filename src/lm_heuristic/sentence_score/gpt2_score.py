@@ -1,11 +1,16 @@
-from typing import *  # pylint: disable=unused-wildcard-import
+"""
+Define a sentence scorer based on GPT2 model
+"""
+
+from typing import *
 import logging
 
 import torch
 from tqdm.autonotebook import tqdm
-from transformers import GPT2Tokenizer, GPT2LMHeadModel
+from transformers import GPT2LMHeadModel
 
 from .sentence_score import SentenceScore
+
 
 logger = logging.getLogger()
 
@@ -21,44 +26,14 @@ class GPT2Score(SentenceScore):
     ->  average the loglikelihood of each token
     """
 
-    def __init__(
-        self,
-        model_name: str,
-        model: GPT2LMHeadModel = None,
-        batch_size: int = 1,
-        length_normalization: bool = False,
-        device: str = None,
-        verbose: bool = False,
-    ):
-        SentenceScore.__init__(
-            self,
-            model_name=model_name,
-            batch_size=batch_size,
-            device=device,
-            length_normalization=length_normalization,
-            verbose=verbose,
-        )
-
-        if model is not None:
-            logger.info("Loading %s on %s", model_name, self.device)
-            self.model = model
-            self.model.eval()
-            self.model.to(self.device)
-
-        self.tokenizer = GPT2Tokenizer.from_pretrained(model_name)
-
     def build(self):
-        if not self.model:
-            logger.info("Loading %s on %s", self.model_name, self.device)
-            self.model = GPT2LMHeadModel.from_pretrained(self.model_name).to(self.device)
+        self.model = GPT2LMHeadModel.from_pretrained(self.model_name)
+        self.model.eval()
+        self.model.to(self.device)
 
     def _compute_sentences_scores(self, sentences: List[str]) -> List[float]:
-        """
-        :param text: str | List[str] sentences to evaluate
-        :return list of sentence's score
-        """
         scores = []
-        for i in tqdm(range(0, len(sentences), self.batch_size), disable=not self.verbose):
+        for i in tqdm(range(0, len(sentences), self.batch_size), disable=not self.progress_bar):
             batch = sentences[i : i + self.batch_size]
             scores += self._compute_single_batch(batch)
 
@@ -70,9 +45,9 @@ class GPT2Score(SentenceScore):
 
     def _pad(self, sequences: List[torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor]:
         """
-        :param sequences: list of Tensor
-        :return: padding input + mask,
-                  both are rensors of shape (len(sequences), max sequence length)
+        rewrite torch.nn.utils.rnn.pad_sequence so that it return a boolean mask of pad position
+        the advantage is that we can avoid to add custom pad token to the model and pad directly
+        with eos token
         """
         max_seq_len = max([s.size(0) for s in sequences])
         out_tensor = (
@@ -87,14 +62,11 @@ class GPT2Score(SentenceScore):
         return out_tensor, mask
 
     def _add_bos_token_and_encode(self, text: str) -> List[float]:
+        # TODO encode the sentences by batch and not one by one 
+        # can be much faster when using FastTokenizer (because of // that occurs in the back)
         return self.tokenizer.encode(self.tokenizer.bos_token + text)
 
     def _compute_single_batch(self, sentences: List[str]) -> List[float]:
-        """
-        Compute GPT2 score of the sentences by given the model all the sentences in a single batch
-        :param sentences: str | List[str] sentences to evaluate:
-        :return: List[float], list of score
-        """
         # Prepare the input ids
         tokens_ids = [self._add_bos_token_and_encode(sentence) for sentence in sentences]
         # don't count the bos token
@@ -110,23 +82,21 @@ class GPT2Score(SentenceScore):
         with torch.no_grad():
             # shape = [batch_size, seq_len, vocab_size]
             pred_logits = self.model(input_ids)[0]
+            pred_scores = torch.nn.LogSoftmax(dim=2)(pred_logits)
 
-        pred_scores = torch.nn.LogSoftmax(dim=2)(pred_logits)
+            # Align input and target
+            target_ids = input_ids[:, 1:]
+            pred_scores = pred_scores[:, :-1, :]
 
-        # Align input and target
-        target_ids = input_ids[:, 1:]
-        pred_scores = pred_scores[:, :-1, :]
+            # Retrieve the token scores corresponding to the target id
+            tokens_scores = pred_scores.gather(dim=2, index=target_ids.unsqueeze(2)).squeeze(2)
 
-        # Retrieve the token scores corresponding to the target id
-        # (found this nice trick in lm-scorer package source code)
-        tokens_scores = pred_scores.gather(dim=2, index=target_ids.unsqueeze(2)).squeeze(2)
+            # Zeros the score of pad tokens
+            tokens_scores *= mask[:, 1:]
 
-        # Zeros the score of pad tokens
-        tokens_scores *= mask[:, 1:]
+            sentences_score = torch.sum(tokens_scores, dim=1)
+            if self.length_normalization:
+                sentences_score = sentences_score / sentences_len
 
-        sentences_score = torch.sum(tokens_scores, dim=1)
-        if self.length_normalization:
-            sentences_score = sentences_score / sentences_len
-
-        sentences_score = torch.exp(sentences_score).tolist()  # type: ignore
+            sentences_score = torch.exp(sentences_score).tolist()  # type: ignore
         return sentences_score  # type: ignore

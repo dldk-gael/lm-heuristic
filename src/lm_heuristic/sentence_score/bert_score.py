@@ -1,5 +1,10 @@
+"""
+Define a sentence scorer based on BERT model
+"""
+
 from typing import *
-from transformers import BertForMaskedLM, BertTokenizer
+
+from transformers import BertForMaskedLM
 import torch
 from tqdm.autonotebook import tqdm
 
@@ -25,31 +30,16 @@ class BertScore(SentenceScore):
     3- return the sum or average of all log-likelihood
     """
 
-    def __init__(
-        self,
-        model_name: str,
-        batch_size: int = 1,
-        length_normalization: bool = False,
-        device: str = None,
-        verbose: bool = False,
-    ):
-        """
-        Initialize the pre-trained BERT model
-        :param model_name : [str] for instance 'bert-base-uncased'
-        :param batch_size: int, batch size to use for BERT input
-        :param length_normalization [boolean]
-        """
-        SentenceScore.__init__(
-            self, batch_size=batch_size, device=device, length_normalization=length_normalization, verbose=verbose
-        )
-        self.model = BertForMaskedLM.from_pretrained(model_name)
-
+    def build(self):
+        self.model = BertForMaskedLM.from_pretrained(self.model_name)
         self.model.eval()
         self.model.to(self.device)
-        self.tokenizer = BertTokenizer.from_pretrained(model_name)
 
     def _compute_sentences_scores(self, sentences: List[str]) -> List[float]:
-        return [self.compute_single_sentence_score(sentence) for sentence in tqdm(sentences)]
+        # TODO merge the PR I made on LM_scorer to batch by sentences
+        return [
+            self.compute_single_sentence_score(sentence) for sentence in tqdm(sentences, disable=not self.progress_bar)
+        ]
 
     def compute_single_sentence_score(self, sentence: str) -> float:
         """
@@ -57,6 +47,8 @@ class BertScore(SentenceScore):
         :param sentence
         :return: float, score
         """
+        # TODO merge the PR I made on LM_scorer to speed up BERT scoring
+
         # prepare the batch of mask sentences
         tok_sentence = self.tokenizer.tokenize(sentence)
         encoded_sentence = self.tokenizer.convert_tokens_to_ids(tok_sentence)
