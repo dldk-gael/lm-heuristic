@@ -1,5 +1,6 @@
 import os
 from typing import *
+from functools import wraps
 import random
 
 from nltk.grammar import FeatureGrammar, Nonterminal, FeatStructNonterminal
@@ -10,13 +11,14 @@ from .node import Node
 
 
 # The rename_variables and substitute_bindings from NLTK can not be applyed to raw string
-# We modify them in order that in return raw string without modifying it to facilitate the use of those functions
+# We modify them in order that to handle raw string (they simply directly it) 
 def skip_terminal_symbole(function):
-    def function_skipping_terminal_symbol(symbol, **kwargs):
+    @wraps(function)
+    def function_skipping_terminal_symbol(symbol, *args, **kwargs):
         if isinstance(symbol, str):
             return symbol
         else:
-            return function(symbol, **kwargs)
+            return function(symbol, *args, **kwargs)
 
     return function_skipping_terminal_symbol
 
@@ -158,9 +160,6 @@ class FeatureGrammarNode(Node):
                 return leaf
 
         return None
-
-    def random_children(self):
-        return random.choice(self.children())
 
     def __hash__(self):
         return hash(self.symbols)

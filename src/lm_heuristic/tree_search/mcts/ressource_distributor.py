@@ -11,7 +11,8 @@ from typing import *
 import logging
 from enum import Enum
 
-from lm_heuristic.tree import Node, TreeStats
+from lm_heuristic.tree import Node
+from lm_heuristic.tree.stats import TreeStats
 from .counter_node import CounterNode
 
 

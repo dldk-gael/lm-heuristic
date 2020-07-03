@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from typing import *
 import logging
 
-from transformers import AutoTokenizer
+from transformers import AutoTokenizer, PreTrainedModel
 import torch
 
 
@@ -25,6 +25,7 @@ class SentenceScore(ABC):
     def __init__(
         self,
         model_name: str,
+        model: PreTrainedModel = None,
         batch_size: int = 1,
         length_normalization: bool = False,
         device: str = None,
@@ -40,8 +41,8 @@ class SentenceScore(ABC):
         # The transformers models will only be load in memory when using build
         # This allows to avoid surcharging the memory when the scorer is not aimed
         # to be used now.
-        # An already loaded-in-memory model can be passed to the scorer
-        self.model = None
+        # An already loaded-in-memory model can also be passed to the scorer
+        self.model = model
         if self.model is not None:
             self.model.eval()
             self.model.to(self.device)

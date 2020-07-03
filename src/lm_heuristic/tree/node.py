@@ -1,12 +1,14 @@
+"""
+Define an abstract class from which all tree must inherate in order to be able to perform
+a tree search on int
+"""
+
 from abc import ABC, abstractmethod
 from typing import *
+import random
 
 
 class Node(ABC):
-    """
-    Abstract class to implement a node class that can be used in tree-based algorithm
-    """
-
     def __init__(self):
         ...
 
@@ -24,20 +26,11 @@ class Node(ABC):
         """
         ...
 
-    @abstractmethod
     def random_children(self) -> "Node":
-        """
-        return a random children
-        """
-        ...
+        assert not self.is_terminal(), "Try to access children of a terminal node :%s" % str(self)
+        return random.choice(self.children())
 
     def random_walk(self) -> "Node":
-        """
-        Perform a random walk from current node to a terminal node
-        and return a leaf.
-        Can return None if no terminal node can be access from current node
-        (for example when using feature grammar)
-        """
         node = self
         while node is not None and not node.is_terminal():
             node = node.random_children()
@@ -45,9 +38,6 @@ class Node(ABC):
 
     @abstractmethod
     def __str__(self):
-        """
-        All node must be represented as a string
-        """
         ...
 
     @abstractmethod

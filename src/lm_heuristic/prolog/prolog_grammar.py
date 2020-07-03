@@ -95,5 +95,5 @@ class PrologGrammarEngine:
         """
         set the random seed of prolog engine
         """
-        # TODO This does not seem to work !
+        # WARNING - This does not seem to work !
         self.prolog.assertz("set_random(seed(%d))" % seed)
