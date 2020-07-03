@@ -100,15 +100,21 @@ class ParallelEvalBuffer(EvalBuffer):
     def _compute(self):
         leaves = list(self._index_table.keys())
         sentences = list(map(str, leaves))
+        if len(self._in_progress_tasks) == 2:
+            self._retrieve_from_results_queue(block=True)
+
         self._tasks_queue.put(sentences)
         self._in_progress_tasks.append((leaves, self._index_table))
         self._index_table = dict()
 
+    def _retrieve_from_results_queue(self, block=False):
+        results = self._results_queue.get(block=block)
+        leaves, index_table = self._in_progress_tasks.pop(0)
+        self._handle_results(leaves, index_table, results)
+
     def pop_results(self):
         while not self._results_queue.empty():
-            results = self._results_queue.get(block=False)
-            leaves, index_table = self._in_progress_tasks.pop(0)
-            self._handle_results(leaves, index_table, results)
+            self._retrieve_from_results_queue(block=False)
 
         results = self._results
         self._results = []
@@ -119,6 +125,4 @@ class ParallelEvalBuffer(EvalBuffer):
             self._compute()
 
         while len(self._in_progress_tasks) > 0:
-            results = self._results_queue.get(block=True)
-            leaves, index_table = self._in_progress_tasks.pop(0)
-            self._handle_results(leaves, index_table, results)
+            self._retrieve_from_results_queue(block=True)
