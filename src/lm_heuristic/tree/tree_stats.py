@@ -42,7 +42,7 @@ class TreeStats(Timer):
         depth = 1  # by choice root's depth = 1 (and not 0)
 
         while not node.is_terminal():
-            branching_factor = len(node.childrens())
+            branching_factor = len(node.children())
             self._branching_factors.setdefault(depth, []).append(branching_factor)
             node = node.random_children()
             depth += 1

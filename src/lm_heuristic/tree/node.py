@@ -18,7 +18,7 @@ class Node(ABC):
         ...
 
     @abstractmethod
-    def childrens(self) -> List["Node"]:
+    def children(self) -> List["Node"]:
         """
         Return the list of all children nodes from current node
         """

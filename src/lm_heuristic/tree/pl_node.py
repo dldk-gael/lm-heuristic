@@ -19,7 +19,7 @@ class PrologGrammarNode(Node):
         """
         Node.__init__(self)
         self.prolog_engine = prolog_engine
-        self._childrens: List["PrologGrammarNode"] = []
+        self._children: List["PrologGrammarNode"] = []
         self.symbols = symbols
 
     @classmethod
@@ -53,20 +53,20 @@ class PrologGrammarNode(Node):
                 return False
         return True
 
-    def childrens(self) -> List["PrologGrammarNode"]:  # type: ignore
+    def children(self) -> List["PrologGrammarNode"]:  # type: ignore
         # Note that we only return valid children !
-        if self._childrens == []:
-            self._childrens = [
+        if self._children == []:
+            self._children = [
                 PrologGrammarNode(child_symbols, self.prolog_engine)
                 for child_symbols in self.prolog_engine.valid_children(list(self.symbols))
             ]
-        return self._childrens
+        return self._children
 
     def random_children(self) -> "PrologGrammarNode":
         """
         return a random children
         """
-        return random.choice(self.childrens())
+        return random.choice(self.children())
 
     def random_walk(self) -> Union["PrologGrammarNode", None]:
         leaf_symbols = self.prolog_engine.leaf(self.symbols)

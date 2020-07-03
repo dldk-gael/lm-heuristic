@@ -23,15 +23,15 @@ def test_str_representation(root):
     assert str(root) == "s."
 
 
-def test_childrens(root):
-    childrens = root.childrens()
-    assert len(root.childrens()) == 1
-    assert str(childrens[0]) == "n v."
+def test_children(root):
+    children = root.children()
+    assert len(root.children()) == 1
+    assert str(children[0]) == "n v."
 
 
 def test_shrink_option(root):
     root.shrink = True
-    assert len(root.childrens()) == 2
+    assert len(root.children()) == 2
 
 
 def test_terminal(root):

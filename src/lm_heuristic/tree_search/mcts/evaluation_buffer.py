@@ -1,14 +1,15 @@
 """
-Define evaluation buffers that can be used between the Monte Carlo search and the evaluation of the leaves. 
+Define evaluation buffers that can be used between the Monte Carlo search and the evaluation of the leaves.
 
 The advantage of using such buffer are:
-1. the evaluation function used in this project (LM basedsentence scorer) are more efficient when the input 
-are sent by batch.
+1. the evaluation function used in this project (LM basedsentence scorer) are more efficient when the input
+are sent by batches.
 
 2. cleary separating the search and the evaluation allows parallel implementation of those tasks
 """
 
 from typing import *
+import logging
 import queue
 import multiprocessing
 import threading
@@ -16,13 +17,15 @@ import threading
 from lm_heuristic.tree import Node
 from lm_heuristic.utils.memory import Memory
 from lm_heuristic.sentence_score import SentenceScore
-
 from .counter_node import CounterNode
+
+logger = logging.getLogger(__name__)
 
 ######################################################################
 ## Vanilla implementation of the Evaluation buffer.
 ## -> No parallelization here
 ######################################################################
+
 
 class EvalBuffer:
     """
@@ -114,6 +117,7 @@ class ParallelEvalWorker:
         self._results_queue = results_queue
 
     def __call__(self):
+        logger.info("Evaluation worker correctly launched")
         self._sentence_scorer.build()  # Load the language model in memory
         while True:
             sentences = self._tasks_queue.get(block=True)
@@ -125,6 +129,7 @@ class MultithreadEvalWorker(ParallelEvalWorker, threading.Thread):
     """
     Same that ParallelEvalWorker but specific to multithread parallelisation
     """
+
     def __init__(self, sentence_scorer, tasks_queue, results_queue):
         threading.Thread.__init__(self)
         ParallelEvalWorker.__init__(self, sentence_scorer, tasks_queue, results_queue)
@@ -135,10 +140,11 @@ class MultithreadEvalWorker(ParallelEvalWorker, threading.Thread):
 
 class ParallelEvalBuffer(EvalBuffer):
     """
-    Same as EvalBuffer except that the evaluation part is executed by an evaluation work 
-    which is runned either on another thread (if parallel_strategy = multithread) 
+    Same as EvalBuffer except that the evaluation part is executed by an evaluation work
+    which is runned either on another thread (if parallel_strategy = multithread)
     or in another process (if parallel_strategy = multiprocess)
     """
+
     def __init__(
         self,
         buffer_size: int,
@@ -148,15 +154,23 @@ class ParallelEvalBuffer(EvalBuffer):
         max_nb_of_tasks_in_advance: int = 2,
     ):
         EvalBuffer.__init__(self, buffer_size, memory, sentence_scorer, load_LM_in_memory=False)
+        self._tasks_queue: Union[queue.Queue, multiprocessing.Queue]
+        self._results_queue: Union[queue.Queue, multiprocessing.Queue]
+        self._eval_worker: Union[multiprocessing.Process, MultithreadEvalWorker]
 
         if parallel_strategy == "multithread":
+            logger.info("Create a new thread to evaluate the leaves")
             self._tasks_queue = queue.Queue()
             self._results_queue = queue.Queue()
             self._eval_worker = MultithreadEvalWorker(sentence_scorer, self._tasks_queue, self._results_queue)
+
         elif parallel_strategy == "multiprocess":
+            logger.info("Create a new process to evaluate the leaves")
             self._tasks_queue = multiprocessing.Queue()
             self._results_queue = multiprocessing.Queue()
-            self._eval_worker = ParallelEvalWorker(sentence_scorer, self._tasks_queue, self._results_queue)
+            self._eval_worker = multiprocessing.Process(
+                target=ParallelEvalWorker(sentence_scorer, self._tasks_queue, self._results_queue)
+            )
 
         self._eval_worker.daemon = True
         self._eval_worker.start()

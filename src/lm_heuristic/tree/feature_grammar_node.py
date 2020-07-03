@@ -35,13 +35,13 @@ class FeatureGrammarNode(Node):
         """
         :param symbols ordered sequences of symbol representing the current derivation string
         :param feature_grammar : reference to ntlk feature grammar containing the production rules
-        :param only_keep_valid_node: bool, if true when asking for the childrens, will filter the one from which no valid leaf can be reached
+        :param only_keep_valid_node: bool, if true when asking for the children, will filter the one from which no valid leaf can be reached
         """
         Node.__init__(self)
         self.feature_grammar = feature_grammar
         self.symbols = (symbols,) if not isinstance(symbols, tuple) else symbols
-        self._childrens: List["FeatureGrammarNode"]
-        self._childrens_have_been_computed = False
+        self._children: List["FeatureGrammarNode"]
+        self._children_have_been_computed = False
         self.only_keep_valid_node = only_keep_valid_node
 
     @classmethod
@@ -60,18 +60,18 @@ class FeatureGrammarNode(Node):
             str_grammar = file.read()
         return cls.from_string(str_grammar, **kwargs)
 
-    def childrens(self) -> List["FeatureGrammarNode"]:  # type: ignore
-        if not self._childrens_have_been_computed:
-            non_filter_childrens = self.compute_childrens()
+    def children(self) -> List["FeatureGrammarNode"]:  # type: ignore
+        if not self._children_have_been_computed:
+            non_filter_children = self.compute_children()
             if self.only_keep_valid_node:
-                self._childrens = [child for child in non_filter_childrens if child.find_random_valid_leaf()]
+                self._children = [child for child in non_filter_children if child.find_random_valid_leaf()]
             else:
-                self._childrens = non_filter_childrens
-            self._childrens_have_been_computed = True
+                self._children = non_filter_children
+            self._children_have_been_computed = True
 
-        return self._childrens
+        return self._children
 
-    def compute_childrens(self) -> List["FeatureGrammarNode"]:
+    def compute_children(self) -> List["FeatureGrammarNode"]:
         child_list: List["FeatureGrammarNode"] = []
 
         # First we retrieve all variables using in current derivation
@@ -127,7 +127,7 @@ class FeatureGrammarNode(Node):
                 leaves.append(symbol)
                 continue
 
-            children_symbol = FeatureGrammarNode(symbol, self.feature_grammar).childrens()
+            children_symbol = FeatureGrammarNode(symbol, self.feature_grammar).children()
             random.shuffle(children_symbol)
             leaf = None
             for child in children_symbol:
@@ -148,19 +148,19 @@ class FeatureGrammarNode(Node):
         if str(self) == "DEAD_END.":
             return None
 
-        node_childrens = self.childrens()
-        shuffle_index = list(range(len(node_childrens)))
+        node_children = self.children()
+        shuffle_index = list(range(len(node_children)))
         random.shuffle(shuffle_index)
 
         for i in shuffle_index:
-            leaf = node_childrens[i].find_random_valid_leaf_debug()
+            leaf = node_children[i].find_random_valid_leaf_debug()
             if leaf and str(leaf) != "DEAD_END.":
                 return leaf
 
         return None
 
     def random_children(self):
-        return random.choice(self.childrens())
+        return random.choice(self.children())
 
     def __hash__(self):
         return hash(self.symbols)

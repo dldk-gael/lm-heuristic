@@ -100,13 +100,13 @@ class RessourceDistributor:
             return False
             
         if self.strategy == AllocationStrategy.DYNAMIC:
-            childrens = self._current_node.childrens()
+            children = self._current_node.children()
 
             # Special case
-            if len(childrens) == 1:
+            if len(children) == 1:
                 return True
 
-            nb_of_wins = [child.sum_rewards for child in childrens]
+            nb_of_wins = [child.sum_rewards for child in children]
             sorted_nb_of_wins = sorted(nb_of_wins, reverse=True)
             return sorted_nb_of_wins[0] >= self.dynamic_ratio * (sorted_nb_of_wins[1] + 1)
 

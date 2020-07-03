@@ -15,7 +15,7 @@ class CFGrammarNode(Node):
 
     A derivation is a string over T union N that can be derivate from S using production rules from P
     CFGrammarNode is used to embed a particular derivation string as a tree node.
-    The childrens of one node consist of all the string that derivated from the current derivation using only
+    The children of one node consist of all the string that derivated from the current derivation using only
     one production rule from P
 
     Two CFGrammarNode that represent a same string will have the same hashing value even if they have
@@ -26,8 +26,8 @@ class CFGrammarNode(Node):
         """
         :param symbols ordered sequences of symbol representing the current derivation string
         :param cfg : reference to context free grammar containing the production rules
-        :param shrink: bool, if true when asking for the childrens and there is only one,
-                                will directly return grandchildrens
+        :param shrink: bool, if true when asking for the children and there is only one,
+                                will directly return grandchildren
         """
         Node.__init__(self)
         self.cfg = cfg
@@ -60,29 +60,29 @@ class CFGrammarNode(Node):
                 return False
         return True
 
-    def childrens(self) -> List["CFGrammarNode"]: # type: ignore
+    def children(self) -> List["CFGrammarNode"]: # type: ignore
         """
         return all the Derivations nodes corresponding to sentences that can be derivated f
         from the current derivation using only one production rule from P
-        if shrink option has been selected, will directly grand childrens if there is only one single children
+        if shrink option has been selected, will directly grand children if there is only one single children
         """
-        childrens = []
+        children = []
         for idx, symbol in enumerate(self.symbols):
             if isinstance(symbol, grammar.Nonterminal):
                 productions = self.cfg.productions(lhs=symbol)
                 for production in productions:
-                    childrens.append(
+                    children.append(
                         CFGrammarNode(self.symbols[:idx] + production.rhs() + self.symbols[idx + 1 :], self.cfg,)
                     )
 
-        if self.shrink and len(childrens) == 1:
-            return childrens[0].childrens()
+        if self.shrink and len(children) == 1:
+            return children[0].children()
 
-        return childrens
+        return children
 
     def random_children(self) -> "CFGrammarNode":
         assert not self.is_terminal(), "Try to access children of a terminal node :%s" % str(self)
-        return random.choice(self.childrens())
+        return random.choice(self.children())
 
     def __str__(self):
         return " ".join(map(str, self.symbols)) + "."

@@ -66,9 +66,9 @@ class MonteCarloTreeSearch(TreeSearch):
         self.ucb_function = ucb_function if ucb_function else single_player_ucb
 
         if parallel_strategy == "none":
-            self.eval_buffer = ParallelEvalBuffer(buffer_size, self._memory, sentence_scorer)
+            self.eval_buffer = EvalBuffer(buffer_size, self._memory, sentence_scorer)
         else:
-            self.eval_buffer = EvalBuffer(buffer_size, self._memory, sentence_scorer, parallel_strategy)
+            self.eval_buffer = ParallelEvalBuffer(buffer_size, self._memory, sentence_scorer, parallel_strategy)
 
         self.child_root_selection = child_root_selection
 
@@ -111,7 +111,7 @@ class MonteCarloTreeSearch(TreeSearch):
                     self.backpropagation_phase()
 
                     # Freeze current_root to avoid modifying the counter in futur backprops
-                    # Choose the best node among the childrens and continue the search from here
+                    # Choose the best node among the  and continue the search from here
                     counter_root.freeze = True
 
                     if self.child_root_selection == "top_child":
@@ -140,13 +140,13 @@ class MonteCarloTreeSearch(TreeSearch):
 
     def selection_policy(self, counter_node: CounterNode) -> CounterNode:
         # if a children of current node has not been visited yet: visit it
-        for children in counter_node.childrens():
+        for children in counter_node.children():
             if children.count == 0:
                 return children
 
         # else elect node that maximise UPC (+ skip node that have been solved)
-        unsolved_childrens = [children for children in counter_node.childrens() if not children.solved]
-        return max(unsolved_childrens, key=lambda node: self.ucb_function(node, counter_node))
+        unsolved_children = [children for children in counter_node.children() if not children.solved]
+        return max(unsolved_children, key=lambda node: self.ucb_function(node, counter_node))
 
     @time_function
     def expansion_phase(self, counter_node: CounterNode) -> CounterNode:

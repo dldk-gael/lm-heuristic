@@ -30,11 +30,11 @@ if __name__ == "__main__":
 
     # Initialize the sentence scorer
     logging.info("Initialize the scorer")
-    #sentence_scorer = GPT2Score("gpt2", batch_size=BATCH_SIZE, length_normalization=True)
+    # sentence_scorer = GPT2Score("gpt2", batch_size=BATCH_SIZE, length_normalization=True)
     # sentence_scorer = test_scorer
     # Ressource distributor
     ressource_distributor = RessourceDistributor(AllocationStrategy.ALL_FROM_ROOT)
- 
+
     # Initialize the search parameters
     mcts_parallel = MonteCarloTreeSearch(
         sentence_scorer=test_scorer,
