@@ -34,11 +34,11 @@ pip install .
     - **MonteCarloTreeSearch** which implements the different steps that are at the core of the algorithm (selection, expansion, simulation, evaluation, backpropagation)
     - **CounterNode** that is used by the MCTS to maintain stastistics over the tree nodes. 
     - **EvalBuffer** that allows to evaluate the tree's leave by batch rather that one by one. **ParallelEvalBuffer** makes it possible to run this evaluation is another process / thread. 
-    - **RessourceDistributor** that let the user the possibility to specify how the computationnal ressource (ie: the tree walks who be divided)
+    - **RessourceDistributor** that let the user specifies how the computationnal ressource (ie: the tree walks) should be divided
  
 - **tree_search.random.RandomSearch** implements a naive search that randomly sample the tree to find the best leaf.
 
-- **benchmark** define an experimentation framework. It take as input : a list of tree search strategy, 
+- **benchmark** defines an experimentation framework. It take as input : a list of tree search strategy, 
 a tree dataset, perform different type of evaluation on it and store the results all of the experiments in a panda dataframe.
 
 - **generation** specifies some modules to quickly generate text from grammar or transformers. 
