@@ -28,13 +28,14 @@ class CFGrammarNode(Node):
     - P: a set of production rules
     - S: the start symbol (belong to N)
 
-    A derivation is a string over T union N that can be derivate from S using production rules from P
-    CFGrammarNode is used to embed a particular derivation string as a tree node.
+    A derivation is a string over T union N that can be iteratively derived from S using production rules from P.
+    CFGrammarNode is used to embed a particular derivation string inside a tree node object.
+
     The children of one node consist of all the string that derivated from the current derivation using only
-    one production rule from P
+    one production rule from P.
 
     Two CFGrammarNode that represent a same string will have the same hashing value even if they have
-    been produced by different parents
+    been produced by different parents.
     """
 
     def __init__(self, symbols: tuple, cfg: CFG, shrink=False):
@@ -77,9 +78,10 @@ class CFGrammarNode(Node):
 
     def children(self) -> List["CFGrammarNode"]:  # type: ignore
         """
-        return all the Derivations nodes corresponding to sentences that can be derivated f
+        return all the nodes corresponding to derativations that can be produced
         from the current derivation using only one production rule from P
-        if shrink option has been selected, will directly grand children if there is only one single children
+        if shrink option has been selected, it will directly return grand children
+        if there is only one single children
         """
         children = []
         for idx, symbol in enumerate(self.symbols):
@@ -106,8 +108,8 @@ class CFGrammarNode(Node):
 ## Feature based grammar --> tree.Node
 ######################################################################
 
-# The rename_variables and substitute_bindings from NLTK can not be applyed to raw string
-# We modify them so they can handle raw string (they simply directly return it)
+# Because rename_variables and substitute_bindings functins from NLTK can not be applyed to raw string
+# We modify them so they can handle raw string (they will simply directly return it)
 def skip_terminal_symbole(function):
     @wraps(function)
     def function_skipping_terminal_symbol(symbol, *args, **kwargs):
@@ -118,12 +120,22 @@ def skip_terminal_symbole(function):
 
     return function_skipping_terminal_symbol
 
-
 substitute_bindings = skip_terminal_symbole(substitute_bindings)
 rename_variables = skip_terminal_symbole(rename_variables)
 
 
 class FeatureGrammarNode(Node):
+    """
+    In addition to the formalism already introduced by context free grammar, 
+    feature grammar represents non terminal symbol of the grammar with feature structures. 
+
+    FeatureGrammarNode object ensure that the feature structures are correctly unified and that
+    variable bindings are well propagated during the productions of new child.
+
+    If we try to compute the children of an non terminal node and it happened that this node 
+    has no valid children because of current variable bindings, it will return a special DEAD_END
+    node.
+    """
     def __init__(
         self,
         symbols: Union[Tuple[FeatStructNonterminal], FeatStructNonterminal],
@@ -172,7 +184,7 @@ class FeatureGrammarNode(Node):
     def compute_children(self) -> List["FeatureGrammarNode"]:
         child_list: List["FeatureGrammarNode"] = []
 
-        # First we retrieve all variables using in current derivation
+        # First we retrieve all variables used in current derivation
         used_vars: Set[Variable] = set()
         for symbol in self.symbols:
             if not isinstance(symbol, str):

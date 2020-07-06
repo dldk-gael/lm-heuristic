@@ -1,5 +1,5 @@
 """
-Specify different possible selection policy
+Specify different possible selection policy rules
 """
 
 import math

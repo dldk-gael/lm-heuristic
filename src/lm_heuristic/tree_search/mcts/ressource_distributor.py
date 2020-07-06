@@ -1,10 +1,9 @@
 """
-In a single-player setting, there is several possibility to divide the computationnal ressource available
-during the MCTS. We can either compute all the tree walks from the tree root or we can choose that,
-after having computing a certain amount of tree walks, to select and go to the best root's child and continue
+In a single-player setting, there are several possibilities to divide the computationnal ressource available
+during the MCTS. We can either compute all the tree walks from the tree root or we can choose,
+after having computed a certain amount of tree walks, to select and go to the best root's child and continue
 the search from this new node. This allows to progressively narrow the search in the most promising part of tree.
-
-This module implements such different stategies.
+This module implements different stategies to tackle this task.
 """
 
 from typing import *
@@ -48,14 +47,16 @@ class AllocationStrategy(Enum):
 
 class RessourceDistributor:
     """
-    A ressource distributor is first initialized with a total number of tree walks that
-    we are allowed to perform. For Uniform and Linear strategy, it is needed to know the
-    average tree's depth in order  to split the ressources. To do so, a tree stats sampling
-    of the tree is performed.
+    A ressource distributor is first initialized with a total number of tree walks.
+    For Uniform and Linear strategy, it is needed to know the average tree's depth in order 
+    to correctly split the ressources. To do so, a tree stats sampling of the tree is performed.
 
-    Then, after each tree walks, the ressource distributor is called:
-    - go_to_children indicates if we must to change the current root and go to a child
-    - still_has_ressources indicates if the MCTS must be stopped or not
+    Durant the search : 
+    - before each tree walk, the MCTS indicates to the ressource distributor that one tree walks will
+    be now consummed.
+    - after each tree walk, the ressource distributor to the MCTS:
+        -> if we must to change the current root and go to a child (go_to_children method)
+        -> if the search must be stopped because all the ressources were consummed (still_has_ressources method)
     """
 
     def __init__(self, strategy: AllocationStrategy, stats_samples=None, dynamic_ratio=None):

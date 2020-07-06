@@ -9,21 +9,19 @@ import random
 
 
 class Node(ABC):
+    """
+    The node abstract object specifies the methods that needs to be implemented in order to 
+    used a custom node object with the different tree search srategies defined in the tree_search modules. 
+    """
     def __init__(self):
         ...
 
     @abstractmethod
     def is_terminal(self) -> bool:
-        """
-        Return true if the current node is a leaf
-        """
         ...
 
     @abstractmethod
     def children(self) -> List["Node"]:
-        """
-        Return the list of all children nodes from current node
-        """
         ...
 
     def random_children(self) -> "Node":

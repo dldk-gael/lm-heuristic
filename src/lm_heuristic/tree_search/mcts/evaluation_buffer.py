@@ -1,11 +1,11 @@
 """
-Define evaluation buffers that can be used between the Monte Carlo search and the evaluation of the leaves.
+Define evaluation buffers that can be used between the MTCS and the evaluation of the leaves.
 
-The advantage of using such buffer are:
-1. the evaluation function used in this project (LM basedsentence scorer) are more efficient when the input
-are sent by batches.
+The advantages of using such buffer are:
+1. we can seen node to the evaluator object by batch. And, in this project, the evaluation function (transformers-based NN)
+are more efficient when the input are sent by batches.
 
-2. cleary separating the search and the evaluation allows parallel implementation of those tasks
+2. by cleary separating the search and the evaluation tasks, it is more easy to allow parallel implementation of those tasks
 """
 
 from typing import *
@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 class EvalBuffer:
     """
     The evaluation buffer works as follows:
-    1. use add methods to add new leaf that need to be evaluate
+    1. use add methods to add new leaf that need to be evaluated
     2. use pop_results to retrieve the results if there are available
 
     Behind the scenes, it uses the following optimization:
@@ -123,7 +123,7 @@ class ParallelEvalWorker:
 
 class MultithreadEvalWorker(ParallelEvalWorker, threading.Thread):
     """
-    Same that ParallelEvalWorker but specific to multithread parallelisation
+    Same as ParallelEvalWorker but specific to multithread parallelisation
     """
 
     def __init__(self, sentence_scorer, tasks_queue, results_queue):
@@ -136,7 +136,7 @@ class MultithreadEvalWorker(ParallelEvalWorker, threading.Thread):
 
 class ParallelEvalBuffer(EvalBuffer):
     """
-    Same as EvalBuffer except that the evaluation part is executed by an evaluation work
+    Same as EvalBuffer except that the evaluation part is executed by an evaluation worker
     which is runned either on another thread (if parallel_strategy = multithread)
     or in another process (if parallel_strategy = multiprocess)
     """
@@ -169,7 +169,7 @@ class ParallelEvalBuffer(EvalBuffer):
 
         self._eval_worker.daemon = True
         self._eval_worker.start()
-        self._in_progress_tasks = []  # Use to keep track tasks given to the worker
+        self._in_progress_tasks = []  # Use to keep track of the tasks that was given to the worker
         self._max_nb_of_tasks_in_advance = max_nb_of_tasks_in_advance
 
     def _compute(self):

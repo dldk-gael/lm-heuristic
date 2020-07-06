@@ -1,3 +1,8 @@
+"""
+This module is used to compute node by queriyng a prolog engine running 
+in the back. 
+"""
+
 import os
 from typing import List, Union
 import random

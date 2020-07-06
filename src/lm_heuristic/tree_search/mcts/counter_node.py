@@ -10,15 +10,16 @@ from lm_heuristic.tree import Node
 
 class CounterNode(Node):
     """
-    Class to wrap a node (which is denote as the reference node) and maintain several statistics during the MCTS:
+    A counter node will be used on top of a given (which is denote as the reference node) in order to
+    maintain several statistics during the MCTS:
     - the nomber of times the node has been visited
     - the expected reward from this node
     - the top reward that has been obtained from this node
-    - a reference to the leaf corresponding to this top reward (only used to make it more to debug)
     - the square sum reward obtained so far from this node
+    - a reference to the leaf corresponding to this top reward 
 
-    Contrary to a vanilla node, the counter node keeps in memory a reference to his parent node in order
-    to be able to backpropagate the information
+    The counter node aloso keeps in memory a reference to his parent node in order to be able to backpropagate
+    the information that it will recieve.
     """
 
     def __init__(self, reference_node: Node, parent: "CounterNode" = None):
@@ -57,7 +58,7 @@ class CounterNode(Node):
     def backpropagate(self, new_reward, leaf):
         """
         Given a new_reward update the average reward, sum of square rewards and top reward
-        and backprogate the information to the parent node
+        and then pass the information to the parent node
         """
         if self.freeze:
             return

@@ -1,6 +1,6 @@
 """
-Implement the Monte Carlo Tree Search (MCTS) algorithm
-it follows mainly the idea that are described in Single-Player Monte-Carlo Tree Search paper
+Implementation of the Monte Carlo Tree Search (MCTS) algorithm
+It follows mainly the ideas described in Single-Player Monte-Carlo Tree Search paper
 from Maarten P.D. Schadd, Mark H.M. Winands, H. Jaap van den Herik,
 Guillaume M.J-B. Chaslot, and Jos W.H.M. Uiterwijk
 """
@@ -24,23 +24,23 @@ logger = logging.getLogger(__name__)
 
 class MonteCarloTreeSearch(TreeSearch):
     """
-    This class will maintain a spanned tree (ST) over the nodes that have been visited by
-    wrapping the tree to search in a counter node object
+    This class will maintain a spanning tree (ST) over the nodes that have been visited by
+    progressively wrapping the tree that need to be searched by a tree_search.CounterNode object
 
     At t=0, ST = {root}
     At time t:
         1. Selection phase: go to the frontier of ST using a specific selection policy
-        2. Expansion phase: add a new children in the ST
-        3. Simulation phase: choose a random leaf that is accessible from the new children
-        4. Evaluation phase: evaluate the leaf using a heuristic
+        2. Expansion phase: compute the children of the frontier node
+        3. Simulation phase: choose a random leaf that is accessible from the frontier node
+        4. Evaluation phase: evaluate the leaf 
         5. Backpropagation phrase: backpropagate the leaf value in the ST
 
-    The leaves' evaluation task is not performed directly but handle to an evaluation buffer.
-    -> The main motivation is to be able to input the leaves by batch to the evaluation function.
+    The evaluation task is not performed directly but is managed by an evaluation buffer (EvalBuffer object).
+    -> The main motivation is to be able to input the leave by batch into the evaluation function.
 
     In this MCTS implementation, it is possible to:
     - progressively go down the tree rather that launching every tree walks from tree root
-        -> the way of divide the computionnal ressources at each depth is specified by passing a RessourceDistributor
+        -> the way to divide the computionnal ressources at each depth is specified by passing a RessourceDistributor
         -> there is two way to select the root's child :
             1. top_child -> select the child from which the best leaf have been found
             2. most_visited -> select the most visited child
@@ -52,7 +52,7 @@ class MonteCarloTreeSearch(TreeSearch):
 
     - choose to accumulate a certain amount of leaves before evaluating in one pass
 
-    - perform the evaluation in another thread/process’
+    - perform the evaluation in another thread/process
     """
 
     def __init__(
@@ -107,6 +107,7 @@ class MonteCarloTreeSearch(TreeSearch):
 
                 self.ressource_distributor.consume_one_unit()
 
+                # The 5 steps of MCTS: selection, expansion, simulation, evaluation, backpropagation
                 frontier_counter_node = self.selection_phase(counter_root)
                 self.expansion_phase(frontier_counter_node)
                 random_leaf = self.simulation_phase(frontier_counter_node)
