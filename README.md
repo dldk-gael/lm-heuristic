@@ -19,15 +19,15 @@ pip install .
 <details>
   <summary><b>sentence_score</b></summary>
 
+
 **sentence_score** provide an interface towards transformers-based model (GPT2 and BERT) that are used to associate a sentence with a *naturalness* score. 
 Currently two LM-based sentences scorer are implemented:
-- **sentence_score.GPT2Score**
 
-<p align="center"><img src="report/schema/GPT2.png" width="50%"></img></p>
+GPT2Score           |  BERTScore
+:-------------------------:|:-------------------------:
+![](report/schema/GPT2.png)  |  ![](report/schema/BERT.png)
 
-- **sentence_score.BERTScore**
 
-<p align="center"><img src="report/schema/BERT.png" width="50%"></img></p>
 
 </details>
 
