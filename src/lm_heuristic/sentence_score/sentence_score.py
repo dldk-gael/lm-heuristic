@@ -24,7 +24,7 @@ class SentenceScore(ABC):
 
     def __init__(
         self,
-        model_name: str,
+        model_name: str = "",
         model: PreTrainedModel = None,
         batch_size: int = 1,
         length_normalization: bool = False,
@@ -32,23 +32,23 @@ class SentenceScore(ABC):
         progress_bar: bool = False,
     ):
         self.model_name = model_name
-        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name)
         self.batch_size = batch_size
         self.length_normalization = length_normalization
         self.progress_bar = progress_bar
         self.device = device if device else ("cuda:0" if torch.cuda.is_available() else "cpu")
-
-        # The transformers models will only be load in memory when using build
-        # This allows to avoid surcharging the memory when the scorer is not aimed
-        # to be used now.
+        
+        # The transformers models will only be load in memory when using build methods
+        # This allows to avoid surcharging the memory when you do not want to use the scorer directly
         # An already loaded-in-memory model can also be passed to the scorer
         self.model = model
-        if self.model is not None:
-            self.model.eval()
-            self.model.to(self.device)
+        self.is_already_built = False
+
+    def build(self):
+        self._build()
+        self.is_already_built = True
 
     @abstractmethod
-    def build(self):
+    def _build(self):
         ...
         
     @overload
@@ -60,7 +60,7 @@ class SentenceScore(ABC):
         ...
 
     def compute_score(self, text: Union[str, List[str]]) -> Union[float, List[float]]:
-        if not self.model:
+        if not self.is_already_built:
             self.build()
 
         sentences = [text] if isinstance(text, str) else text

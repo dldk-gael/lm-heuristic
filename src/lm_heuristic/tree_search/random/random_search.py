@@ -5,9 +5,8 @@ Implement a random searcher for baseline
 from typing import *
 from tqdm import tqdm
 
-from lm_heuristic.tree_search import TreeSearch
+from lm_heuristic.tree_search import TreeSearch, Evaluator
 from lm_heuristic.tree import Node
-from lm_heuristic.sentence_score import SentenceScore
 
 
 class RandomSearch(TreeSearch):
@@ -17,12 +16,13 @@ class RandomSearch(TreeSearch):
     """
     def __init__(
         self,
-        sentence_scorer: SentenceScore,
+        evaluator: Evaluator,
         buffer_size: int = 1,
         name: str = "Random Search",
         progress_bar: bool = False,
     ):
-        TreeSearch.__init__(self, sentence_scorer, buffer_size, name, progress_bar)
+        TreeSearch.__init__(self, evaluator, name, progress_bar)
+        self._buffer_size = buffer_size
 
     def _search(self, root: Node, nb_of_tree_walks: int):
         leave_buffer = []
@@ -30,10 +30,8 @@ class RandomSearch(TreeSearch):
         for _ in tqdm(range(nb_of_tree_walks), disable=not self._progress_bar):
             leave_buffer.append(root.random_walk())
             if len(leave_buffer) == self._buffer_size:
-                scores = self._sentence_scorer.compute_score(list(map(str, leave_buffer)))
-                self._memory.update_memory(zip(leave_buffer, scores))
+                self._evaluator.eval(leave_buffer)
                 leave_buffer = []
 
         if len(leave_buffer) > 0:
-            scores = self._sentence_scorer.compute_score(list(map(str, leave_buffer)))
-            self._memory.update_memory(zip(leave_buffer, scores))
+            self._evaluator.eval(leave_buffer)

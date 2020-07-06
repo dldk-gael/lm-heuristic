@@ -1,0 +1,17 @@
+,strategy,dataset,input_nb_tree_walks,restart,time_needed,best_value,best_leaf
+0,Random Search,ex_1_small,5,0,1.7152399999999997,-1.0,None
+1,Random Search,ex_1_small,5,1,1.7973030000000012,-1.0,None
+2,Random Search,ex_1_small,10,0,3.6052999999999997,-1.0,None
+3,Random Search,ex_1_small,10,1,4.297183,-1.0,None
+4,Random Search,ex_2_small,5,0,2.544901999999997,-1.0,None
+5,Random Search,ex_2_small,5,1,2.536157000000003,-1.0,None
+6,Random Search,ex_2_small,10,0,4.396339999999999,-1.0,None
+7,Random Search,ex_2_small,10,1,4.324872999999997,-1.0,None
+8,MCTS,ex_1_small,5,0,1.687447000000006,-1.0,None
+9,MCTS,ex_1_small,5,1,1.6021530000000013,-1.0,None
+10,MCTS,ex_1_small,10,0,3.244987000000002,-1.0,None
+11,MCTS,ex_1_small,10,1,2.8928159999999963,-1.0,None
+12,MCTS,ex_2_small,5,0,1.6763210000000015,-1.0,None
+13,MCTS,ex_2_small,5,1,1.7311669999999992,-1.0,None
+14,MCTS,ex_2_small,10,0,3.382595000000002,-1.0,None
+15,MCTS,ex_2_small,10,1,3.3715779999999995,-1.0,None

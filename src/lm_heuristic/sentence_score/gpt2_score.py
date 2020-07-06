@@ -7,7 +7,7 @@ import logging
 
 import torch
 from tqdm.autonotebook import tqdm
-from transformers import GPT2LMHeadModel
+from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
 from .sentence_score import SentenceScore
 
@@ -26,8 +26,10 @@ class GPT2Score(SentenceScore):
     ->  average the loglikelihood of each token
     """
 
-    def build(self):
-        self.model = GPT2LMHeadModel.from_pretrained(self.model_name)
+    def _build(self):
+        self.tokenizer = GPT2Tokenizer.from_pretrained(self.model_name)
+        if not self.model:
+            self.model = GPT2LMHeadModel.from_pretrained(self.model_name)
         self.model.eval()
         self.model.to(self.device)
 

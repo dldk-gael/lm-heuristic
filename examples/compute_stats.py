@@ -2,7 +2,8 @@
 Use to evaluate depth and branching factor of tree by performing random sampling on it
 """
 
-from lm_heuristic.tree import CFGrammarNode, TreeStats
+from lm_heuristic.tree.interface.nltk_grammar import CFGrammarNode
+from lm_heuristic.tree.stats import TreeStats
 
 
 GRAMMAR_FOLDER = "data/cfg/"
@@ -17,6 +18,6 @@ if __name__ == "__main__":
     # Compute stats
     stats = TreeStats(grammar_root)
     stats.accumulate_stats(nb_samples=NB_SAMPLES)
-    print("time needed to accumulate the statistics : %0.3fs" % stats.time_spent())
+    print("time needed to accumulate the statistics : %0.3fs" % stats.accumulate_stats.time_spent)
     print("depth : ", stats.depths_info())
     print("branching factor : ", stats.branching_factors_info())

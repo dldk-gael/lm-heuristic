@@ -1,5 +1,0 @@
-# TARGET SENTENCE : "The boy wants to ride the red bicycle."
-S -> NP[SEM=pivot] V NP[SEM=theme]
-NP -> ADJ NP
-V -> "wants"
-NP -> "gael"

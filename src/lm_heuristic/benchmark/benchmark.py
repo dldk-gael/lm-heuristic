@@ -1,11 +1,13 @@
 from typing import *
+import time
+
 import pandas as pd
 
 from lm_heuristic.tree_search import TreeSearch
 from lm_heuristic.tree import Node
 
 
-class EvalStrategy:
+class Benchmark:
     """
     Class use to evaluate and compare different search strategy on a dataset
     The idea is to evaluate each strategy :
@@ -13,8 +15,7 @@ class EvalStrategy:
     - with different number of allowed tree walks
     - with different random seeds
 
-    This class is use to run all the experiments and produce a dataframe
-    gathering all the results
+    This class is use to run all the experiments and produce a dataframe that gather all the results
     """
 
     def __init__(
@@ -68,15 +69,15 @@ class EvalStrategy:
                                 "- random restart n°%d" % (strategy_name, sample_name, k, j),
                                 end="",
                             )
-                        best_leaf, best_leaf_value = strategy(root_sample, nb_of_tree_walks=k)
-                        time_needed = strategy.time_spent()
+                        begin_time = time.process_time()
+                        best_leaf, best_leaf_value = strategy.search(root_sample, nb_of_tree_walks=k)
+                        time_needed = time.process_time() - begin_time
 
                         experiment_results = {
                             "strategy": strategy_name,
                             "dataset": sample_name,
                             "input_nb_tree_walks": k,
                             "restart": j,
-                            "eval_call_counter": strategy.heuristic.eval_counter,
                             "time_needed": time_needed,
                             "best_value": best_leaf_value,
                             "best_leaf": str(best_leaf),

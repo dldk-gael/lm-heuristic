@@ -4,7 +4,7 @@ Define a sentence scorer based on BERT model
 
 from typing import *
 
-from transformers import BertForMaskedLM
+from transformers import BertForMaskedLM, BertTokenizer
 import torch
 from tqdm.autonotebook import tqdm
 
@@ -30,8 +30,10 @@ class BertScore(SentenceScore):
     3- return the sum or average of all log-likelihood
     """
 
-    def build(self):
-        self.model = BertForMaskedLM.from_pretrained(self.model_name)
+    def _build(self):
+        self.tokenizer = BertTokenizer.from_pretrained(self.model_name)      
+        if not self.model:
+            self.model = BertForMaskedLM.from_pretrained(self.model_name)
         self.model.eval()
         self.model.to(self.device)
 

@@ -1,14 +1,16 @@
 from typing import *
-import logging 
+import logging
 
 import numpy as np
 
-from lm_heuristic.utils.timer import timeit, Timer
-from .node import Node
+from lm_heuristic.utils.timer import time_function
+from ..node import Node
+
 
 logger = logging.getLogger(__name__)
 
-class TreeStats(Timer):
+
+class TreeStats:
     """
     Class use to accumulate informations about a tree
     and compute several statistics on depth and branching factor
@@ -18,12 +20,11 @@ class TreeStats(Timer):
         """
         :param root: root of the tree to evaluate
         """
-        Timer.__init__(self)
         self.root = root
         self._depths: List[int] = []
         self._branching_factors: Dict[int, List[int]] = dict()
 
-    @timeit
+    @time_function
     def accumulate_stats(self, nb_samples: int = 1):
         """
         Accumulate statistics on the tree by performing nb_samples tree walks

@@ -1,10 +1,9 @@
 import random
-from typing import List, Union
+from typing import *
 from nltk.grammar import FeatureGrammar, FeatStructNonterminal, Production
 from nltk.featstruct import FeatStruct
-from nltk.sem import Variable
 
-from lm_heuristic.tree import FeatureGrammarNode, TreeStats
+from lm_heuristic.tree.interface.nltk_grammar import FeatureGrammarNode
 
 
 def format_list(obj_list: List[FeatStruct]) -> FeatStruct:

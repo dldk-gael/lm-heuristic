@@ -2,7 +2,7 @@ import os
 from typing import List, Union
 import random
 from lm_heuristic.tree import Node
-from lm_heuristic.prolog import PrologGrammarEngine
+from lm_heuristic.utils.prolog import PrologGrammarEngine
 
 
 class PrologGrammarNode(Node):

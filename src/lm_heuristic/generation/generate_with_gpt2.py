@@ -6,7 +6,6 @@ import torch
 class GenerateWithGPT2:
     """
     Class to quickly generate sentences from GPT2 model
-    Will be remove later
     """
 
     def __init__(self, model_name: str = "gpt2", max_length: int = 30):

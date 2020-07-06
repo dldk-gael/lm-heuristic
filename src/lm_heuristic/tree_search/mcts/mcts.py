@@ -10,9 +10,8 @@ import logging
 
 from tqdm import tqdm
 
-from lm_heuristic.sentence_score import SentenceScore
 from lm_heuristic.tree import Node
-from lm_heuristic.tree_search import TreeSearch
+from lm_heuristic.tree_search import TreeSearch, Evaluator
 from lm_heuristic.utils.timer import time_function
 from .evaluation_buffer import EvalBuffer, ParallelEvalBuffer
 from .selection_rules import single_player_ucb
@@ -58,7 +57,7 @@ class MonteCarloTreeSearch(TreeSearch):
 
     def __init__(
         self,
-        sentence_scorer: SentenceScore,
+        evaluator: Evaluator,
         buffer_size: int = 1,
         ressource_distributor: RessourceDistributor = None,
         expansion_threshold: int = 0,
@@ -69,7 +68,7 @@ class MonteCarloTreeSearch(TreeSearch):
         progress_bar: bool = False,
         parallel_strategy: str = "none",
     ):
-        TreeSearch.__init__(self, sentence_scorer, buffer_size, name, progress_bar)
+        TreeSearch.__init__(self, evaluator, name, progress_bar)
         self.expansion_threshold = expansion_threshold
         self.ressource_distributor = (
             ressource_distributor if ressource_distributor else RessourceDistributor(AllocationStrategy.ALL_FROM_ROOT)
@@ -78,9 +77,9 @@ class MonteCarloTreeSearch(TreeSearch):
         self.ucb_function = ucb_function if ucb_function else single_player_ucb
 
         if parallel_strategy == "none":
-            self.eval_buffer = EvalBuffer(buffer_size, self._memory, self._sentence_scorer)
+            self.eval_buffer = EvalBuffer(buffer_size, self._evaluator)
         else:
-            self.eval_buffer = ParallelEvalBuffer(buffer_size, self._memory, self._sentence_scorer, parallel_strategy)
+            self.eval_buffer = ParallelEvalBuffer(buffer_size, self._evaluator, parallel_strategy)
 
         self.child_root_selection = child_root_selection
 

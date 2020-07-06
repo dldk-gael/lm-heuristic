@@ -1,4 +1,9 @@
-import os 
+"""
+Script to merge all the subsets of the BLIMP dataset (https://github.com/alexwarstadt/blimp)
+in a single csv file.
+"""
+
+import os
 import json
 import pandas as pd
 

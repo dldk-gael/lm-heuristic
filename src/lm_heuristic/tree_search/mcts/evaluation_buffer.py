@@ -15,8 +15,7 @@ import multiprocessing
 import threading
 
 from lm_heuristic.tree import Node
-from lm_heuristic.utils.memory import Memory
-from lm_heuristic.sentence_score import SentenceScore
+from lm_heuristic.tree_search import Evaluator
 from .counter_node import CounterNode
 
 logger = logging.getLogger(__name__)
@@ -45,22 +44,21 @@ class EvalBuffer:
     """
 
     def __init__(
-        self, buffer_size: int, memory: Memory, sentence_scorer: SentenceScore, load_LM_in_memory: bool = True
+        self, buffer_size: int, evaluator: Evaluator, load_LM_in_memory: bool = True
     ):
         self._buffer_size = buffer_size
         self._index_table: Dict[Node, List[CounterNode]] = dict()
-        self._memory = memory
+        self._evaluator = evaluator
 
-        self._sentence_scorer = sentence_scorer
         # load_LM_in_memory condition enable to not directly load the model in memory for class that inherate of EvalBuffer
         if load_LM_in_memory:
-            self._sentence_scorer.build()
+            self._evaluator.build()
 
         self._results: List[Tuple[CounterNode, Node, float]] = []
 
     def add(self, counter_node: CounterNode, leaf: Node):
-        if self._memory.has_already_eval(leaf):
-            reward = self._memory.value_from_memory(leaf)
+        if self._evaluator.has_already_eval(leaf):
+            reward = self._evaluator.value_from_memory(leaf)
             self._results.append((counter_node, leaf, reward))
 
         else:
@@ -72,13 +70,11 @@ class EvalBuffer:
 
     def _compute(self):
         leaves = list(self._index_table.keys())
-        sentences = list(map(str, leaves))
-        results = self._sentence_scorer(sentences)
+        results = self._evaluator.eval(leaves)
         self._handle_results(leaves, self._index_table, results)
         self._index_table = dict()
 
     def _handle_results(self, leaves, index_table, results):
-        self._memory.update_memory(zip(leaves, results))
         for leaf, reward in zip(leaves, results):
             for counter_node in index_table[leaf]:
                 self._results.append((counter_node, leaf, reward))
@@ -108,20 +104,20 @@ class ParallelEvalWorker:
 
     def __init__(
         self,
-        sentence_scorer: SentenceScore,
+        evaluator: Evaluator,
         tasks_queue: Union[queue.Queue, multiprocessing.Queue],
         results_queue: Union[queue.Queue, multiprocessing.Queue],
     ):
-        self._sentence_scorer = sentence_scorer
+        self._evaluator = evaluator
         self._tasks_queue = tasks_queue
         self._results_queue = results_queue
 
     def __call__(self):
         logger.info("Evaluation worker correctly launched")
-        self._sentence_scorer.build()  # Load the language model in memory
+        self._evaluator.build()  # Load the language model in memory
         while True:
-            sentences = self._tasks_queue.get(block=True)
-            scores = self._sentence_scorer.compute_score(sentences)
+            leave_to_eval = self._tasks_queue.get(block=True)
+            scores = self._evaluator.eval(leave_to_eval)
             self._results_queue.put(scores)
 
 
@@ -148,12 +144,11 @@ class ParallelEvalBuffer(EvalBuffer):
     def __init__(
         self,
         buffer_size: int,
-        memory: Memory,
-        sentence_scorer: SentenceScore,
+        evaluator: Evaluator,
         parallel_strategy: str = "multithread",
         max_nb_of_tasks_in_advance: int = 2,
     ):
-        EvalBuffer.__init__(self, buffer_size, memory, sentence_scorer, load_LM_in_memory=False)
+        EvalBuffer.__init__(self, buffer_size, evaluator, load_LM_in_memory=False)
         self._tasks_queue: Union[queue.Queue, multiprocessing.Queue]
         self._results_queue: Union[queue.Queue, multiprocessing.Queue]
         self._eval_worker: Union[multiprocessing.Process, MultithreadEvalWorker]
@@ -162,14 +157,14 @@ class ParallelEvalBuffer(EvalBuffer):
             logger.info("Create a new thread to evaluate the leaves")
             self._tasks_queue = queue.Queue()
             self._results_queue = queue.Queue()
-            self._eval_worker = MultithreadEvalWorker(sentence_scorer, self._tasks_queue, self._results_queue)
+            self._eval_worker = MultithreadEvalWorker(evaluator, self._tasks_queue, self._results_queue)
 
         elif parallel_strategy == "multiprocess":
             logger.info("Create a new process to evaluate the leaves")
             self._tasks_queue = multiprocessing.Queue()
             self._results_queue = multiprocessing.Queue()
             self._eval_worker = multiprocessing.Process(
-                target=ParallelEvalWorker(sentence_scorer, self._tasks_queue, self._results_queue)
+                target=ParallelEvalWorker(evaluator, self._tasks_queue, self._results_queue)
             )
 
         self._eval_worker.daemon = True
@@ -178,19 +173,18 @@ class ParallelEvalBuffer(EvalBuffer):
         self._max_nb_of_tasks_in_advance = max_nb_of_tasks_in_advance
 
     def _compute(self):
-        leaves = list(self._index_table.keys())
-        sentences = list(map(str, leaves))
+        leave = list(self._index_table.keys())
         if len(self._in_progress_tasks) == self._max_nb_of_tasks_in_advance:
             self._retrieve_from_results_queue(block=True)
 
-        self._tasks_queue.put(sentences)
-        self._in_progress_tasks.append((leaves, self._index_table))
+        self._tasks_queue.put(leave)
+        self._in_progress_tasks.append((leave, self._index_table))
         self._index_table = dict()
 
     def _retrieve_from_results_queue(self, block=False):
         results = self._results_queue.get(block=block)
-        leaves, index_table = self._in_progress_tasks.pop(0)
-        self._handle_results(leaves, index_table, results)
+        leave, index_table = self._in_progress_tasks.pop(0)
+        self._handle_results(leave, index_table, results)
 
     def pop_results(self):
         while not self._results_queue.empty():
