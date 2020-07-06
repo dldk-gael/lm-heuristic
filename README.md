@@ -30,7 +30,7 @@ pip install .
     - an **tree_search.Evaluator** use to wrap an evaluation function (that takes as input a list of **Node** and return the associated list of scores). Moreover it adds on top of the evaluation function a memory buffer and keep also statistics about the call to the evaluation function. 
     -  an abstract **TreeSearch** from which all tree search strategies must inheritate. A **TreeSearch** object is initialized with an **Evaluator** object. Then given, a root (**tree.Node**) and a number of tree walks that are allowed, it try to search a leave that maximize the **Evaluator** object. 
 
-- **tree_search.mcts** use Monte Carlo algorithm to perfom the tree search. The algorithm is divide in several submodules :
+- **tree_search.mcts** uses Monte Carlo algorithm to perfom the tree search. The algorithm is divide in several submodules :
     - **MonteCarloTreeSearch** which implements the different steps that are at the core of the algorithm (selection, expansion, simulation, evaluation, backpropagation)
     - **CounterNode** that is used by the MCTS to maintain stastistics over the tree nodes. 
     - **EvalBuffer** that allows to evaluate the tree's leave by batch rather that one by one. **ParallelEvalBuffer** makes it possible to run this evaluation is another process / thread. 
@@ -38,9 +38,10 @@ pip install .
  
 - **tree_search.random.RandomSearch** implements a naive search that randomly sample the tree to find the best leaf.
 
-- **benchmark** : define an experimentation framework. It take as input : a list of tree search strategy, 
+- **benchmark** define an experimentation framework. It take as input : a list of tree search strategy, 
 a tree dataset, perform different type of evaluation on it and store the results all of the experiments in a panda dataframe.
- 
+
+- **generation** specifies some modules to quickly generate text from grammar or transformers. 
 
 ## Examples
 

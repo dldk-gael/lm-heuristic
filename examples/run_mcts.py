@@ -2,6 +2,7 @@
 This script shows how to use a MCTS searcher with a nltk context free grammar
 """
 from lm_heuristic.tree.interface.nltk_grammar import CFGrammarNode
+from lm_heuristic.sentence_score import GPT2Score
 from lm_heuristic.tree_search import Evaluator
 from lm_heuristic.tree_search.mcts import (
     MonteCarloTreeSearch,
@@ -23,9 +24,12 @@ if __name__ == "__main__":
 
     ressource_distributor = RessourceDistributor(AllocationStrategy.ALL_FROM_ROOT)
 
+    gpt_2_scorer = GPT2Score("gpt2", length_normalization=True, batch_size=1)
+
+
     # Initialize the search parameters
     mcts = MonteCarloTreeSearch(
-        evaluator=Evaluator(ZeroScorer()),
+        evaluator=Evaluator(gpt_2_scorer),
         buffer_size=1,
         ressource_distributor=ressource_distributor,
         nb_random_restarts=1,

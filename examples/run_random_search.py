@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
     logging.info("Load heuristic function <- GPT2 score")
     gpt_2_scorer = GPT2Score("gpt2", length_normalization=True, batch_size=1)
-    evaluator = Evaluator(lambda terminal_nodes: gpt_2_scorer(list(map(str, terminal_nodes))))
+    evaluator = Evaluator(gpt_2_scorer)
 
     logging.info("Initialize and perform the search")
     random_search = RandomSearch(evaluator)

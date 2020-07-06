@@ -108,9 +108,9 @@ class MonteCarloTreeSearch(TreeSearch):
                 self.ressource_distributor.consume_one_unit()
 
                 frontier_counter_node = self.selection_phase(counter_root)
-                new_counter_node = self.expansion_phase(frontier_counter_node)
-                random_leaf = self.simulation_phase(new_counter_node)
-                self.evaluation_phase(new_counter_node, random_leaf)
+                self.expansion_phase(frontier_counter_node)
+                random_leaf = self.simulation_phase(frontier_counter_node)
+                self.evaluation_phase(frontier_counter_node, random_leaf)
                 self.backpropagation_phase()
 
                 # After each iteration, we query the ressource distributor to know if we should continue
@@ -159,17 +159,16 @@ class MonteCarloTreeSearch(TreeSearch):
         return max(unsolved_children, key=lambda node: self.ucb_function(node, counter_node))
 
     @time_function
-    def expansion_phase(self, counter_node: CounterNode) -> CounterNode:
+    def expansion_phase(self, counter_node: CounterNode):
         if counter_node.count < self.expansion_threshold:
-            return counter_node
+            return
 
         if counter_node.reference_node.is_terminal():
             # backpropagate the information to the parent in order to avoid selecting this node in the futur
             counter_node.set_as_solved()
-            return counter_node
+            return 
 
-        counter_node.expand()  # This compute all the children of current counter_node
-        return counter_node.random_children()
+        counter_node.expand()  
 
     @time_function
     def simulation_phase(self, counter_node: CounterNode) -> Node:

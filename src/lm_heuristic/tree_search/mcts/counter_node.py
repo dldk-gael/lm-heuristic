@@ -130,3 +130,7 @@ class CounterNode(Node):
 
     def __hash__(self):
         raise Exception("Try to hash a counter node - not implemented yet")
+
+    def __repr__(self):
+        # Use only for debug
+        return str(self.reference_node)
