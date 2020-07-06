@@ -1,0 +1,10 @@
+s -> sentence[FACT_LIST=[HEAD = [S="bas", P="know", O="gael"], QUEUE=[HEAD= [S="gael", P="know", O="bas"], QUEUE=none]]]
+sentence[FACT_LIST=none] -> " "
+sentence[FACT_LIST=[HEAD=?f, QUEUE=none]] -> fact[FACT=?f]
+sentence[FACT_LIST=[HEAD=?f, QUEUE=?q]] -> fact[FACT=?f] conjunction sentence[FACT_LIST=?q]
+fact[FACT = [S=?s, P=?p, O=?o]] -> word[SEM=?s] word[SEM=?p] word[SEM=?o]
+ 
+word[SEM="bas"] -> "Bas"
+word[SEM="know"] -> "knows"
+word[SEM="gael"] -> "Gael"
+conjunction -> "and" | "," | " "

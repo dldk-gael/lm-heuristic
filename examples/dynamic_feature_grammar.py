@@ -100,7 +100,7 @@ root = FeatStructNonterminal("Root")
 start_production = Production(lhs=root, rhs=[list_of_facts])
 
 # CREATE A NEW GRAMMAR THAT COMBINE THE STATIC + DYNAMIC RULES
-with open("data/fcfg/foaf_fact5.fcfg", "r") as grammar_file:
+with open("data/fcfg/feature_grammar.fcfg", "r") as grammar_file:
     grammar_str = grammar_file.read()
     static_grammar = FeatureGrammar.fromstring(grammar_str)
 

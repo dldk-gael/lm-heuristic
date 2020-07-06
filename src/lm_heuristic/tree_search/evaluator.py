@@ -19,18 +19,25 @@ class Evaluator:
     def __init__(self, evaluation_fct: Callable[[List[str]], List[float]]):
         self._evaluation_fct = evaluation_fct
         self._memory: Dict[Node, float] = dict()
+        self._default_values: Dict[Node, float] = dict()
         self._call_history: List[Tuple[Node, float]] = list()
         self._best_node: Node
         self._best_value: float = -1.0
 
     def reset(self):
-        self._memory = dict()
+        self._memory = self._default_values.copy()
         self._call_history = list()
         self._best_node = None
         self._best_value = -1.0
 
     def build(self):
         self._evaluation_fct.build() # To load the LM in memory from the evaluator
+
+    def set_default_value(self, node: Node, value: float):
+        # Sometimes it is interesting to specificy default values
+        # For instance, when using FeatureGrammarNode, we can set a value to DEAD_END node
+        self._default_values[node] = value
+        self._memory.update(self._default_values)
 
     def has_already_eval(self, node: Node) -> bool:
         return node in self._memory

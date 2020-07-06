@@ -3,7 +3,7 @@ from io import StringIO
 from nltk.tree import Tree
 
 from lm_heuristic.generation import generate_from_grammar
-from lm_heuristic.tree import FeatureGrammarNode
+from lm_heuristic.tree.interface.nltk_grammar import FeatureGrammarNode
 
 from grammar_backend import celery
 from grammar_backend.models import Models

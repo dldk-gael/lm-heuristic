@@ -19,6 +19,7 @@ from lm_heuristic.tree.node import Node
 ## Context free grammar --> tree.Node
 ######################################################################
 
+
 class CFGrammarNode(Node):
     """
     Given a context-free grammar (T, N, P, S) :
@@ -74,7 +75,7 @@ class CFGrammarNode(Node):
                 return False
         return True
 
-    def children(self) -> List["CFGrammarNode"]: # type: ignore
+    def children(self) -> List["CFGrammarNode"]:  # type: ignore
         """
         return all the Derivations nodes corresponding to sentences that can be derivated f
         from the current derivation using only one production rule from P
@@ -106,7 +107,7 @@ class CFGrammarNode(Node):
 ######################################################################
 
 # The rename_variables and substitute_bindings from NLTK can not be applyed to raw string
-# We modify them in order that to handle raw string (they simply directly it) 
+# We modify them so they can handle raw string (they simply directly return it)
 def skip_terminal_symbole(function):
     @wraps(function)
     def function_skipping_terminal_symbol(symbol, *args, **kwargs):
@@ -211,8 +212,7 @@ class FeatureGrammarNode(Node):
                 )
                 child_list.append(new_child)
 
-        return child_list if len(child_list) != 0 else [FeatureGrammarNode("DEAD_END", self.feature_grammar)]
-
+        return child_list if len(child_list) != 0 else [FeatureGrammarNode("DEAD_END", None)]
 
     def find_random_valid_leaf(self):
         leaves = []
@@ -229,16 +229,16 @@ class FeatureGrammarNode(Node):
             leaf = None
             for child in children_symbol:
                 leaf = child.find_random_valid_leaf()
-                if leaf: 
+                if leaf:
                     break
             if not leaf:
-                return None 
+                return None
             else:
                 leaves.append(leaf)
         return " ".join(leaves)
 
     def find_random_valid_leaf_debug(self) -> Union["FeatureGrammarNode", None]:
-        # This version is much more slower but make it easy to debug grammar
+        # This version is much more slower but make it easier to debug grammar
         if self.is_terminal():
             return self
 

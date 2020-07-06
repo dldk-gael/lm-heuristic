@@ -6,9 +6,11 @@ from nltk.parse import CoreNLPParser
 
 from lm_heuristic.generation import GPT2Paraphrases
 from lm_heuristic.sentence_score import GPT2Score
-from lm_heuristic.heuristic import Heuristic
-from lm_heuristic.tree_search import MonteCarloTreeSearch, RandomSearch, AllocationStrategy
-from lm_heuristic.tree import FeatureGrammarNode
+from lm_heuristic.tree_search.evaluator import Evaluator
+from lm_heuristic.tree_search.mcts import MonteCarloTreeSearch, AllocationStrategy
+from lm_heuristic.tree_search.random import RandomSearch
+from lm_heuristic.tree.interface.nltk_grammar import FeatureGrammarNode
+from lm_heuristic.utils.zero_scorer import ZeroScorer
 
 from .config import config
 
@@ -18,6 +20,7 @@ class Models:
     This class is used to load in memory the different language model only when
     it is necessary.
     """
+
     def __init__(self):
         self._gpt2_model = None
         self._universal_sentence_encoder = None
@@ -55,26 +58,19 @@ class Models:
             length_normalization=True,
         )
 
-        evaluation_fn = lambda terminal_nodes: gpt_2_scorer(list(map(str, terminal_nodes)))
-        heuristic = Heuristic(evaluation_fn, use_memory=True)
-        heuristic.set_default_value(FeatureGrammarNode("DEAD_END", feature_grammar=None), 0)
+        evaluator = Evaluator(gpt_2_scorer)
+        evaluator.set_default_value(node=FeatureGrammarNode("DEAD_END", feature_grammar=None), value=0.0)
 
         self.montecarlo_searcher = MonteCarloTreeSearch(
-            heuristic=heuristic,
-            buffer_size=config["BATCH_SIZE"],
-            c=1,
-            d=1000,
-            t=0,
-            allocation_strategy=AllocationStrategy.UNIFORM,
-            verbose=True,
+            evaluator=evaluator, buffer_size=config["BATCH_SIZE"], progress_bar=False,
         )
 
     def is_random_searcher_ready(self):
         return self.random_searcher is not None
-        
+
     def load_random_searcher(self):
         assert not self.is_random_searcher_ready()
-        self.random_searcher = RandomSearch(Heuristic(lambda terminal_nodes: [0] * len(terminal_nodes)))
+        self.random_searcher = RandomSearch(Evaluator(ZeroScorer()))
 
     def gpt2(self):
         if not self._gpt2_model:

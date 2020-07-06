@@ -1,7 +1,7 @@
 import pytest
 import nltk
 
-from lm_heuristic.tree import CFGrammarNode
+from lm_heuristic.tree.interface.nltk_grammar import CFGrammarNode
 
 # pylint: disable=redefined-outer-name, missing-function-docstring
 
