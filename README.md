@@ -23,11 +23,11 @@ pip install .
 Currently two LM-based sentences scorer are implemented:
 - **sentence_score.GPT2Score**
 
-![image](report/schema/GPT2.png)
+<p align="center"><img src="report/schema/GPT2.png" width="50%"></img></p>
 
 - **sentence_score.BERTScore**
 
-![image](report/schema/BERT.png)
+<p align="center"><img src="report/schema/BERT.png" width="50%"></img></p>
 
 </details>
 
@@ -59,7 +59,7 @@ Currently two LM-based sentences scorer are implemented:
 
     **Schematic overview of the tree_search.mcts internal working**:
 
-![image](report/schema/mcts.png)
+<p align="center"><img src="report/schema/mcts.png" width="70%"></img></p>
 
  
 - **tree_search.random.RandomSearch** implements a naive search that randomly sample the tree to find the best leaf.
