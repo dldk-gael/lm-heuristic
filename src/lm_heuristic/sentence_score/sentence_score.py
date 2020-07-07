@@ -50,7 +50,8 @@ class SentenceScore(ABC):
     def build(self):
         self._build()
         self.is_already_built = True
-
+        return self
+        
     @abstractmethod
     def set_context(self, context):
         """
