@@ -63,14 +63,23 @@ class GPT2Score(SentenceScore):
 
         return out_tensor, mask
 
-    def _add_bos_token_and_encode(self, text: str) -> List[float]:
-        # TODO encode the sentences by batch and not one by one 
+    def set_context(self, context):
+        self.context_ids = self.tokenizer.encode(context)
+
+    def _add_context_and_encode(self, text: str) -> List[int]:
+        # TODO encode the sentences by batch and not one by one
         # can be much faster when using FastTokenizer (because of // that occurs in the back)
-        return self.tokenizer.encode(self.tokenizer.bos_token + text)
+        return [
+            self.tokenizer.bos_token_id,
+            *self.context_ids,
+            *self.tokenizer.encode(" " + text),
+            self.tokenizer.eos_token_id,
+        ]
 
     def _compute_single_batch(self, sentences: List[str]) -> List[float]:
         # Prepare the input ids
-        tokens_ids = [self._add_bos_token_and_encode(sentence) for sentence in sentences]
+        tokens_ids = [self._add_context_and_encode(sentence) for sentence in sentences]
+
         # don't count the bos token
         sentences_len = torch.tensor(  # pylint: disable=not-callable
             [len(toks) - 1 for toks in tokens_ids], device=self.device

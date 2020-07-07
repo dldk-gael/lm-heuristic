@@ -94,3 +94,6 @@ class BertScore(SentenceScore):
             return torch.exp(torch.mean(log_likelihood_scores)).item()
         else:
             return torch.exp(torch.sum(log_likelihood_scores)).item()
+
+    def set_context(self, context):
+        raise NotImplementedError("BertScore do not support context for now")

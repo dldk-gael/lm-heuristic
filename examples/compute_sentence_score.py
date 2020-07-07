@@ -16,6 +16,11 @@ if __name__ == "__main__":
 
     gpt2_score.print_sentences_score(sentences)
 
+    context = "Who knows Bas ?"
+    gpt2_score.set_context(context)
+    sentences = ["I know him.", "I play tennis."]
+    print("Computing sentences' score with context %s" % context)
+    gpt2_score.print_sentences_score(sentences)
 
     # ////////////////////////////////////////////////////////////
     # Demonstration of BERT-based sentence scorer

@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from typing import *
 import logging
 
-from transformers import AutoTokenizer, PreTrainedModel
+from transformers import PreTrainedTokenizer, PreTrainedModel
 import torch
 
 
@@ -43,9 +43,21 @@ class SentenceScore(ABC):
         self.model = model
         self.is_already_built = False
 
+        self.context = ""
+        self.context_ids: List[int] = []
+        self.tokenizer: PreTrainedTokenizer
+
     def build(self):
         self._build()
         self.is_already_built = True
+
+    @abstractmethod
+    def set_context(self, context):
+        """
+        The context will be concatenate at the left side of input sentence
+        before sentence evaluation
+        """
+        ...
 
     @abstractmethod
     def _build(self):
