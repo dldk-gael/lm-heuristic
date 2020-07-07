@@ -14,11 +14,9 @@ pip install .
 
 # Package architecture 
 
+<details><summary>details</summary>
 
-
-<details>
-  <summary><b>sentence_score</b></summary>
-
+## Sentence score
 
 **sentence_score** provide an interface towards transformers-based model (GPT2 and BERT) that are used to associate a sentence with a *naturalness* score. It is build on top of [huggingface library](https://huggingface.co/transformers/) in order to use the different transformer models.  
 Currently two sentences scorer are implemented: one based on unidirectionnal language model (with GPT2) and the other on bi-directionnal language model (with BERT2). Below is a schematic overview of how sentence score is computed from the output of those language models.
@@ -29,10 +27,7 @@ GPT2Score           |  BERTScore
 
 
 
-</details>
-
-<details>
-  <summary><b>tree</b></summary>
+## Tree 
 
 **tree** defines:
 - **tree.Node**, an abstract class from which all tree structure must inheritate. Any object can be a node as soon as it has a *is_terminal* and *children* method. 
@@ -42,11 +37,9 @@ GPT2Score           |  BERTScore
     - **ntlk_grammar.CFGrammarNode** and **nltk_grammar.FeatureGrammarNode** allow the create of tree node from grammars written using nltk specification. The grammars are first processed using nltk grammar parsers and then the trees are generated based on nltk internal representation of such grammar.
     - when using **prolog.PrologGrammarNode**, the grammars are first transformed into prolog predicates and then a **PrologEngine** based on [Pyswip](https://pypi.org/project/pyswip/) is used to compute the nodes and leave of the tree grammar. In order to use this submodule, it is needed to first [install SWI-Prolog](https://www.swi-prolog.org/download/stable).
 
-</details>
 
 
-<details>
-  <summary><b>tree_search</b></summary>
+## Tree search
 
 - **tree_search** define:
     - an **tree_search.Evaluator** use to wrap an evaluation function (that takes as input a list of **Node** and return the associated list of scores). Moreover it adds on top of the evaluation function a memory buffer and keep also statistics about the call to the evaluation function. 
@@ -65,19 +58,15 @@ GPT2Score           |  BERTScore
  
 - **tree_search.random.RandomSearch** implements a naive search that randomly sample the tree to find the best leaf.
 
-</details>
-
-<details>
-  <summary><b>benchmark</b></summary>
+## Benchmark
 
 - **benchmark** defines an experimentation framework. It takes as input : a list of tree search strategies, 
 a dataset of trees, perform different type of evaluation on it and store the results all of the experiments in a panda dataframe.
-</details>
 
-<details>
-  <summary><b>generation</b></summary>
+## Generation 
 
 - **generation** specifies some modules to quickly generate text from grammar or transformers. 
+
 </details>
 
 # Examples
