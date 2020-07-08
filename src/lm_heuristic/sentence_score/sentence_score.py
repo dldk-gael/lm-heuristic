@@ -58,7 +58,7 @@ class SentenceScore(ABC):
         self.model = model
         self.is_already_built = False
 
-        self.context = ""
+        self.context = None
         self.context_ids: List[int] = []
         self.tokenizer: PreTrainedTokenizerFast
 
@@ -84,9 +84,9 @@ class SentenceScore(ABC):
         self.model.to(self.device)
         self.model.eval()
 
-    def set_context(self, context: str):
+    def set_context(self, context):
         self.context = context
-        self.context_ids = self.tokenizer(context)["input_ids"]
+        self.context_ids = self.tokenizer(context)["input_ids"] if self.context else []
 
     @abstractmethod
     def _compute_transformers_log_prob_scores(self, sentences_token_ids: List[List[int]]) -> List[float]:
@@ -116,6 +116,7 @@ class SentenceScore(ABC):
     def compute_score(
         self, text: Union[str, List[str]], context: str = None, normalization_strategy: str = "raw_log_prob"
     ) -> Union[float, List[float]]:
+
         if not self.is_already_built:
             self.build()
 
@@ -124,7 +125,7 @@ class SentenceScore(ABC):
 
         sentences = [text] if isinstance(text, str) else text
 
-        if len(self.context) > 0:
+        if self.context_ids != []:
             # Because in BPE, tokenisation is different if there is a space before a word
             sentences = [" " + sentence for sentence in sentences]
 
