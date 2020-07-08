@@ -19,7 +19,7 @@ from transformers import (
 )
 import torch
 
-from .unigram.load_unigram import load_unigram
+from .unigram import load_unigram
 
 logger = logging.getLogger(__name__)
 
