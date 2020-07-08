@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="lm-heuristic",
-    version="0.1.0",
+    version="1.0.0",
     package_dir={'': 'src'},
     packages=find_packages(where='src'),
     install_requires=[
@@ -12,7 +12,7 @@ setup(
         "seaborn",
         "nltk",
         "numpy",
-        "transformers",
+        "transformers==3.0.2",
         "tensorflow",
         "tensorflow_hub",
         "flask",
