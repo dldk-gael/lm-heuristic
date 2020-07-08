@@ -57,7 +57,7 @@ class BertScore(SentenceScore):
 
         return full_mask_batch
 
-    def _compute_LM_log_prob_scores(self, sentences_token_ids: List[List[int]]) -> List[float]:
+    def _compute_transformers_log_prob_scores(self, sentences_token_ids: List[List[int]]) -> List[float]:
         """
         1/ First create all the mask_sentences
         2/ Split the mask sentences by batch
@@ -98,8 +98,10 @@ class BertScore(SentenceScore):
         dict_batch = self._join_list_of_dict(batch)
 
         input_ids, no_pad_mask = self._pad(
-            sequences=list(map(lambda ids: torch.tensor(ids, device=self.device), dict_batch["mask_sentence_token_ids"])),
-            pad_token_id=self.tokenizer.sep_token_id
+            sequences=list(
+                map(lambda ids: torch.tensor(ids, device=self.device), dict_batch["mask_sentence_token_ids"],)
+            ),
+            pad_token_id=self.tokenizer.sep_token_id,
         )
 
         with torch.no_grad():

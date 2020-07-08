@@ -21,7 +21,7 @@ class GPT2Score(SentenceScore):
     P(sentence) = P(t_n | t_1 .. t_(n-1)) * ... * P(t_1)
     """
 
-    def _compute_LM_log_prob_scores(self, sentences_token_ids: List[List[int]]) -> List[float]:
+    def _compute_transformers_log_prob_scores(self, sentences_token_ids: List[List[int]]) -> List[float]:
         log_prob_scores = []
 
         for i in tqdm(range(0, len(sentences_token_ids), self.batch_size), disable=not self.progress_bar):

@@ -5,9 +5,10 @@ Define an abstract class from which all transformers-based sentence scorer must 
 from abc import ABC, abstractmethod
 from typing import *
 import logging
+from urllib.request import urlopen
 import pickle
-import numpy as np
 
+import numpy as np
 from transformers import (
     BertTokenizerFast,
     BertForMaskedLM,
@@ -19,6 +20,7 @@ from transformers import (
 )
 import torch
 
+from lm_heuristic.utils.addr import BERT_UNCASED_UNIGRAM_ADDR, BERT_CASED_UNIGRAM_ADDR, GPT2_UNIGRAM_ADDR
 
 logger = logging.getLogger(__name__)
 
@@ -64,18 +66,6 @@ class SentenceScore(ABC):
         self.unigram_count = None
         self.unigram_total = None
 
-        if path_to_unigram_count:
-            self.load_unigram_count(path_to_unigram_count)
-
-    def load_unigram_count(self, path_to_unigram_count: str):
-        """
-        re-use unigram frequencies computed by J.Hau & al that are available here: 
-        https://github.com/jhlau/acceptability-prediction-in-context/tree/master/code/unigram-stats
-        """
-        with open(path_to_unigram_count, "rb") as pickle_file:
-            self.unigram_count = pickle.load(pickle_file)
-            self.unigram_total = sum(self.unigram_count.values())
-
     def build(self):
         self.is_already_built = True
 
@@ -83,23 +73,32 @@ class SentenceScore(ABC):
             self.tokenizer = GPT2TokenizerFast.from_pretrained(self.model_name)
             if not self.model:
                 self.model = GPT2LMHeadModel.from_pretrained(self.model_name)
+            
+            self.unigram_count = pickle.load(urlopen(GPT2_UNIGRAM_ADDR))
 
         elif "bert" in self.model_name:
             self.tokenizer = BertTokenizerFast.from_pretrained(self.model_name)
             if not self.model:
                 self.model = BertForMaskedLM.from_pretrained(self.model_name)
+            
+            if "uncased" in self.model_name:
+                self.unigram_count = pickle.load(urlopen(BERT_UNCASED_UNIGRAM_ADDR))
+            else:
+                self.unigram_count = pickle.load(urlopen(BERT_CASED_UNIGRAM_ADDR))
+
         else:
             raise NotImplementedError("Sentence scorer only work with gpt2-based and BERT-based model")
 
         self.model.to(self.device)
         self.model.eval()
+        self.unigram_total = sum(self.unigram_count.values())
 
     def set_context(self, context: str):
         self.context = context
         self.context_ids = self.tokenizer(context)["input_ids"]
 
     @abstractmethod
-    def _compute_LM_log_prob_scores(self, sentences_token_ids: List[List[int]]) -> List[float]:
+    def _compute_transformers_log_prob_scores(self, sentences_token_ids: List[List[int]]) -> List[float]:
         """
         Given a list of tokenized and encoded sentences
         return the list of log probability of each sentences for the Language Model
@@ -138,9 +137,9 @@ class SentenceScore(ABC):
             # Because in BPE, tokenisation is different if there is a space before a word
             sentences = [" " + sentence for sentence in sentences]
 
-        # We can not directly input the special tokens because we first have to insert the context 
+        # We can not directly input the special tokens because we first have to insert the context
         encoding: BatchEncoding = self.tokenizer(sentences, add_special_tokens=False)
-        raw_sentences_score = self._compute_LM_log_prob_scores(encoding["input_ids"])
+        raw_sentences_score = self._compute_transformers_log_prob_scores(encoding["input_ids"])
 
         normalized_sentences_scores = []
         for i, sentence_score in enumerate(raw_sentences_score):
@@ -161,9 +160,7 @@ class SentenceScore(ABC):
         with any token we want
         """
         max_seq_len = max([s.size(0) for s in sequences])
-        out_tensor = (
-            sequences[0].data.new(len(sequences), max_seq_len).fill_(pad_token_id)  # type:ignore
-        )
+        out_tensor = sequences[0].data.new(len(sequences), max_seq_len).fill_(pad_token_id)  # type:ignore
         mask = torch.zeros((len(sequences), max_seq_len), device=sequences[0].device)
         for i, tensor in enumerate(sequences):
             length = tensor.size(0)
