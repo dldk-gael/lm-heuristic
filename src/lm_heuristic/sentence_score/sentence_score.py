@@ -5,9 +5,8 @@ Define an abstract class from which all transformers-based sentence scorer must 
 from abc import ABC, abstractmethod
 from typing import *
 import logging
-from urllib.request import urlopen
 import pickle
-
+import os
 import numpy as np
 from transformers import (
     BertTokenizerFast,
@@ -20,7 +19,7 @@ from transformers import (
 )
 import torch
 
-from lm_heuristic.utils.addr import BERT_UNCASED_UNIGRAM_ADDR, BERT_CASED_UNIGRAM_ADDR, GPT2_UNIGRAM_ADDR
+from .unigram.load_unigram import load_unigram
 
 logger = logging.getLogger(__name__)
 
@@ -63,8 +62,8 @@ class SentenceScore(ABC):
         self.context_ids: List[int] = []
         self.tokenizer: PreTrainedTokenizerFast
 
-        self.unigram_count = None
-        self.unigram_total = None
+        self.unigram_count = load_unigram(model_name)
+        self.unigram_total = sum(self.unigram_count.values())
 
     def build(self):
         self.is_already_built = True
@@ -74,24 +73,16 @@ class SentenceScore(ABC):
             if not self.model:
                 self.model = GPT2LMHeadModel.from_pretrained(self.model_name)
             
-            self.unigram_count = pickle.load(urlopen(GPT2_UNIGRAM_ADDR))
-
         elif "bert" in self.model_name:
             self.tokenizer = BertTokenizerFast.from_pretrained(self.model_name)
             if not self.model:
                 self.model = BertForMaskedLM.from_pretrained(self.model_name)
-            
-            if "uncased" in self.model_name:
-                self.unigram_count = pickle.load(urlopen(BERT_UNCASED_UNIGRAM_ADDR))
-            else:
-                self.unigram_count = pickle.load(urlopen(BERT_CASED_UNIGRAM_ADDR))
 
         else:
             raise NotImplementedError("Sentence scorer only work with gpt2-based and BERT-based model")
 
         self.model.to(self.device)
         self.model.eval()
-        self.unigram_total = sum(self.unigram_count.values())
 
     def set_context(self, context: str):
         self.context = context
