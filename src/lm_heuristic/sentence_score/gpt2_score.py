@@ -19,10 +19,6 @@ class GPT2Score(SentenceScore):
     Compute the score of a sentence for GPT2 model.
     Because GPT2 has been trained to predict next_tokens given all previous tokens, we use as a score :
     P(sentence) = P(t_n | t_1 .. t_(n-1)) * ... * P(t_1)
-    Computation are performed in logspace
-
-    Length normalization can be applied on top of this score:
-    ->  average the loglikelihood of each token
     """
 
     def _compute_LM_log_prob_scores(self, sentences_token_ids: List[List[int]]) -> List[float]:
