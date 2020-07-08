@@ -4,7 +4,7 @@ Define a sentence scorer based on BERT model
 
 from typing import *
 
-from transformers import BertForMaskedLM, BertTokenizer
+import numpy as np
 import torch
 from tqdm.autonotebook import tqdm
 
@@ -18,7 +18,7 @@ class BertScore(SentenceScore):
 
     Roughly the idea is to :
     1- mask successively each word of the sentences
-        For instance, if the context is "Where is Gael ?" and a possible sentence is "He has left"
+        For instance, if the context is "Where is Gael ?" and the sentence to score is "He has left"
         We will create the following mask sentences
             - [CLS] [MASK]  is Gael ?  He has left [SEP]
             - [CLS] Where [MASK]  Gael ? he has left [SEP]
@@ -27,73 +27,94 @@ class BertScore(SentenceScore):
             - [CLS] Where is Gael ?  he has [MASK] [SEP]
 
     2- compute the likelihood of each target word that has been mask using context from both side
-    3- return the sum or average of all log-likelihood
+    3- return the sum all log-likelihood
     """
 
-    def _build(self):
-        self.tokenizer = BertTokenizer.from_pretrained(self.model_name)      
-        if not self.model:
-            self.model = BertForMaskedLM.from_pretrained(self.model_name)
-        self.model.eval()
-        self.model.to(self.device)
+    def _add_context_and_generate_mask_sentences(self, sentences_token_ids: List[List[int]]) -> List[Dict]:
+        full_mask_batch = []
+        len_context = len(self.context_ids)
 
-    def _compute_sentences_scores(self, sentences: List[str]) -> List[float]:
-        # TODO merge the PR I made on LM_scorer to batch by sentences
-        return [
-            self.compute_single_sentence_score(sentence) for sentence in tqdm(sentences, disable=not self.progress_bar)
-        ]
+        for sentence_idx, sentence_token_ids in enumerate(sentences_token_ids):
+            for token_idx, token in enumerate(sentence_token_ids):
+                # construct full sentence : [SEP] context sentence [CLS]
+                mask_sentence_token_ids = (
+                    [self.tokenizer.cls_token_id]
+                    + self.context_ids
+                    + sentence_token_ids
+                    + [self.tokenizer.sep_token_id]
+                )
+                # Replace token n°token_idx by [MASK] token
+                mask_sentence_token_ids[1 + len_context + token_idx] = self.tokenizer.mask_token_id
 
-    def compute_single_sentence_score(self, sentence: str) -> float:
+                full_mask_batch.append(
+                    {
+                        "mask_sentence_token_ids": mask_sentence_token_ids,
+                        "sentence_idx": sentence_idx,
+                        "mask_positions": 1 + len_context + token_idx,
+                        "mask_target": token,
+                    }
+                )
+
+        return full_mask_batch
+
+    def _compute_LM_log_prob_scores(self, sentences_token_ids: List[List[int]]) -> List[float]:
         """
-        Compute BERT score of a sentence
-        :param sentence
-        :return: float, score
+        1/ First create all the mask_sentences
+        2/ Split the mask sentences by batch
+            -> The batch can contain mask_sentences coming from different input sentences
+            in order to deal with that, the batch will keep for each mask_sentence the following details :
+                - mask_sentence_token_ids: list of token ids that compose the mask sentence
+                - sentence_idx: index of the corresponding input sentence
+                - mask_positions: index of the token that have been masked
+                - mask_target: token that have been masked
+
+            those informations allows to :
+            1. retrieve the log prob scores of only mask tokens
+            2. gather the results by input sentence  at the end
         """
-        # TODO merge the PR I made on LM_scorer to speed up BERT scoring
+        full_mask_batch = self._add_context_and_generate_mask_sentences(sentences_token_ids)
 
-        # prepare the batch of mask sentences
-        tok_sentence = self.tokenizer.tokenize(sentence)
-        encoded_sentence = self.tokenizer.convert_tokens_to_ids(tok_sentence)
-        seq_len = len(tok_sentence)
+        mask_log_prob_scores = []
+        for i in tqdm(range(0, len(full_mask_batch), self.batch_size), disable=not self.progress_bar):
+            batch = full_mask_batch[i : i + self.batch_size]
+            mask_log_prob_scores += self._compute_mask_log_prob(batch)
 
-        mask_sentences = [tok_sentence.copy() for _ in range(seq_len)]
-        for i in range(seq_len):
-            mask_sentences[i][i] = "[MASK]"
+        # Gather the result for each input sentence
+        sentences_log_prob_scores = np.zeros(len(sentences_token_ids))
+        for mask_sentence_idx, mask_log_prob_score in enumerate(mask_log_prob_scores):
+            sentence_idx = full_mask_batch[mask_sentence_idx]["sentence_idx"]
+            sentences_log_prob_scores[sentence_idx] += mask_log_prob_score
 
-        input_sentences = [["[CLS]"] + mask_sentence + ["[SEP]"] for mask_sentence in mask_sentences]
-        input_ids = torch.stack(
-            [
-                torch.tensor(self.tokenizer.convert_tokens_to_ids(input_sentence))  # pylint: disable=not-callable
-                for input_sentence in input_sentences
-            ],
-            dim=0,
+        return sentences_log_prob_scores.tolist()
+
+    @staticmethod
+    def _join_list_of_dict(list_of_dict):
+        # for instance, if list_of_dict = [{a:1, b:2}, {a:3, b:4}]
+        # will return => {a:[1,3], b:[2,4]}
+        return {key: [single_dict[key] for single_dict in list_of_dict] for key in list_of_dict[0].keys()}
+
+    def _compute_mask_log_prob(self, batch: List[Dict]) -> List[float]:
+        batch_size = len(batch)
+        dict_batch = self._join_list_of_dict(batch)
+
+        input_ids, no_pad_mask = self._pad(
+            sequences=list(map(lambda ids: torch.tensor(ids, device=self.device), dict_batch["mask_sentence_token_ids"])),
+            pad_token_id=self.tokenizer.sep_token_id
         )
-        input_ids = input_ids.to(self.device)
 
-        # Compute all prediction logits by batch
-        i = 0
-        pred_logits = []
         with torch.no_grad():
-            while i + self.batch_size < seq_len:
-                pred_logits.append(self.model(input_ids[i : i + self.batch_size])[0])
-                i += self.batch_size
-            if i < seq_len:
-                pred_logits.append(self.model(input_ids[i:])[0])
+            # contrary to GPT2-based score, we have to provide an attention mask
+            # because BERT will also look on the right side and will see the pad tokens
+            # with no_pad_mask, the model will zero the score of pad tokens at each layer
+            # shape = [batch_size, seq_len, vocab_size]
+            logits = self.model(input_ids, attention_mask=no_pad_mask)[0]
 
-        all_pred_logits = torch.cat(pred_logits, dim=0)  # shape (seq_len, seq_len, vocab_size)
+            # Retrieve the logits of mask tokens
+            # mask_pred_logits.shape = [batch_size, vocac_size]
+            mask_pred_logits = logits[range(batch_size), dict_batch["mask_positions"], :]
 
-        # retrieve only logits corresponding to mask tokens : new shape (seq_len, vocab_size)
-        mask_positions = range(1, 1 + seq_len)  # not take into account first and last special tokens
-        mask_pred_logits = all_pred_logits[range(input_ids.shape[0]), mask_positions, :]
+            # target_score.shape = [batch_size,]
+            target_scores = mask_pred_logits[range(batch_size), dict_batch["mask_target"]]
+            target_log_probs = target_scores - mask_pred_logits.logsumexp(dim=1)
 
-        # compute log_likelihood and retrieve value for true_tokens
-        log_likelihood_scores = torch.nn.LogSoftmax(dim=1)(mask_pred_logits)
-        log_likelihood_scores = log_likelihood_scores[range(input_ids.shape[0]), encoded_sentence]
-
-        if self.length_normalization:
-            return torch.exp(torch.mean(log_likelihood_scores)).item()
-        else:
-            return torch.exp(torch.sum(log_likelihood_scores)).item()
-
-    def set_context(self, context):
-        raise NotImplementedError("BertScore do not support context for now")
+        return target_log_probs

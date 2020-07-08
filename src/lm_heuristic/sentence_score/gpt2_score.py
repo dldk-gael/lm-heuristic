@@ -7,7 +7,6 @@ import logging
 
 import torch
 from tqdm.autonotebook import tqdm
-from transformers import GPT2LMHeadModel, GPT2Tokenizer
 
 from .sentence_score import SentenceScore
 
@@ -26,68 +25,26 @@ class GPT2Score(SentenceScore):
     ->  average the loglikelihood of each token
     """
 
-    def _build(self):
-        self.tokenizer = GPT2Tokenizer.from_pretrained(self.model_name)
-        if not self.model:
-            self.model = GPT2LMHeadModel.from_pretrained(self.model_name)
-        self.model.eval()
-        self.model.to(self.device)
+    def _compute_LM_log_prob_scores(self, sentences_token_ids: List[List[int]]) -> List[float]:
+        log_prob_scores = []
 
-    def _compute_sentences_scores(self, sentences: List[str]) -> List[float]:
-        scores = []
-        for i in tqdm(range(0, len(sentences), self.batch_size), disable=not self.progress_bar):
-            batch = sentences[i : i + self.batch_size]
-            scores += self._compute_single_batch(batch)
+        for i in tqdm(range(0, len(sentences_token_ids), self.batch_size), disable=not self.progress_bar):
+            batch = sentences_token_ids[i : i + self.batch_size]
+            log_prob_scores += self._compute_single_batch(batch)
 
-        if len(sentences) % self.batch_size != 0:
-            last_batch = sentences[-(len(sentences) % self.batch_size) :]
-            scores += self._compute_single_batch(last_batch)
+        return log_prob_scores
 
-        return scores
-
-    def _pad(self, sequences: List[torch.Tensor]) -> Tuple[torch.Tensor, torch.Tensor]:
-        """
-        rewrite torch.nn.utils.rnn.pad_sequence so that it return a boolean mask of pad position
-        the advantage is that we can avoid to add custom pad token to the model and pad directly
-        with eos token
-        """
-        max_seq_len = max([s.size(0) for s in sequences])
-        out_tensor = (
-            sequences[0].data.new(len(sequences), max_seq_len).fill_(self.tokenizer.eos_token_id)  # type:ignore
-        )
-        mask = torch.zeros((len(sequences), max_seq_len), device=sequences[0].device)
-        for i, tensor in enumerate(sequences):
-            length = tensor.size(0)
-            out_tensor[i, :length] = tensor
-            mask[i, :length] = 1
-
-        return out_tensor, mask
-
-    def set_context(self, context):
-        self.context_ids = self.tokenizer.encode(context)
-
-    def _add_context_and_encode(self, text: str) -> List[int]:
-        # TODO encode the sentences by batch and not one by one
-        # can be much faster when using FastTokenizer (because of // that occurs in the back)
-        return [
-            self.tokenizer.bos_token_id,
-            *self.context_ids,
-            *self.tokenizer.encode(" " + text),
-            self.tokenizer.eos_token_id,
+    def _compute_single_batch(self, sentences_token_ids: List[List[int]]) -> List[float]:
+        # Prepare the input ids
+        tokens_ids = [
+            [self.tokenizer.bos_token_id] + self.context_ids + sentence_token_ids
+            for sentence_token_ids in sentences_token_ids
         ]
 
-    def _compute_single_batch(self, sentences: List[str]) -> List[float]:
-        # Prepare the input ids
-        tokens_ids = [self._add_context_and_encode(sentence) for sentence in sentences]
-
-        # don't count the bos token
-        sentences_len = torch.tensor(  # pylint: disable=not-callable
-            [len(toks) - 1 for toks in tokens_ids], device=self.device
+        input_ids, no_pad_mask = self._pad(
+            sequences=list(map(lambda ids: torch.tensor(ids, device=self.device), tokens_ids)),
+            pad_token_id=self.tokenizer.eos_token_id,
         )
-        input_ids, mask = self._pad(list(map(torch.tensor, tokens_ids)))
-
-        input_ids = input_ids.to(self.device)
-        mask = mask.to(self.device)
 
         # Compute all prediction logits by batch of batch_size
         with torch.no_grad():
@@ -103,11 +60,6 @@ class GPT2Score(SentenceScore):
             tokens_scores = pred_scores.gather(dim=2, index=target_ids.unsqueeze(2)).squeeze(2)
 
             # Zeros the score of pad tokens
-            tokens_scores *= mask[:, 1:]
+            tokens_scores *= no_pad_mask[:, 1:]
 
-            sentences_score = torch.sum(tokens_scores, dim=1)
-            if self.length_normalization:
-                sentences_score = sentences_score / sentences_len
-
-            sentences_score = torch.exp(sentences_score).tolist()  # type: ignore
-        return sentences_score  # type: ignore
+        return torch.sum(tokens_scores, dim=1).tolist()
