@@ -1,7 +1,8 @@
 from nltk.parse import CoreNLPParser
 from nltk.corpus import brown
-import pickle 
-from tqdm import tqdm 
+import pickle
+from tqdm import tqdm
+
 
 def number_of_words(sentence):
     """
@@ -9,11 +10,13 @@ def number_of_words(sentence):
     """
     return len([word for word in sentence if word.isalnum()])
 
+
 def is_rhs_terminal(production):
     rhs = production.rhs()
     return len(rhs) == 1 and isinstance(rhs[0], str)
 
-parser = CoreNLPParser(url='http://localhost:9000')
+
+parser = CoreNLPParser(url="http://localhost:9000")
 
 sentences = brown.sents()
 
@@ -21,7 +24,7 @@ sentences = brown.sents()
 filter_sentences = []
 for sentence in tqdm(sentences):
     nb_words = number_of_words(sentence)
-    if nb_words >= 5 and nb_words <=10:
+    if nb_words >= 5 and nb_words <= 10:
         filter_sentences.append(sentence)
 
 # PARSE SENTENCES
@@ -29,6 +32,8 @@ productions = []
 for sentence in tqdm(filter_sentences):
     parse_tree = next(iter(parser.parse(sentence)))
     productions += parse_tree.productions()
+
+unique_productions = list(set(productions))
 
 # REMOVE TERMINAL SYMBOLS
 productions_wo_term = []
