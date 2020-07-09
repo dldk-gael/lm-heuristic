@@ -1,5 +1,6 @@
 from nltk.parse import CoreNLPParser
 from nltk.corpus import brown
+from nltk.grammar import CFG, Nonterminal
 import pickle
 from tqdm import tqdm
 
@@ -41,4 +42,5 @@ for prod in unique_productions:
     if not is_rhs_terminal(prod):
         productions_wo_term.append(prod)
 
-pickle.dump(productions_wo_term, open("brown_rules.pickle", "wb"))
+grammar = CFG(start=Nonterminal("ROOT"), productions=productions_wo_term)
+pickle.dump(grammar, open("brown_grammar.pickle", "wb"))
