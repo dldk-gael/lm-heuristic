@@ -38,25 +38,22 @@ class CFGrammarNode(Node):
     been produced by different parents.
     """
 
-    def __init__(self, symbols: tuple, cfg: CFG, shrink=False):
+    def __init__(self, symbols: tuple, cfg: CFG):
         """
         :param symbols ordered sequences of symbol representing the current derivation string
         :param cfg : reference to context free grammar containing the production rules
-        :param shrink: bool, if true when asking for the children and there is only one,
-                                will directly return grandchildren
         """
         Node.__init__(self)
         self.cfg = cfg
         self.symbols = (symbols,) if not isinstance(symbols, tuple) else symbols
-        self.shrink = shrink
 
     @classmethod
-    def from_string(cls, str_grammar: str, **kwargs) -> "CFGrammarNode":
+    def from_string(cls, str_grammar: str) -> "CFGrammarNode":
         nltk_grammar = CFG.fromstring(str_grammar)
-        return cls(nltk_grammar.start(), nltk_grammar, **kwargs)
+        return cls(nltk_grammar.start(), nltk_grammar)
 
     @classmethod
-    def from_cfg_file(cls, path: str, **kwargs) -> "CFGrammarNode":
+    def from_cfg_file(cls, path: str) -> "CFGrammarNode":
         """
         :param path: path to file containing a context-free grammar
         :return: new Derivation tree node
@@ -65,7 +62,7 @@ class CFGrammarNode(Node):
         with open(path) as file:
             str_grammar = file.read()
         nltk_grammar = CFG.fromstring(str_grammar)
-        return cls(nltk_grammar.start(), nltk_grammar, **kwargs)
+        return cls(nltk_grammar.start(), nltk_grammar)
 
     def is_terminal(self) -> bool:
         """
@@ -92,10 +89,7 @@ class CFGrammarNode(Node):
                         CFGrammarNode(self.symbols[:idx] + production.rhs() + self.symbols[idx + 1 :], self.cfg,)
                     )
 
-        if self.shrink and len(children) == 1:
-            return children[0].children()
-
-        return children
+        return children if len(children) != 0 else [CFGrammarNode(("DEAD_END",), None)]
 
     def __str__(self):
         return " ".join(map(str, self.symbols)) + "."

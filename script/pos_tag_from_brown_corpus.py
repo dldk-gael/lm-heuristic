@@ -4,7 +4,7 @@ import pickle
 
 tag_words = dict()
 
-for word, pos in tqdm(brown.tagged_words()):
+for word, pos in brown.tagged_words():
     tag_words.setdefault(word, set())
     raw_pos = pos.split("-")[0] # remove -TL or -NL information
     tag_words[word].add(raw_pos)
