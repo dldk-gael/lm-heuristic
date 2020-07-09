@@ -87,7 +87,7 @@ if __name__ == "__main__":
         if subset[-6:] != ".jsonl":
             continue
 
-        with open(PATH_TO_BLIMP + "adjunct_island.jsonl", "r") as subset_json:
+        with open(PATH_TO_BLIMP + subset, "r") as subset_json:
             if subset[-6:] == ".jsonl":
                 for line in subset_json:
                     example = json.loads(line)
