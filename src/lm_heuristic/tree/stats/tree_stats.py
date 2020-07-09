@@ -2,6 +2,7 @@ from typing import *
 import logging
 
 import numpy as np
+from tqdm.autonotebook import tqdm
 
 from lm_heuristic.utils.timer import time_function
 from ..node import Node
@@ -16,13 +17,14 @@ class TreeStats:
     and compute several statistics on depth and branching factor
     """
 
-    def __init__(self, root: Node):
+    def __init__(self, root: Node, progress_bar: bool = False):
         """
         :param root: root of the tree to evaluate
         """
         self.root = root
         self._depths: List[int] = []
         self._branching_factors: Dict[int, List[int]] = dict()
+        self._progress_bar = progress_bar
 
     @time_function
     def accumulate_stats(self, nb_samples: int = 1):
@@ -32,7 +34,7 @@ class TreeStats:
         """
         self._depths = []
         self._branching_factors = dict()
-        for _ in range(nb_samples):
+        for _ in tqdm(range(nb_samples), disable=not self._progress_bar):
             self.single_tree_walk()
 
     def single_tree_walk(self):
