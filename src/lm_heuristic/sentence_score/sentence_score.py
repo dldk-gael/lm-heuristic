@@ -72,7 +72,7 @@ class SentenceScore(ABC):
             self.tokenizer = GPT2TokenizerFast.from_pretrained(self.model_name)
             if not self.model:
                 self.model = GPT2LMHeadModel.from_pretrained(self.model_name)
-            
+
         elif "bert" in self.model_name:
             self.tokenizer = BertTokenizerFast.from_pretrained(self.model_name)
             if not self.model:
@@ -106,12 +106,16 @@ class SentenceScore(ABC):
     def score_normalization(self, sentence_score: float, tokens: List[str], normalization_strategy="raw_log_prob"):
         if normalization_strategy == "raw_log_prob":
             return sentence_score
-        if normalization_strategy == "mean_length_log_prob":
+        elif normalization_strategy == "mean_length_log_prob":
             return sentence_score / len(tokens)
-        if normalization_strategy == "mean_length_alpha_log_prob":
+        elif normalization_strategy == "mean_length_alpha_log_prob":
             return sentence_score / ((5 + len(tokens)) / (5 + 1)) ** 0.8
-        if normalization_strategy == "unigram_norm_log_prob":
+        elif normalization_strategy == "unigram_norm_log_prob":
             return -sentence_score / self._compute_unigram_log_prob(tokens)
+        raise NotImplementedError(
+            """Only the following strategies are implemeted : \n
+            raw_log_prob, mean_length_log_prob, mean_length_alpha_log_prob, unigram_norm_log_prob"""
+        )
 
     def compute_score(
         self, text: Union[str, List[str]], context: str = None, normalization_strategy: str = "raw_log_prob"
