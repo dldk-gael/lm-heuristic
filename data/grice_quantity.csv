@@ -10,7 +10,7 @@ Too long;Do you know Alicia's father ? ;Yes.;Yes, he is a man.
 Too long;Do you know Alicia's father ? ;Yes, I know him.;Yes, I know him, he is a man.
 Too few;What did you see at the cinema yesterday ? ;I saw James Bond. ;I saw something.
 Too few;What did you see at the cinema yesterday ? ;I saw James Bond. ;I saw a movie.
-Too long;What did you see at the cinema yesterday ? ;James Bond.;James Bond, it is a move.
+Too long;What did you see at the cinema yesterday ? ;James Bond.;James Bond, it is a movie.
 Too few;What did you see at the cinema yesterday ? ;James Bond.;A movie.
 Too long;What did you see at the cinema yesterday ? ;I saw James Bond. ;I saw James Bond, it is a movie.
 Too few;What kind of music do you like ? ;I like classical music.;I like music.
@@ -20,10 +20,10 @@ Too long;Do you know him ? ;Yes, I do.;Yes, I do, he is a person I know.
 Too long;Where did you go last week ? ;I went to Paris.;I went to Paris, it is a city in a country. 
 Too few;Where did you go last week ? ;I went to Paris.;I went somewhere.
 Too few;Where did you go last week ? ;I went to Paris, last week. ;I went somewhere.
-Too few;How many children do have ? ;Three.;Several.
-Too few;How many children do have ? ;Three.;At least one. 
-Too few;How many children do have ? ;I have three children. ;At least one. 
-Too long;How many children do have ? ;I have three children. ;I have three children, each of them is my child. 
+Too few;How many children do you have ? ;Three.;Several.
+Too few;How many children do you have ? ;Three.;At least one. 
+Too few;How many children do you have ? ;I have three children. ;At least one. 
+Too long;How many children do you have ? ;I have three children. ;I have three children, each of them is my child. 
 Too long;What do you want to drink ? ;I would like a beer.;I would like a beer, it is a drink. 
 Too long;What do you want to drink ? ;I would like a beer, it have been a long time since last time I drink one. ;I would like a beer, it is a drink. 
 Too long;Do you have a dog ? ;Yes, I have a dog.;Yes, it has four legs. 
