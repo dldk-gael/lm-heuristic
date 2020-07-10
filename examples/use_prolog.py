@@ -17,7 +17,7 @@ if __name__ == "__main__":
 
     prolog_engine.set_random_seed(1)
     # Load heuristic function <- GPT2 score
-    gpt_2_scorer = GPT2Score("gpt2", batch_size=BATCH_SIZE, length_normalization=True)
+    gpt_2_scorer = GPT2Score("gpt2", batch_size=BATCH_SIZE)
     evaluator = Evaluator(lambda terminal_nodes: gpt_2_scorer(list(map(str, terminal_nodes))))
 
     # Initialize the search parameters

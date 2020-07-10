@@ -9,3 +9,8 @@ src/lm_heuristic.egg-info/*
 model_weights/*
 feature_grammar.ipynb
 data/blimp/*
+script/.ipynb_checkpoints/brown_tag.py-checkpoint.ipynb
+script/.ipynb_checkpoints/parse_brown-checkpoint.ipynb
+script/brown_tag.py.ipynb
+script/parse_brown.ipynb
+script/brown_grammar_rules.cfg

@@ -6,7 +6,7 @@ if __name__ == "__main__":
     # Demonstration of GPT2-based sentence scorer
     # ////////////////////////////////////////////////////////////
     print("Initialize sentence scorer parameters")
-    gpt2_score = GPT2Score(model_name="gpt2", batch_size=2, length_normalization=True)
+    gpt2_score = GPT2Score(model_name="gpt2", batch_size=2)
 
     print("Loading the GPT2 model in memory")
     gpt2_score.build()
@@ -26,7 +26,7 @@ if __name__ == "__main__":
     # Demonstration of BERT-based sentence scorer
     # ////////////////////////////////////////////////////////////
     print("Initialize sentence scorer parameters")
-    bert_score = BertScore(model_name="bert-base-uncased", batch_size=1, length_normalization=True)
+    bert_score = BertScore(model_name="bert-base-uncased", batch_size=1)
 
     print("Loading the BERT model in memory")
     bert_score.build()

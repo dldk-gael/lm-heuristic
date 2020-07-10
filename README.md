@@ -99,9 +99,9 @@ grammar_root = nltk_grammar.CFGrammarNode.from_string(GRAMMAR)
 print(grammar_root.children()[0])  # np vp.
 
 # Initialize Sentence scorer
-gpt2_scorer = GPT2Score(model_name="gpt2", batch_size=2, length_normalization=True)
+gpt2_scorer = GPT2Score(model_name="gpt2", batch_size=2)
 gpt2_scorer.build()  # load GPT2 in memory
-print(gpt2_scorer(["Gael knows Bas", "Gael know Bas"]))  # => 6.1e-06, 3.6e-06
+print(gpt2_scorer(["Gael knows Bas", "Gael know Bas"]))  
 
 # Initialize MCTS to search the best leaf of the grammar tree
 mcts = MonteCarloTreeSearch(

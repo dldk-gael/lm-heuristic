@@ -20,11 +20,11 @@ BATCH_SIZE = 5
 if __name__ == "__main__":
     # Load grammar tree
     print("Load Grammar")
-    grammar_root = CFGrammarNode.from_cfg_file(GRAMMAR_FOLDER + GRAMMAR_NAME + ".cfg", shrink=True)
+    grammar_root = CFGrammarNode.from_cfg_file(GRAMMAR_FOLDER + GRAMMAR_NAME + ".cfg")
 
     ressource_distributor = RessourceDistributor(AllocationStrategy.ALL_FROM_ROOT)
 
-    gpt_2_scorer = GPT2Score("gpt2", length_normalization=True, batch_size=1)
+    gpt_2_scorer = GPT2Score("gpt2", batch_size=1)
 
 
     # Initialize the search parameters

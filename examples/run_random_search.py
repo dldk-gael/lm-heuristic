@@ -21,7 +21,7 @@ if __name__ == "__main__":
     root = CFGrammarNode.from_cfg_file(GRAMMAR_FOLDER + GRAMMAR_NAME + ".cfg")
 
     logging.info("Load heuristic function <- GPT2 score")
-    gpt_2_scorer = GPT2Score("gpt2", length_normalization=True, batch_size=1)
+    gpt_2_scorer = GPT2Score("gpt2", batch_size=1)
     evaluator = Evaluator(gpt_2_scorer)
 
     logging.info("Initialize and perform the search")

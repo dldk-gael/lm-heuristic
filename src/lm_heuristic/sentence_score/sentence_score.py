@@ -41,14 +41,11 @@ class SentenceScore(ABC):
         model_name: str = "",
         model: PreTrainedModel = None,
         batch_size: int = 1,
-        length_normalization: bool = False,
         device: str = None,
         progress_bar: bool = False,
-        path_to_unigram_count: str = None,
     ):
         self.model_name = model_name
         self.batch_size = batch_size
-        self.length_normalization = length_normalization
         self.progress_bar = progress_bar
         self.device = device if device else ("cuda:0" if torch.cuda.is_available() else "cpu")
 
