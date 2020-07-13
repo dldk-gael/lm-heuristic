@@ -46,6 +46,7 @@ class CFGrammarNode(Node):
         Node.__init__(self)
         self.cfg = cfg
         self.symbols = (symbols,) if not isinstance(symbols, tuple) else symbols
+        self._children = None
 
     @classmethod
     def from_string(cls, str_grammar: str) -> "CFGrammarNode":
@@ -73,23 +74,32 @@ class CFGrammarNode(Node):
                 return False
         return True
 
-    def children(self) -> List["CFGrammarNode"]:  # type: ignore
-        """
-        return all the nodes corresponding to derativations that can be produced
-        from the current derivation using only one production rule from P
-        if shrink option has been selected, it will directly return grand children
-        if there is only one single children
-        """
-        children = []
-        for idx, symbol in enumerate(self.symbols):
-            if isinstance(symbol, nltk.grammar.Nonterminal):
-                productions = self.cfg.productions(lhs=symbol)
-                for production in productions:
-                    children.append(
-                        CFGrammarNode(self.symbols[:idx] + production.rhs() + self.symbols[idx + 1 :], self.cfg,)
-                    )
+    def children(self):
+        if not self._children:
+            self._children = self.compute_children()
+        return self._children
 
-        return children if len(children) != 0 else [CFGrammarNode(("DEAD_END",), None)]
+    def compute_children(self):
+        child_nodes = []
+
+        # Go from left to right to the first non terminal symbol
+        idx_left_nt_symb = 0
+        for symbol in self.symbols:
+            if not isinstance(symbol, nltk.grammar.Nonterminal):
+                idx_left_nt_symb += 1
+                continue
+
+        symbol = self.symbols[idx_left_nt_symb]
+
+        for production in self.cfg.productions(lhs=symbol):
+            child_nodes.append(
+                CFGrammarNode(
+                    self.symbols[:idx_left_nt_symb] + production.rhs() + self.symbols[idx_left_nt_symb + 1 :],
+                    self.cfg,
+                )
+            )
+
+        return child_nodes if len(child_nodes) != 0 else [CFGrammarNode(("DEAD_END",), None)]
 
     def __str__(self):
         return " ".join(map(str, self.symbols)) + "."
@@ -114,6 +124,7 @@ def skip_terminal_symbole(function):
 
     return function_skipping_terminal_symbol
 
+
 substitute_bindings = skip_terminal_symbole(substitute_bindings)
 rename_variables = skip_terminal_symbole(rename_variables)
 
@@ -130,6 +141,7 @@ class FeatureGrammarNode(Node):
     has no valid children because of current variable bindings, it will return a special DEAD_END
     node.
     """
+
     def __init__(
         self,
         symbols: Union[Tuple[FeatStructNonterminal], FeatStructNonterminal],
@@ -175,6 +187,7 @@ class FeatureGrammarNode(Node):
 
         return self._children
 
+    # TODO compute children from left -> right as in CFG
     def compute_children(self) -> List["FeatureGrammarNode"]:
         child_list: List["FeatureGrammarNode"] = []
 
