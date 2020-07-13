@@ -62,6 +62,9 @@ class SentenceScore(ABC):
         self.normalization_strategy = normalization_strategy
 
     def build(self):
+        if self.is_already_built:
+            return self
+             
         self.is_already_built = True
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name, use_fast=True)
         self.model = AutoModelWithLMHead.from_pretrained(self.model_name)
