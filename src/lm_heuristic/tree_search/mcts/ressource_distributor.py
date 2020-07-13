@@ -113,14 +113,12 @@ class RessourceDistributor:
         if not self.still_has_ressources():
             return False
 
+        # Special case, not need to stay in a position where there is only one children
+        children = self._current_node.children()
+        if len(children) == 1:
+            return True
+            
         if self.strategy == AllocationStrategy.DYNAMIC:
-            children = self._current_node.children()
-
-            # Special case, not need to stay in a position where there is only one children
-            # TODO: spread this behaviour to other strategy
-            if len(children) == 1:
-                return True
-
             nb_of_wins = [child.sum_rewards for child in children]
             sorted_nb_of_wins = sorted(nb_of_wins, reverse=True)
             return sorted_nb_of_wins[0] >= self.dynamic_ratio * (sorted_nb_of_wins[1] + 1)
