@@ -28,10 +28,14 @@ class Node(ABC):
         assert not self.is_terminal(), "Try to access children of a terminal node :%s" % str(self)
         return random.choice(self.children())
 
-    def random_walk(self) -> "Node":
+    def random_walk(self, debug=False) -> "Node":
         node = self
         while node is not None and not node.is_terminal():
+            if debug:
+                print(node)
             node = node.random_children()
+        if debug:
+            print(node)
         return node
 
     @abstractmethod
@@ -44,3 +48,6 @@ class Node(ABC):
 
     def __eq__(self, other):
         return self.__hash__() == other.__hash__()
+
+    def __repr__(self):
+        return str(self)
