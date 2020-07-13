@@ -65,12 +65,13 @@ class SentenceScore(ABC):
     def build(self):
         self.is_already_built = True
 
-        if "gpt" in self.model_name:
+        # TODO this can be replace by AutoTokenizer and AutoModelWithLMHead
+        if "gpt" in self.model_name.lower():
             self.tokenizer = GPT2TokenizerFast.from_pretrained(self.model_name)
             if not self.model:
                 self.model = GPT2LMHeadModel.from_pretrained(self.model_name)
 
-        elif "bert" in self.model_name:
+        elif "bert" in self.model_name.lower():
             self.tokenizer = BertTokenizerFast.from_pretrained(self.model_name)
             if not self.model:
                 self.model = BertForMaskedLM.from_pretrained(self.model_name)
