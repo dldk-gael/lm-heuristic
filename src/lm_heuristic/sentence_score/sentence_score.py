@@ -35,7 +35,7 @@ class SentenceScore(ABC):
         batch_size: int = 1,
         device: str = None,
         progress_bar: bool = False,
-        load_unigram_file: bool = True,
+        load_unigram_file: bool = False,
     ):
         self.model_name = model_name
         self.batch_size = batch_size
