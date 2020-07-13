@@ -5,18 +5,10 @@ Define an abstract class from which all transformers-based sentence scorer must 
 from abc import ABC, abstractmethod
 from typing import *
 import logging
-import pickle
-import os
 import numpy as np
-from transformers import (
-    BertTokenizerFast,
-    BertForMaskedLM,
-    GPT2LMHeadModel,
-    GPT2TokenizerFast,
-    BatchEncoding,
-    PreTrainedTokenizerFast,
-    PreTrainedModel,
-)
+
+from transformers import AutoModelWithLMHead, AutoTokenizer, PreTrainedTokenizer, PreTrainedModel
+
 import torch
 
 from .unigram import load_unigram
@@ -58,7 +50,7 @@ class SentenceScore(ABC):
 
         self.context = None
         self.context_ids: List[int] = []
-        self.tokenizer: PreTrainedTokenizerFast
+        self.tokenizer: PreTrainedTokenizer
 
         self.load_unigram_file = load_unigram_file
         if self.load_unigram_file:
@@ -67,21 +59,8 @@ class SentenceScore(ABC):
 
     def build(self):
         self.is_already_built = True
-
-        # TODO this can be replace by AutoTokenizer and AutoModelWithLMHead
-        if "gpt" in self.model_name.lower():
-            self.tokenizer = GPT2TokenizerFast.from_pretrained(self.model_name)
-            if not self.model:
-                self.model = GPT2LMHeadModel.from_pretrained(self.model_name)
-
-        elif "bert" in self.model_name.lower():
-            self.tokenizer = BertTokenizerFast.from_pretrained(self.model_name)
-            if not self.model:
-                self.model = BertForMaskedLM.from_pretrained(self.model_name)
-
-        else:
-            raise NotImplementedError("Sentence scorer only work with gpt2-based and BERT-based model")
-
+        self.tokenizer = AutoTokenizer.from_pretrained(self.model_name, use_fast=True)
+        self.model = AutoModelWithLMHead.from_pretrained(self.model_name)
         self.model.to(self.device)
         self.model.eval()
 
