@@ -38,7 +38,7 @@ class CFGrammarNode(Node):
     been produced by different parents.
     """
 
-    def __init__(self, symbols: tuple, cfg: CFG):
+    def __init__(self, symbols: tuple, cfg: CFG, left_to_right_generation=True):
         """
         :param symbols ordered sequences of symbol representing the current derivation string
         :param cfg : reference to context free grammar containing the production rules
@@ -47,14 +47,15 @@ class CFGrammarNode(Node):
         self.cfg = cfg
         self.symbols = (symbols,) if not isinstance(symbols, tuple) else symbols
         self._children = None
+        self.left_to_right_generation = left_to_right_generation
 
     @classmethod
-    def from_string(cls, str_grammar: str) -> "CFGrammarNode":
+    def from_string(cls, str_grammar: str, **kwargs) -> "CFGrammarNode":
         nltk_grammar = CFG.fromstring(str_grammar)
-        return cls(nltk_grammar.start(), nltk_grammar)
+        return cls(nltk_grammar.start(), nltk_grammar, **kwargs)
 
     @classmethod
-    def from_cfg_file(cls, path: str) -> "CFGrammarNode":
+    def from_cfg_file(cls, path: str, **kwargs) -> "CFGrammarNode":
         """
         :param path: path to file containing a context-free grammar
         :return: new Derivation tree node
@@ -63,7 +64,7 @@ class CFGrammarNode(Node):
         with open(path) as file:
             str_grammar = file.read()
         nltk_grammar = CFG.fromstring(str_grammar)
-        return cls(nltk_grammar.start(), nltk_grammar)
+        return cls(nltk_grammar.start(), nltk_grammar, **kwargs)
 
     def is_terminal(self) -> bool:
         """
@@ -76,10 +77,12 @@ class CFGrammarNode(Node):
 
     def children(self):
         if not self._children:
-            self._children = self.compute_children()
+            self._children = (
+                self.compute_children_left_to_right() if self.left_to_right_generation else self.compute_all_children()
+            )
         return self._children
 
-    def compute_children(self):
+    def compute_children_left_to_right(self):
         child_nodes = []
 
         # Go from left to right to the first non terminal symbol
@@ -96,8 +99,31 @@ class CFGrammarNode(Node):
                 CFGrammarNode(
                     self.symbols[:idx_left_nt_symb] + production.rhs() + self.symbols[idx_left_nt_symb + 1 :],
                     self.cfg,
+                    self.left_to_right_generation,
                 )
             )
+
+        return child_nodes if len(child_nodes) != 0 else [CFGrammarNode(("DEAD_END",), None)]
+
+    def compute_all_children(self) -> List["CFGrammarNode"]:  # type: ignore
+        """
+        return all the nodes corresponding to derativations that can be produced
+        from the current derivation using only one production rule from P
+        if shrink option has been selected, it will directly return grand children
+        if there is only one single children
+        """
+        child_nodes = []
+        for idx, symbol in enumerate(self.symbols):
+            if isinstance(symbol, nltk.grammar.Nonterminal):
+                productions = self.cfg.productions(lhs=symbol)
+                for production in productions:
+                    child_nodes.append(
+                        CFGrammarNode(
+                            self.symbols[:idx] + production.rhs() + self.symbols[idx + 1 :],
+                            self.cfg,
+                            self.left_to_right_generation,
+                        )
+                    )
 
         return child_nodes if len(child_nodes) != 0 else [CFGrammarNode(("DEAD_END",), None)]
 
