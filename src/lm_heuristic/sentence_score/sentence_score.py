@@ -43,6 +43,7 @@ class SentenceScore(ABC):
         batch_size: int = 1,
         device: str = None,
         progress_bar: bool = False,
+        load_unigram_file: bool = True,
     ):
         self.model_name = model_name
         self.batch_size = batch_size
@@ -59,8 +60,10 @@ class SentenceScore(ABC):
         self.context_ids: List[int] = []
         self.tokenizer: PreTrainedTokenizerFast
 
-        self.unigram_count = load_unigram(model_name)
-        self.unigram_total = sum(self.unigram_count.values())
+        self.load_unigram_file = load_unigram_file
+        if self.load_unigram_file:
+            self.unigram_count = load_unigram(model_name)
+            self.unigram_total = sum(self.unigram_count.values())
 
     def build(self):
         self.is_already_built = True
@@ -96,7 +99,7 @@ class SentenceScore(ABC):
 
     def _compute_unigram_log_prob(self, tokens: List[str]) -> float:
         assert (
-            self.unigram_count
+            self.load_unigram_file
         ), "Try to compute the unigram log prob of a sentence but no unigram count pickle file was loaded"
         count = np.array([self.unigram_count[token] for token in tokens])
         return np.sum(np.log(count / self.unigram_total))
