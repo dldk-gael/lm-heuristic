@@ -6,8 +6,9 @@ from abc import ABC, abstractmethod
 from typing import *
 import logging
 import numpy as np
+import math
 
-from transformers import AutoModelWithLMHead, AutoTokenizer, PreTrainedTokenizer, PreTrainedModel
+from transformers import AutoModelWithLMHead, AutoTokenizer, PreTrainedTokenizer, PreTrainedModel, BatchEncoding
 
 import torch
 
@@ -36,6 +37,7 @@ class SentenceScore(ABC):
         device: str = None,
         progress_bar: bool = False,
         load_unigram_file: bool = False,
+        normalization_strategy="raw_log_prob",
     ):
         self.model_name = model_name
         self.batch_size = batch_size
@@ -57,12 +59,15 @@ class SentenceScore(ABC):
             self.unigram_count = load_unigram(model_name)
             self.unigram_total = sum(self.unigram_count.values())
 
+        self.normalization_strategy = normalization_strategy
+
     def build(self):
         self.is_already_built = True
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name, use_fast=True)
         self.model = AutoModelWithLMHead.from_pretrained(self.model_name)
         self.model.to(self.device)
         self.model.eval()
+        return self
 
     def set_context(self, context):
         self.context = context
@@ -83,15 +88,16 @@ class SentenceScore(ABC):
         count = np.array([self.unigram_count[token] for token in tokens])
         return np.sum(np.log(count / self.unigram_total))
 
-    def score_normalization(self, sentence_score: float, tokens: List[str], normalization_strategy="raw_log_prob"):
-        if normalization_strategy == "raw_log_prob":
+    def score_normalization(self, sentence_score: float, tokens: List[str]):
+        if self.normalization_strategy == "raw_log_prob":
             return sentence_score
-        elif normalization_strategy == "mean_length_log_prob":
+        elif self.normalization_strategy == "mean_length_log_prob":
             return sentence_score / len(tokens)
-        elif normalization_strategy == "mean_length_alpha_log_prob":
+        elif self.normalization_strategy == "mean_length_alpha_log_prob":
             return sentence_score / ((5 + len(tokens)) / (5 + 1)) ** 0.8
-        elif normalization_strategy == "unigram_norm_log_prob":
+        elif self.normalization_strategy == "unigram_norm_log_prob":
             return -sentence_score / self._compute_unigram_log_prob(tokens)
+
         raise NotImplementedError(
             """Only the following strategies are implemeted : \n
             raw_log_prob, mean_length_log_prob, mean_length_alpha_log_prob, unigram_norm_log_prob"""
@@ -101,8 +107,7 @@ class SentenceScore(ABC):
         self, text: Union[str, List[str]], context: str = None, normalization_strategy: str = "raw_log_prob"
     ) -> Union[float, List[float]]:
 
-        if not self.is_already_built:
-            self.build()
+        assert self.is_already_built, "You have to first build the model."
 
         if context:
             self.set_context(context)
@@ -119,9 +124,7 @@ class SentenceScore(ABC):
 
         normalized_sentences_scores = []
         for i, sentence_score in enumerate(raw_sentences_score):
-            normalized_sentences_scores.append(
-                self.score_normalization(sentence_score, encoding.tokens(i), normalization_strategy)
-            )
+            normalized_sentences_scores.append(math.exp(self.score_normalization(sentence_score, encoding.tokens(i))))
 
         return normalized_sentences_scores[0] if isinstance(text, str) else normalized_sentences_scores
 
