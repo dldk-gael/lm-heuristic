@@ -85,9 +85,9 @@ class CFGrammarNode(Node):
         # Go from left to right to the first non terminal symbol
         idx_left_nt_symb = 0
         for symbol in self.symbols:
-            if not isinstance(symbol, nltk.grammar.Nonterminal):
-                idx_left_nt_symb += 1
-                continue
+            if isinstance(symbol, nltk.grammar.Nonterminal):
+                break
+            idx_left_nt_symb += 1
 
         symbol = self.symbols[idx_left_nt_symb]
 
