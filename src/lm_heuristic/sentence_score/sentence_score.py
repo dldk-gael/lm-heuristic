@@ -37,7 +37,7 @@ class SentenceScore(ABC):
         device: str = None,
         progress_bar: bool = False,
         load_unigram_file: bool = False,
-        normalization_strategy="raw_log_prob",
+        normalization_strategy="LP",
     ):
         self.model_name = model_name
         self.batch_size = batch_size
@@ -108,14 +108,9 @@ class SentenceScore(ABC):
             LP, MeanLP, PenLP, NormLP, SLOR"""
         )
 
-    def compute_score(
-        self, text: Union[str, List[str]], context: str = None, normalization_strategy: str = "LP"
-    ) -> Union[float, List[float]]:
+    def compute_score(self, text: Union[str, List[str]]) -> Union[float, List[float]]:
 
         assert self.is_already_built, "You have to first build the model."
-
-        if context:
-            self.set_context(context)
 
         sentences = [text] if isinstance(text, str) else text
 

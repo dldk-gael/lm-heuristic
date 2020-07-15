@@ -5,10 +5,10 @@ import pickle
 def load_unigram(model_name):
     abs_path = os.path.dirname(os.path.abspath(__file__))
 
-    if "gpt" in model_name:
+    if "gpt" in model_name.lower():
         pkl_name = "gpt-openwebtext.pickle"
-    elif "bert" in model_name:
-        if "uncased" in model_name:
+    elif "bert" in model_name.lower():
+        if "uncased" in model_name.lower():
             pkl_name = "bert-uncased-bookcorpus-wikipedia.pickle"
         else:
             pkl_name = "bert-cased-bookcorpus-wikipedia.pickle"
