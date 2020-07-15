@@ -120,3 +120,34 @@ class BertScore(SentenceScore):
             target_log_probs = target_scores - mask_pred_logits.logsumexp(dim=1)
 
         return target_log_probs
+
+
+class BertInverseScore(BertScore):
+    """
+    Compute P(context | sentence) rather than P(sentence | context)
+    """
+    def _add_context_and_generate_mask_sentences(self, sentences_token_ids: List[List[int]]) -> List[Dict]:
+        full_mask_batch = []
+
+        for sentence_idx, sentence_token_ids in enumerate(sentences_token_ids):
+            for token_idx, token in enumerate(self.context_ids):
+                # construct full sentence : [SEP] context sentence [CLS]
+                mask_sentence_token_ids = (
+                    [self.tokenizer.cls_token_id]
+                    + self.context_ids
+                    + sentence_token_ids
+                    + [self.tokenizer.sep_token_id]
+                )
+                # Replace token n°token_idx by [MASK] token
+                mask_sentence_token_ids[1 + token_idx] = self.tokenizer.mask_token_id
+
+                full_mask_batch.append(
+                    {
+                        "mask_sentence_token_ids": mask_sentence_token_ids,
+                        "sentence_idx": sentence_idx,
+                        "mask_positions": 1 + token_idx,
+                        "mask_target": token,
+                    }
+                )
+
+        return full_mask_batch
