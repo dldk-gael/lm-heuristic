@@ -92,22 +92,24 @@ class SentenceScore(ABC):
         return np.sum(np.log(count / self.unigram_total))
 
     def score_normalization(self, sentence_score: float, tokens: List[str]):
-        if self.normalization_strategy == "raw_log_prob":
+        if self.normalization_strategy == "LP":
             return sentence_score
-        elif self.normalization_strategy == "mean_length_log_prob":
+        elif self.normalization_strategy == "MeanLP":
             return sentence_score / len(tokens)
-        elif self.normalization_strategy == "mean_length_alpha_log_prob":
+        elif self.normalization_strategy == "PenLP":
             return sentence_score / ((5 + len(tokens)) / (5 + 1)) ** 0.8
-        elif self.normalization_strategy == "unigram_norm_log_prob":
+        elif self.normalization_strategy == "NormLP":
             return -sentence_score / self._compute_unigram_log_prob(tokens)
+        elif self.normalization_strategy == "SLOR":
+            return (sentence_score - self._compute_unigram_log_prob(tokens)) / len(tokens)
 
         raise NotImplementedError(
             """Only the following strategies are implemeted : \n
-            raw_log_prob, mean_length_log_prob, mean_length_alpha_log_prob, unigram_norm_log_prob"""
+            LP, MeanLP, PenLP, NormLP, SLOR"""
         )
 
     def compute_score(
-        self, text: Union[str, List[str]], context: str = None, normalization_strategy: str = "raw_log_prob"
+        self, text: Union[str, List[str]], context: str = None, normalization_strategy: str = "LP"
     ) -> Union[float, List[float]]:
 
         assert self.is_already_built, "You have to first build the model."
