@@ -1,0 +1,13 @@
+﻿Context;Good;Bad
+Does anyone know Mr De Léséleuc?;Someone knows him.;Someone knows someone named Mr De Léséleuc.
+Does anyone know Mr De Léséleuc?;Someone knows him.;He knows him.
+Does anyone know Mr De Léséleuc?;A person named Bas knows Mr De Léséleuc.;Someone knows Mr de Léséleuc.
+Does anyone know Mr De Léséleuc?;Mr Testerink knows him.;Someone knows him.
+Who knows Mr De Léséleuc?;Someone knows someone named Mr De Léséleuc.;Yes.
+Who knows Mr De Léséleuc?;Mr Testerink knows him.;He knows him.
+Who knows Mr De Léséleuc?;A person named Bas knows Mr De Léséleuc.;Someone knows Mr de Léséleuc.
+Who knows Mr De Léséleuc?;Mr Testerink.;He.
+Does Mr Testerink know anyone?;Mr Testerink knows Mr De Léséleuc.;He knows him.
+Does Mr Testerink know anyone?;Mr Testerink knows someone named Gaël.;He knows him.
+Does Mr Testerink know anyone?;Mr Testerink knows a person named Gaël.;Mr Testerink knows someone.
+Does Mr Testerink know anyone?;Mr Testerink knows several persons. ;Mr Testerink knows them. 
