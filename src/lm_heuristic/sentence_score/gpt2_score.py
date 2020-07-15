@@ -58,4 +58,5 @@ class GPT2Score(SentenceScore):
             # Zeros the score of pad tokens
             tokens_scores *= no_pad_mask[:, 1:]
 
-        return torch.sum(tokens_scores, dim=1).tolist()
+        # Return the sum of tokens scores without taking into account context token
+        return torch.sum(tokens_scores[:, len(self.context_ids):], dim=1).tolist()
