@@ -64,7 +64,7 @@ class SentenceScore(ABC):
     def build(self):
         if self.is_already_built:
             return self
-             
+
         self.is_already_built = True
         self.tokenizer = AutoTokenizer.from_pretrained(self.model_name, use_fast=True)
         self.model = AutoModelWithLMHead.from_pretrained(self.model_name)
@@ -74,7 +74,7 @@ class SentenceScore(ABC):
 
     def set_context(self, context):
         self.context = context
-        self.context_ids = self.tokenizer(context)["input_ids"] if self.context else []
+        self.context_ids = self.tokenizer(context, add_special_tokens=False)["input_ids"] if self.context else []
 
     @abstractmethod
     def _compute_transformers_log_prob_scores(self, sentences_token_ids: List[List[int]]) -> List[float]:
