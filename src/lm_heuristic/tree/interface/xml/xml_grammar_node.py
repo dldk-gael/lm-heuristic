@@ -6,16 +6,17 @@ from .feature_structure import PStruct, is_symbol_terminal, copy_features, rever
 
 
 class XMLGrammarNode(Node):
-    def __init__(self, symbols: tuple, grammar):
+    def __init__(self, symbols: tuple, grammar, shrink=True):
         self.symbols = symbols
         self.grammar = grammar
         self._children = None
+        self.shrink = shrink
 
     @classmethod
-    def from_file(cls, file):
+    def from_file(cls, file, **kwargs):
         grammar_as_str = xml_to_string(file)
         grammar = parse_grammar(grammar_as_str)
-        return cls(({"str": "ROOT", "features": PStruct({})},), grammar)
+        return cls(({"str": "ROOT", "features": PStruct({})},), grammar, **kwargs)
 
     def __hash__(self):
         return hash(str(self)) # TODO optimize that
@@ -71,6 +72,9 @@ class XMLGrammarNode(Node):
     def children(self):
         if not self._children:
             self._children = self.compute_children()
+            if (len(self._children) == 1) and (not self._children[0].is_terminal()) and (self.shrink):
+                self._children = self._children[0].children()
+            
         return self._children
 
     def is_terminal(self):
