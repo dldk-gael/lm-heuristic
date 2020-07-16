@@ -38,7 +38,7 @@ class CFGrammarNode(Node):
     been produced by different parents.
     """
 
-    def __init__(self, symbols: tuple, cfg: CFG, left_to_right_generation=True):
+    def __init__(self, symbols: tuple, cfg: CFG, left_to_right_generation=True, shrink=True):
         """
         :param symbols ordered sequences of symbol representing the current derivation string
         :param cfg : reference to context free grammar containing the production rules
@@ -48,6 +48,7 @@ class CFGrammarNode(Node):
         self.symbols = (symbols,) if not isinstance(symbols, tuple) else symbols
         self._children = None
         self.left_to_right_generation = left_to_right_generation
+        self.shrink = shrink
 
     @classmethod
     def from_string(cls, str_grammar: str, **kwargs) -> "CFGrammarNode":
@@ -80,6 +81,9 @@ class CFGrammarNode(Node):
             self._children = (
                 self.compute_children_left_to_right() if self.left_to_right_generation else self.compute_all_children()
             )
+        if (len(self._children) == 1) and (not self._children[0].is_terminal()) and (self.shrink):
+            self._children = self._children[0].children()
+
         return self._children
 
     def compute_children_left_to_right(self):
