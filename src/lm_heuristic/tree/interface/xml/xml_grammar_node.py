@@ -22,7 +22,16 @@ class XMLGrammarNode(Node):
 
     def __str__(self):
         if self.is_terminal():
-            return " ".join(map(lambda x: x["str"][1:-1], self.symbols)) #[1:-1] to remove " "
+            as_str = ""
+            for symbol in self.symbols:
+                if not len(symbol["str"]) == 2: # to remove "" or ''
+                    str_symbol = symbol["str"][1:-1] # to remove " " from "word"
+                    if as_str != "":
+                        as_str += " " + str_symbol
+                    else:
+                        as_str += str_symbol
+
+            return as_str
         else: # for debug only
             return " ".join(map(str, self.symbols))
 
