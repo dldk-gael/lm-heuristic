@@ -9,10 +9,10 @@ import pandas as pd
 import seaborn as sns
 
 from lm_heuristic.tree import Node
-from lm_heuristic.utils.timer import time_function
+from lm_heuristic.utils.timer import time_function, Timer
 from .evaluator import Evaluator
 
-class TreeSearch(ABC):
+class TreeSearch(ABC, Timer):
     """
     Given a root (tree.Node) and an evaluation function (tree_search.Evaluator), the goal of
     a tree_search object is to find a leaf that can be reached from the root and that
@@ -22,6 +22,7 @@ class TreeSearch(ABC):
     def __init__(
         self, evaluator: Evaluator, name: str = "", progress_bar: bool = False
     ):
+        Timer.__init__(self)
         self._evaluator = evaluator
         self._name = name
         self._progress_bar = progress_bar
@@ -29,6 +30,7 @@ class TreeSearch(ABC):
     @time_function
     def search(self, root: Node, nb_of_tree_walks: int) -> Tuple[Node, float]:
         self._evaluator.reset()
+        self.reset_timer()
         self._search(root, nb_of_tree_walks)
         return self._evaluator.best_result()
 

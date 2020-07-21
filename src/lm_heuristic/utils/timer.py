@@ -53,19 +53,25 @@ class TimeComputation:
 
 def time_function(func):
     @wraps(func)
-    def wrapper(*args, **kwargs):
+    def wrapper(self, *args, **kwargs):
         begin_time = time.process_time()
-        res = func(*args, **kwargs)
+        res = func(self, *args, **kwargs)
         end_time = time.process_time()
-        wrapper.time_spent += end_time - begin_time
+        self._timer.setdefault(func.__name__, 0.0)
+        self._timer[func.__name__] += end_time - begin_time
         return res
-
-    wrapper.time_spent = 0.0
+    
     return wrapper
 
-######################################################################
-## Other time utility function
-######################################################################
+class Timer:
+    def __init__(self):
+        self._timer = dict()
+    
+    def reset_timer(self):
+        for key in self._timer:
+            self._timer[key] = 0.0 
+    
+    def print_timer(self):
+        for key in self._timer: 
+            print("Time spent in %s : %0.2f ms" % (key, self._timer[key] * 1000))
 
-def print_timer(func):
-    print("Time spent in %s : %0.2f ms" % (func.__name__, func.time_spent * 1000))
