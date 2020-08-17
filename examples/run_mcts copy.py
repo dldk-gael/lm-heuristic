@@ -2,7 +2,7 @@
 This script shows how to use a MCTS searcher with a nltk context free grammar
 """
 from lm_heuristic.tree.interface.nltk_grammar import CFGrammarNode
-from lm_heuristic.sentence_score import GPT2Score
+from lm_heuristic.utils.zero_scorer import ZeroScorer
 from lm_heuristic.tree_search import Evaluator
 from lm_heuristic.tree_search.mcts import (
     MonteCarloTreeSearch,
@@ -10,10 +10,15 @@ from lm_heuristic.tree_search.mcts import (
     RessourceDistributor,
     standart_ucb,
 )
-from lm_heuristic.utils.zero_scorer import ZeroScorer
+from lm_heuristic.utils.timer import print_timer
+import logging
+
+
+logger = logging.getLogger()
+logger.setLevel(logging.DEBUG)
 
 GRAMMAR_FOLDER = "data/cfg/"
-GRAMMAR_NAME = "ex_1_small"
+GRAMMAR_NAME = "ex_1_large"
 BATCH_SIZE = 5
 
 if __name__ == "__main__":
@@ -23,12 +28,11 @@ if __name__ == "__main__":
 
     ressource_distributor = RessourceDistributor(AllocationStrategy.ALL_FROM_ROOT)
 
-    gpt_2_scorer = GPT2Score("gpt2", batch_size=1)
-
+    scorer = ZeroScorer()
 
     # Initialize the search parameters
     mcts = MonteCarloTreeSearch(
-        evaluator=Evaluator(gpt_2_scorer),
+        evaluator=Evaluator(scorer),
         buffer_size=1,
         ressource_distributor=ressource_distributor,
         nb_random_restarts=1,
@@ -37,5 +41,5 @@ if __name__ == "__main__":
         progress_bar=True,
     )
 
-    best_node, best_value = mcts.search(grammar_root, nb_of_tree_walks=64)
-    mcts.print_timer()
+    mcts.search(grammar_root, nb_of_tree_walks=10000)
+    print(len(mcts._evaluator._call_history))

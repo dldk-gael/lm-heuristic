@@ -13,11 +13,12 @@ NB_SAMPLES = 1000
 if __name__ == "__main__":
 
     # Prepare grammar tree
-    grammar_root = CFGrammarNode.from_cfg_file(GRAMMAR_FOLDER + GRAMMAR_NAME + '.cfg')
+    grammar_root = CFGrammarNode.from_cfg_file(GRAMMAR_FOLDER + GRAMMAR_NAME + '.cfg', shrink=True)
+    print(grammar_root.children()[0])
 
     # Compute stats
     stats = TreeStats(grammar_root)
     stats.accumulate_stats(nb_samples=NB_SAMPLES)
-    print("time needed to accumulate the statistics : %0.3fs" % stats.accumulate_stats.time_spent)
+    stats.print_timer()
     print("depth : ", stats.depths_info())
     print("branching factor : ", stats.branching_factors_info())

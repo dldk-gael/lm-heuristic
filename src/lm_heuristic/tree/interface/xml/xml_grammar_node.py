@@ -7,7 +7,7 @@ from .feature_structure import PStruct, is_symbol_terminal, copy_features, rever
 
 class XMLGrammarNode(Node):
     def __init__(self, symbols: tuple, grammar, shrink=True):
-        self.symbols = symbols
+        self.symbols = symbols  # a symbol <- {"str": str, "features": PStruct | PVar | PConst}
         self.grammar = grammar
         self._children = None
         self.shrink = shrink
@@ -47,14 +47,16 @@ class XMLGrammarNode(Node):
             idx_left_nt_symb += 1
         symbol = self.symbols[idx_left_nt_symb]
 
-        productions = self.grammar.get(symbol["str"], [])
+        bodies = self.grammar.get(symbol["str"], [])
 
-        if not productions:
+        if not bodies:
             # Error in grammar -> miss a non terminal symbol
             return [XMLGrammarNode(({"str": "DEAD_END", "features": PStruct({})},), self.grammar)]
 
-        for production in productions:
-            feature_copies = copy_features(production)
+        for body in bodies:
+            # body <- {'head_feature':PStruct, 'body_features': List[PStruct], 'body_symbols': List[str]}
+            feature_copies = copy_features(body) # <- List[{'str': str, 'features': PStruct}]
+
             head_bindings = []
             if not symbol["features"].unify(feature_copies[0]["features"], head_bindings):
                 revert(head_bindings)
