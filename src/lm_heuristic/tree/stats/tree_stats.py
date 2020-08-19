@@ -4,14 +4,13 @@ import logging
 import numpy as np
 from tqdm.autonotebook import tqdm
 
-from lm_heuristic.utils.timer import Timer, time_function
 from ..node import Node
 
 
 logger = logging.getLogger(__name__)
 
 
-class TreeStats(Timer):
+class TreeStats():
     """
     Class use to accumulate informations about a tree
     and compute several statistics on depth and branching factor
@@ -21,19 +20,16 @@ class TreeStats(Timer):
         """
         :param root: root of the tree to evaluate
         """
-        Timer.__init__(self)
         self.root = root
         self._depths: List[int] = []
         self._branching_factors: Dict[int, List[int]] = dict()
         self._progress_bar = progress_bar
 
-    @time_function
     def accumulate_stats(self, nb_samples: int = 1):
         """
         Accumulate statistics on the tree by performing nb_samples tree walks
         :param nb_samples: number of tree walks to perform
         """
-        self.reset_timer()
         self._depths = []
         self._branching_factors = dict()
         for _ in tqdm(range(nb_samples), disable=not self._progress_bar):
