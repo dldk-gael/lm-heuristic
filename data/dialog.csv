@@ -5,7 +5,7 @@ A: alright, go ahead
 U: open the case file
 A: got it right here
 U: is mr McBass by any chance familiar with mrs McJune?
-";Mr McBass knows Mrs McJune.;the person named Bas McBass knows  the person name mrs McJune;too redundant in the formulation
+";Mr McBass knows Mrs McJune.;the person named Bas McBass knows  the person name mrs McJune.;too redundant in the formulation
 "A: good day
 U: i need you to do some stuff
 A: what can I do for you?
@@ -13,7 +13,7 @@ U: open the case file
 A: sure, go ahead
 U: does the name Judith ring a bell?
 A: Judith McJune is the only match i can find
-U: any connections with her you can give me information about?";Bas knows someone named Judith  from Project X  in 1993.;someone knows one or more people named ms McJune from Project X  in 1993;do not provide enough information
+U: any connections with her you can give me information about?";Bas knows someone named Judith  from Project X  in 1993.;someone knows one or more people named ms McJune from Project X  in 1993.;do not provide enough information
 "A: hi
 U: can you check something for me
 A: alright, go ahead
@@ -21,7 +21,7 @@ U: continue with the last session
 A: i have the data ready
 U: Can you find a mr McBass?
 A: there is some information about a guy named Bas McBass
-U: is he familiar with anybody?";He knows someone named Judith McJune  from Project X.;someone named Bas McBass knows someone named Judith McJune from Project X;to redundant given the context 
+U: is he familiar with anybody?";He knows someone named Judith McJune  from Project X.;someone named Bas McBass knows someone named Judith McJune from Project X.;to redundant given the context 
 "A: hello
 U: i need you to do some stuff
 A: sure, i'm ready to work
@@ -66,4 +66,4 @@ U: load the social network data
 A: i have the data ready
 U: Can you find a mr McBass?
 A: there is a person named Bas McBass in the data
-U: is he known by anyone in the network?";Someone named ms McJune knows him;Someone named ms McJune knows someone named  Bas McBass;to redundant given the context 
+U: is he known by anyone in the network?";Someone named ms McJune knows him.;Someone named ms McJune knows someone named  Bas McBass.;to redundant given the context 
