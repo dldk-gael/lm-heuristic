@@ -1,0 +1,69 @@
+﻿;good ;bad
+"A: hello
+U: can you check something for me
+A: alright, go ahead
+U: open the case file
+A: got it right here
+U: is mr McBass by any chance familiar with mrs McJune?
+";Mr McBass knows Mrs McJune.;the person named Bas McBass knows  the person name mrs McJune
+"A: good day
+U: i need you to do some stuff
+A: what can I do for you?
+U: open the case file
+A: sure, go ahead
+U: does the name Judith ring a bell?
+A: Judith McJune is the only match i can find
+U: any connections with her you can give me information about?";Bas knows someone named Judith  from Project X  in 1993;someone knows one or more people named ms McJune from Project X  in 1993
+"A: hi
+U: can you check something for me
+A: alright, go ahead
+U: continue with the last session
+A: i have the data ready
+U: Can you find a mr McBass?
+A: there is some information about a guy named Bas McBass
+U: is he familiar with anybody?";He knows someone named Judith McJune  from Project X;someone named Bas McBass knows someone named Judith McJune  from Project X
+"A: hello
+U: i need you to do some stuff
+A: sure, i'm ready to work
+U: get the knowledge graph
+A: sure, go ahead
+U: is there a person named Judith in the data?
+A: there is some information about a girl named Judith McJune
+U: does she know someone else from the network?";Judith McJune knows a person named Bas McBass from Project X;the person named ms McJune knows a person named Bas from Project X
+"A: hi
+U: hi
+U: get the knowledge graph
+A: i have the data ready
+U: is anyone from project X occurring in the data?";a person named Bas knows  a person named Judith McJune  from Project X  in 1993;a person knows  one or more people called Judith  from Project X  in 1993
+"A: hi
+U: hey
+U: continue with the last session
+A: loaded and good to go!
+U: is there anything you uncovered since last time?";Mr McBass knows someone named Judith McJune  from Project X;A person named  mr McBass knows  at least one person.
+"A: hello
+U: open the case file
+A: i have the data ready
+U: is there a person named Bas in the data?
+A: there is a person named Bas McBass in the data
+U: does anyone in our data know him?";one or more people called Judith McJune know mr McBass;omeone knows a person named Bas McBass  from Project X
+"A: good day
+U: i need you to do some stuff
+A: alright, go ahead
+U: get the knowledge graph
+A: i have the data ready
+U: is there a person named Judith in the data?
+A: there is a person named Judith McJune  in the data
+U: is she familiar with anybody?";She knows a person called Bas from Project X.;A person named Judith knows someone from Project X.
+"A: good day
+U: open the case file
+A: loaded and good to go!
+U: Any connections in the data you can tell me about?";The person called Bas knows  at least one person called  ms McJune  from Project X;At least one person named Bas McBass knows one or more people  from Project X.
+"A: hi
+U: hello
+U: i need you to do some stuff
+A: just say the word
+U: load the social network data
+A: i have the data ready
+U: Can you find a mr McBass?
+A: there is a person named Bas McBass in the data
+U: is he known by anyone in the network?";Someone named ms McJune knows him;Someone named ms McJune knows someone named  Bas McBass
