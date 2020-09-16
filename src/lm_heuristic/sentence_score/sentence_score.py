@@ -88,7 +88,8 @@ class SentenceScore(ABC):
         assert (
             self.load_unigram_file
         ), "Try to compute the unigram log prob of a sentence but no unigram count pickle file was loaded"
-        count = np.array([self.unigram_count[token] for token in tokens if token != "Ċ"]) # remove '\n' 
+        count = np.array([self.unigram_count[token] for token in tokens if token not in ["Ċ", "Âł"]) # remove '\n' 
+
         return np.sum(np.log(count / self.unigram_total))
 
     def score_normalization(self, sentence_score: float, tokens: List[str]):
