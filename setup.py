@@ -12,7 +12,7 @@ setup(
         "seaborn",
         "nltk",
         "numpy",
-        "transformers==3.0.2",
+        "transformers==4.30.0",
         "tensorflow",
         "tensorflow_hub",
         "flask",
